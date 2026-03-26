@@ -25,6 +25,21 @@ vi.mock("./TypeWriter", () => ({
   },
 }))
 
+// useTheme mock — 테마 컨텍스트 시뮬레이션
+vi.mock("@/features/theme", () => ({
+  useTheme: () => ({
+    decorations: {
+      dividerIcon: "antler",
+      dividerColor: "#9a8060",
+      headerIcon: "antler",
+      headerSubtitle: "",
+      cardAccentPosition: "left",
+      footerText: "",
+    },
+    tagline: "테스트 태그라인",
+  }),
+}))
+
 const mockMeta: ContentMeta = {
   slug: "ep-test",
   type: "episode",
@@ -68,7 +83,7 @@ describe("EpisodeViewer", () => {
 
     expect(screen.getByText("Grimoire · Episode 01")).toBeInTheDocument()
     expect(screen.getByText("테스트 에피소드")).toBeInTheDocument()
-    expect(screen.getByText("결핍은 질문을 삼킨다.")).toBeInTheDocument()
+    expect(screen.getByText("테스트 태그라인")).toBeInTheDocument()
   })
 
   it("재방문 시 모든 본문 블록이 즉시 표시된다", () => {
@@ -78,6 +93,12 @@ describe("EpisodeViewer", () => {
     expect(screen.getByText("첫 번째 문단")).toBeInTheDocument()
     expect(screen.getByText("두 번째 문단")).toBeInTheDocument()
     expect(screen.getByText("세 번째 문단")).toBeInTheDocument()
+  })
+
+  it("tagline prop이 전달되면 해당 값을 표시한다", () => {
+    sessionStorage.setItem("visited:ep-test", "true")
+    render(<EpisodeViewer meta={mockMeta} data={mockData} tagline="커스텀 태그라인" />)
+    expect(screen.getByText("커스텀 태그라인")).toBeInTheDocument()
   })
 
   it("다른 slug의 방문 기록은 영향을 주지 않는다", () => {

@@ -9,6 +9,7 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { motion } from "framer-motion"
 import type { EpisodeData, ContentMeta, Block } from "@/features/universe/data"
 import type { ThemeDecorations as DecorationConfig } from "@/features/theme"
+import { useTheme } from "@/features/theme"
 
 // 기본 장식 설정 — DeerDevil 스타일
 const DEFAULT_DECORATIONS: DecorationConfig = {
@@ -27,6 +28,8 @@ interface EpisodeViewerProps {
   authorName?: string
   /** 장식 설정 — 테마에서 전달 */
   decorations?: DecorationConfig
+  /** 작가별 대표 문구 — 테마에서 전달 */
+  tagline?: string
 }
 
 // 글자 타이핑이 적용되는 첫 문단 수
@@ -34,7 +37,12 @@ const TYPING_BLOCKS = 3
 // 뭉텅이 페이드인이 적용되는 뷰포트 블록 수
 const VIEWPORT_BLOCKS = 10
 
-export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations = DEFAULT_DECORATIONS }: EpisodeViewerProps) {
+export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations: decorationsProp, tagline: taglineProp }: EpisodeViewerProps) {
+  // 테마 컨텍스트에서 장식/태그라인 가져오기 (props 우선)
+  const theme = useTheme()
+  const decorations = decorationsProp ?? theme.decorations ?? DEFAULT_DECORATIONS
+  const tagline = taglineProp ?? theme.tagline
+
   // 세션 내 방문 여부 확인 — 재방문 시 타이핑 스킵
   const isRevisit = typeof window !== "undefined"
     && sessionStorage.getItem(`visited:${data.slug}`) === "true"
@@ -255,9 +263,11 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
         animate={{ opacity: stage >= 5 ? 1 : 0 }}
         transition={{ duration: 0.4 }}
       >
-        <p className="italic text-[0.95rem] text-u-text-muted leading-loose">
-          결핍은 질문을 삼킨다.
-        </p>
+        {tagline && (
+          <p className="italic text-[0.95rem] text-u-text-muted leading-loose">
+            {tagline}
+          </p>
+        )}
         <p className="text-[0.8rem] text-u-text-dim mt-4 not-italic font-u-sans tracking-u-normal">
           {authorName}
         </p>

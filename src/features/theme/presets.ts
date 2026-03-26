@@ -1,6 +1,6 @@
 // 장식 요소 — 테마 데코레이션 시스템
 export interface ThemeDecorations {
-  dividerIcon: "antler" | "star" | "dot" | "line" | "none"
+  dividerIcon: "antler" | "flower" | "star" | "geometric" | "brush" | "leaf" | "camellia" | "umbrella" | "waterwheel" | "dot" | "line" | "none"
   dividerColor: string
   headerIcon: "antler" | "quill" | "book" | "none"
   headerSubtitle: string    // 예: "Short Fiction Anthology"
@@ -33,6 +33,9 @@ export interface AuthorTheme {
 
   // 장식 요소
   decorations: ThemeDecorations
+
+  // 작가별 대표 문구 (optional)
+  tagline?: string         // 예: "결핍은 질문을 삼킨다."
 
   // 추가 시각 요소 (optional, 기본값 있음)
   typingSpeed?: number     // ms per character (default: 50)
