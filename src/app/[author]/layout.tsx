@@ -53,7 +53,8 @@ const DEFAULT_THEME: AuthorTheme = {
 // API에서 테마를 로드한다. API가 단일 진실 공급원.
 async function loadTheme(authorSlug: string): Promise<AuthorTheme> {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
+    // 서버 컴포넌트: 백엔드 직접 호출 (BFF 프록시 루프백 방지)
+    const apiUrl = process.env.API_URL || 'http://localhost:3000/api'
     const res = await fetch(`${apiUrl}/themes/${authorSlug}`, {
       next: { revalidate: 60 },
       signal: AbortSignal.timeout(3000),
@@ -100,7 +101,8 @@ interface AuthorInfo {
 
 async function loadAuthorInfo(authorSlug: string): Promise<AuthorInfo> {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
+    // 서버 컴포넌트: 백엔드 직접 호출 (BFF 프록시 루프백 방지)
+    const apiUrl = process.env.API_URL || 'http://localhost:3000/api'
     const res = await fetch(`${apiUrl}/authors/${authorSlug}`, {
       next: { revalidate: 60 },
       signal: AbortSignal.timeout(3000),

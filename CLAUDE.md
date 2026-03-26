@@ -90,6 +90,21 @@ src/
 - 서버 API 명세: `docs/api-contract.md` 참조
 - 백엔드: grimoire-server
 
+### BFF (Backend For Frontend) 패턴
+
+클라이언트 → Next.js API Route (`/api/...`) → grimoire-server
+
+- 클라이언트는 같은 도메인(`/api/...`)으로만 호출 → CORS 문제 없음
+- 백엔드 URL(`API_URL`)은 런타임 환경변수 → Docker 이미지 1개로 3환경 배포
+- `NEXT_PUBLIC_API_URL` 사용하지 않음 (빌드 시 인라인 방지)
+- HttpOnly Cookie가 같은 도메인이므로 자동 전송
+- 프록시 핸들러: `src/app/api/[...path]/route.ts`
+
+호출 패턴:
+- **클라이언트 컴포넌트** (`'use client'`): `/api/...` (프록시 경유)
+- **서버 컴포넌트**: `process.env.API_URL` 직접 호출 (루프백 방지)
+- `api.ts`는 `typeof window`로 자동 분기
+
 ---
 
 ## 5. 공통 명령어
@@ -111,8 +126,7 @@ npm run test:coverage # 커버리지 리포트
 
 ```bash
 # .env.local
-NEXT_PUBLIC_APP_ENV=development
-NEXT_PUBLIC_API_URL=http://localhost:3000
+API_URL=http://localhost:3000/api
 ```
 
 | 환경 | API URL | 배포 |
