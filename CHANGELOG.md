@@ -1,5 +1,42 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.5.0] - 2026-03-26
+
+### Added
+- EpisodeFooter 컴포넌트 (이전화/좋아요/다음화 + 댓글 UI)
+- 독자 서재 페이지 (`/library`) — 내 작품 + 구독 작품 탭
+- 프로필 설정 페이지 (`/dashboard/profile`)
+- 좋아요/구독/댓글 API 클라이언트 메서드
+- PageFlipTransition 작가 공간 레이아웃에 통합
+- 8개 페이지 SEO metadata 추가
+
+### Fixed
+- 전수조사: theme/page.tsx 타입 캐스팅 이중 캐스트 수정
+- 고아 컴포넌트 2개 통합 (EpisodeFooter, PageFlipTransition)
+- SCREENS.md 5개 라우트 추가
+- DESIGN.md design-tokens.md 참조 추가
+- docs/api-contract.md 서버와 동기화
+
+---
+
+## 2026-03-26
+
+### Phase 2 — 인증 화면 + 대시보드 + 원고 업로드
+
+#### Added
+- API 클라이언트 (`src/lib/api.ts`) — grimoire-server 연동 (인증, 테마, 작가, 작품, 원고)
+- AuthProvider 컨텍스트 (`src/features/auth/`) — JWT 토큰 기반 로그인 상태 관리
+- 로그인 페이지 (`/login`) — 테스트 계정 자동 채우기 버튼 포함
+- 회원가입 페이지 (`/register`) — 슬러그 자동 생성, 3 크레딧 보너스 안내
+- 작가 대시보드 (`/dashboard`) — 환영 카드, 빠른 액션, 작품 목록, 크레딧 현황
+- 원고 업로드 페이지 (`/dashboard/upload`) — 파일 드래그앤드롭, 텍스트 붙여넣기, 포맷 자동 감지, 서버 파싱 미리보기
+- TESTING.md 신규 생성 (고아문서 해소)
+
+#### Stats
+- 기존 테스트 70개 전부 통과
+
+---
+
 ## 2026-03-25 (2차)
 
 ### E2E 테스트 도입 (Playwright, 15개 시나리오)

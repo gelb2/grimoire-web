@@ -1,0 +1,59 @@
+# 개발 환경 배포 — develop 브랜치 푸시 시 자동 실행
+# Docker 이미지 빌드 (dev API URL 주입) → ACR 푸시 → Azure Container Apps 업데이트
+
+name: Deploy Dev
+
+on:
+  push:
+    branches: [develop]
+
+# 동시 배포 방지
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to Dev
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+      # 소스 코드 체크아웃
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Azure CLI 로그인
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # ACR 로그인
+      - name: Login to ACR
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      # Docker 이미지 빌드 (개발 서버 API URL을 빌드 인자로 전달)
+      - name: Build and push Docker image
+        run: |
+          IMAGE=${{ secrets.ACR_LOGIN_SERVER }}/grimoire-web
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=${{ secrets.DEV_API_URL }} \
+            --build-arg NEXT_PUBLIC_APP_ENV=development \
+            -t $IMAGE:dev-${{ github.sha }} \
+            -t $IMAGE:dev-latest \
+            .
+          docker push $IMAGE:dev-${{ github.sha }}
+          docker push $IMAGE:dev-latest
+
+      # Azure Container Apps 업데이트
+      - name: Deploy to Container Apps
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          resourceGroup: grimoire-rg
+          containerAppName: grimoire-web-dev
+          imageToDeploy: ${{ secrets.ACR_LOGIN_SERVER }}/grimoire-web:dev-${{ github.sha }}

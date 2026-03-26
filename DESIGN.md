@@ -1,5 +1,8 @@
 # DESIGN.md — 사슴악마 UI 디자인 시스템
 
+> 이 문서는 `docs/design-tokens.md` (정본)에서 파생된 Tailwind 구현 가이드이다.
+> 디자인 토큰의 정의 및 변경은 반드시 `docs/design-tokens.md`에서 먼저 수행한다.
+
 ## 디자인 철학
 
 A24 영화 감성의 다크 판타지 소설 뷰어.

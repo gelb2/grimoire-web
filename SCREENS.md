@@ -2,17 +2,52 @@
 
 ## 라우트 구조
 
+### 작가 공간 (멀티테넌트)
+
 | 경로 | 파일 | 설명 |
 |------|------|------|
-| `/` | `app/page.tsx` | 루트 → `/universe`로 리다이렉트 |
-| `/universe` | `app/universe/page.tsx` | 에피소드 목록 랜딩 |
-| `/universe/[slug]` | `app/universe/[slug]/page.tsx` | 에피소드 읽기 (ep1~ep8, bonus1) |
-| `/universe/preface` | `app/universe/preface/page.tsx` | 일러두기 |
-| `/universe/afterword` | `app/universe/afterword/page.tsx` | 후기 |
+| `/` | `app/page.tsx` | 루트 → `/deerdevil`로 리다이렉트 |
+| `/{author}` | `app/[author]/page.tsx` | 작가 랜딩 (에피소드 목록) |
+| `/{author}/{slug}` | `app/[author]/[slug]/page.tsx` | 에피소드 읽기 |
+| `/{author}/preface` | `app/[author]/preface/page.tsx` | 일러두기 |
+| `/{author}/afterword` | `app/[author]/afterword/page.tsx` | 후기 |
+
+### 인증
+
+| 경로 | 파일 | 설명 | API |
+|------|------|------|-----|
+| `/login` | `app/login/page.tsx` | 로그인 | `POST /api/auth/login` |
+| `/register` | `app/register/page.tsx` | 회원가입 (3 크레딧 보너스) | `POST /api/auth/register` |
+
+### 작가 대시보드
+
+| 경로 | 파일 | 설명 | API |
+|------|------|------|-----|
+| `/dashboard` | `app/dashboard/page.tsx` | 작가 대시보드 (작품 목록, 크레딧, 빠른 액션) | `GET /api/auth/profile` |
+| `/dashboard/upload` | `app/dashboard/upload/page.tsx` | 원고 업로드 (드래그앤드롭, 포맷 감지, 미리보기) | `POST /api/manuscripts/parse` |
+| `/dashboard/theme` | (Phase 2 예정) | 테마 에디터 | `POST /api/themes/generate` |
+| `/dashboard/credits` | (예정) | 크레딧 충전 (상품 선택, 결제) | `GET /api/payments/products`, `GET /api/payments/credits` |
+| `/dashboard/profile` | (예정) | 프로필 설정 (이름, 슬러그, 비밀번호 변경) | `GET /api/auth/profile` |
+
+### 독자 공간
+
+| 경로 | 파일 | 설명 | API |
+|------|------|------|-----|
+| `/library` | (예정) | 독자 서재 (북마크 작품 + 구독 작가 작품) | `GET /api/reader/bookmarks`, `GET /api/social/subscriptions` |
+| `/explore` | (예정) | 작품 탐색 (검색, 인기, 최신) | `GET /api/discover/authors`, `GET /api/discover/works/popular`, `GET /api/discover/works/recent` |
+
+### 관리자
+
+| 경로 | 파일 | 설명 | API |
+|------|------|------|-----|
+| `/admin` | (예정) | 관리자 패널 (통계, 크레딧 부여) | `GET /api/admin/stats`, `POST /api/admin/credits` |
 
 ### 레이아웃
 - `app/layout.tsx` — 루트 레이아웃 (html/body, globals.css import, 메타데이터)
-- `app/universe/layout.tsx` — Universe 전용 레이아웃 (serif 폰트, 다크 배경, 네비게이션)
+- `app/[author]/layout.tsx` — 작가 공간 레이아웃 (ThemeProvider, 폰트, CardTransitionProvider)
+- `app/login/layout.tsx` — 인증 레이아웃 (AuthProvider)
+- `app/register/layout.tsx` — 인증 레이아웃 (AuthProvider)
+- `app/dashboard/layout.tsx` — 대시보드 레이아웃 (AuthProvider)
 
 ---
 

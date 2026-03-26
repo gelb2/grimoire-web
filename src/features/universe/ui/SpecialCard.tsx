@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef } from "react"
+import { usePathname } from "next/navigation"
 import { SectionLabel } from "./SectionLabel"
 import { useCardTransition } from "./CardTransition"
 import type { ContentMeta } from "@/features/universe/data"
@@ -9,11 +10,13 @@ export function SpecialCard({ content }: { content: ContentMeta }) {
   const isAfterword = content.type === "afterword"
   const cardRef = useRef<HTMLDivElement>(null)
   const ctx = useCardTransition()
+  const pathname = usePathname()
+  const authorSlug = pathname.split("/").filter(Boolean)[0] ?? "deerdevil"
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()
     if (ctx && cardRef.current) {
-      ctx.navigateWithTransition(`/universe/${content.slug}`, cardRef.current)
+      ctx.navigateWithTransition(`/${authorSlug}/${content.slug}`, cardRef.current)
     }
   }
 

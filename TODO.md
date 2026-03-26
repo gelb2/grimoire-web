@@ -58,8 +58,35 @@
 ## 콘텐츠
 - [x] ep11 이름 없는 괴물 추가 (262개 블록)
 
-## 향후 계획 (사용자 설정 필요)
-- [ ] Vercel 배포 (vercel.com 로그인 → GitHub repo 연결)
-- [ ] Supabase 도입 (프로젝트 생성 → API 키 발급)
-- [ ] 백엔드 아키텍처 설계
+## Phase 2 (진행 중)
+- [x] API 클라이언트 (grimoire-server 연동)
+- [x] AuthProvider (JWT 토큰 기반 로그인 상태 관리)
+- [x] 로그인 페이지 (`/login`)
+- [x] 회원가입 페이지 (`/register`)
+- [x] 작가 대시보드 (`/dashboard`)
+- [x] 원고 업로드 페이지 (`/dashboard/upload`)
+- [x] TESTING.md 생성
+- [ ] 멀티테넌트 라우팅 서버 연동 (`/[author]/` → API에서 테마 로드)
+- [ ] 커스텀 테마 에디터 (Color Picker, 폰트 선택)
+- [ ] 테마 Baking 후 CDN CSS 로드
+
+## Phase 3 (완료 항목 포함)
+- [x] EpisodeFooter 컴포넌트 (이전화/좋아요/다음화 + 댓글 UI)
+- [x] 독자 서재 페이지 (`/library`)
+- [x] 프로필 설정 페이지 (`/dashboard/profile`)
+- [x] 좋아요/구독/댓글 API 클라이언트 메서드
+- [x] PageFlipTransition 작가 공간 레이아웃에 통합
+- [x] 8개 페이지 SEO metadata 추가
+- [x] 전수조사 지적사항 수정 (타입 캐스팅, 고아 컴포넌트, 문서 동기화)
+- [ ] Google OAuth 실제 연동 (Client ID 필요)
+- [ ] 작가 대시보드 고도화 (조회수 통계 차트, 작품 CRUD)
+- [ ] 크레딧 충전 UI (PAYAPP 연동)
+
+## Phase 4 (예정)
+- [ ] 크레딧-원화-AI토큰 비용 정밀 계산식 UI
+- [ ] 조회수 통계 차트 (대시보드)
+- [ ] HTML 파서 (최후순위)
+
+## 인프라 (예정)
+- [ ] Vercel 배포
 - [ ] 이미지/일러스트 추가
