@@ -1,11 +1,13 @@
 import type { ReactNode } from "react"
 import { EB_Garamond, Noto_Serif_KR } from "next/font/google"
-import { UniverseNav } from "@/features/universe/ui/UniverseNav"
 import { CardTransitionProvider } from "@/features/universe/ui/CardTransition"
-import { PageFlipTransition } from "@/features/universe/ui/PageFlipTransition"
 import { ThemeProvider } from "@/features/theme"
-import { getThemeForAuthor } from "@/features/theme"
 import type { AuthorTheme } from "@/features/theme"
+import { AuthProvider } from "@/features/auth"
+import { UniverseNav } from "@/features/universe/ui/UniverseNav"
+
+// 완전 동적 — SSR on every request
+export const dynamic = "force-dynamic"
 
 const garamond = EB_Garamond({
   subsets: ["latin"],
@@ -22,7 +24,33 @@ const notoSerifKR = Noto_Serif_KR({
   display: "swap",
 })
 
-// 서버에서 테마 로드 시도, 실패 시 로컬 프리셋 폴백
+// API 실패 시 기본 다크 테마 (로컬 프리셋 사용 안 함)
+const DEFAULT_THEME: AuthorTheme = {
+  bgPrimary: "#07070a",
+  bgSecondary: "#0d0d12",
+  textPrimary: "#cdc8bc",
+  textMuted: "#7a7570",
+  textDim: "#4a4740",
+  textBright: "#e8e3d8",
+  accent: "#9a8060",
+  accent2: "#c4a46a",
+  border: "#1e1e26",
+  fontBody: "serif",
+  fontHeading: "serif",
+  animation: "typing",
+  tone: "dark",
+  layout: "grid",
+  decorations: {
+    dividerIcon: "dot",
+    dividerColor: "",
+    headerIcon: "none",
+    headerSubtitle: "",
+    cardAccentPosition: "left",
+    footerText: "",
+  },
+}
+
+// API에서 테마를 로드한다. API가 단일 진실 공급원.
 async function loadTheme(authorSlug: string): Promise<AuthorTheme> {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
@@ -32,14 +60,24 @@ async function loadTheme(authorSlug: string): Promise<AuthorTheme> {
     })
     if (res.ok) {
       const data = await res.json()
+      // API에서 받은 overrides를 사용, 누락 필드는 기본값으로 보완
       if (data.overrides) {
-        return { ...getThemeForAuthor(authorSlug), ...data.overrides }
+        const overrides = data.overrides as Partial<AuthorTheme>
+        return {
+          ...DEFAULT_THEME,
+          ...overrides,
+          layout: overrides.layout ?? DEFAULT_THEME.layout,
+          decorations: {
+            ...DEFAULT_THEME.decorations,
+            ...(overrides.decorations ?? {}),
+          },
+        }
       }
     }
   } catch {
-    // 서버 미연결 시 로컬 프리셋 사용
+    // API 연결 실패 — 기본 다크 테마 사용
   }
-  return getThemeForAuthor(authorSlug)
+  return DEFAULT_THEME
 }
 
 interface Props {
@@ -47,20 +85,92 @@ interface Props {
   children: ReactNode
 }
 
+// 작가 정보 로드 — 이름 + 첫 작품 슬러그 + 에피소드 목록 (UniverseNav에 전달)
+interface NavEpisode {
+  slug: string
+  num?: string
+  type?: string
+}
+
+interface AuthorInfo {
+  name: string
+  workSlug?: string
+  episodes?: NavEpisode[]
+}
+
+async function loadAuthorInfo(authorSlug: string): Promise<AuthorInfo> {
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
+    const res = await fetch(`${apiUrl}/authors/${authorSlug}`, {
+      next: { revalidate: 60 },
+      signal: AbortSignal.timeout(3000),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      const name = data.author?.name ?? data.name ?? authorSlug
+      const workSlug = data.works?.[0]?.slug
+
+      // 첫 작품의 에피소드 목록도 로드 (UniverseNav 탭용)
+      let episodes: NavEpisode[] | undefined
+      if (workSlug) {
+        try {
+          const workRes = await fetch(`${apiUrl}/works/${authorSlug}/${workSlug}`, {
+            next: { revalidate: 60 },
+            signal: AbortSignal.timeout(3000),
+          })
+          if (workRes.ok) {
+            const workData = await workRes.json()
+            const rawEpisodes = workData.episodes ?? workData.work?.episodes ?? []
+            episodes = rawEpisodes.map((ep: { slug: string; orderNum?: number; type?: string }) => {
+              // episode 타입: slug에서 번호 추출 (ep1 → "01")
+              const epType = ep.type ?? 'episode'
+              let num: string | undefined
+              if (epType === 'episode') {
+                const match = ep.slug.match(/\d+/)
+                num = match ? match[0].padStart(2, '0') : undefined
+              }
+              return { slug: ep.slug, num, type: ep.type }
+            })
+          }
+        } catch {
+          // 에피소드 로드 실패 — 로컬 데이터 폴백
+        }
+      }
+
+      return { name, workSlug, episodes }
+    }
+  } catch {
+    // 작가 정보 로드 실패 — slug 폴백
+  }
+  return { name: authorSlug }
+}
+
 export default async function AuthorLayout({ params, children }: Props) {
   const { author } = await params
-  const theme = await loadTheme(author)
+  const [theme, authorInfo] = await Promise.all([
+    loadTheme(author),
+    loadAuthorInfo(author),
+  ])
+
+  const isUniverse = theme.layout === 'universe'
 
   return (
     <div className={`${garamond.variable} ${notoSerifKR.variable}`}>
-      <ThemeProvider theme={theme}>
-        <CardTransitionProvider>
-          <UniverseNav />
-          <PageFlipTransition>
+      <AuthProvider>
+        <ThemeProvider theme={theme}>
+          <CardTransitionProvider>
+            {/* universe 레이아웃: UniverseNav를 모든 하위 페이지에 표시 (원본 DeerDevil 동작) */}
+            {isUniverse && (
+              <UniverseNav
+                authorName={authorInfo.name}
+                workSlug={authorInfo.workSlug}
+                apiEpisodes={authorInfo.episodes}
+              />
+            )}
             {children}
-          </PageFlipTransition>
-        </CardTransitionProvider>
-      </ThemeProvider>
+          </CardTransitionProvider>
+        </ThemeProvider>
+      </AuthProvider>
     </div>
   )
 }

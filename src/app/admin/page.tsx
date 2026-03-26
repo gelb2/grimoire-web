@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { api } from '@/lib/api'
+import { PlatformNav } from '@/components/PlatformNav'
 
 export default function AdminPage() {
   const [stats, setStats] = useState<any>(null)
   const [grantForm, setGrantForm] = useState({ authorId: '', amount: '', reason: '' })
+  const [granting, setGranting] = useState(false)
   const [message, setMessage] = useState('')
 
   useEffect(() => {
@@ -14,23 +16,22 @@ export default function AdminPage() {
   }, [])
 
   const handleGrant = async () => {
-    if (!grantForm.authorId || !grantForm.amount) return
+    if (!grantForm.authorId || !grantForm.amount || granting) return
+    setGranting(true)
     try {
       await api.adminGrantCredits(grantForm.authorId, parseInt(grantForm.amount), grantForm.reason || 'admin_grant')
       setMessage('크레딧이 부여되었습니다')
       setGrantForm({ authorId: '', amount: '', reason: '' })
     } catch (err: any) {
       setMessage(err.message || '실패')
+    } finally {
+      setGranting(false)
     }
   }
 
   return (
     <div className="min-h-screen bg-neutral-950">
-      <header className="border-b border-neutral-800 px-6 py-4 flex items-center gap-4">
-        <Link href="/" className="text-xl font-bold text-white">Grimoire</Link>
-        <span className="text-neutral-600">|</span>
-        <span className="text-red-400 font-medium">관리자 패널</span>
-      </header>
+      <PlatformNav />
 
       <main className="max-w-4xl mx-auto px-6 py-8">
         <h1 className="text-2xl font-bold text-white mb-6">플랫폼 통계</h1>
@@ -60,8 +61,8 @@ export default function AdminPage() {
           <input type="text" placeholder="사유 (예: event_bonus)" value={grantForm.reason}
             onChange={e => setGrantForm(prev => ({ ...prev, reason: e.target.value }))}
             className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-white text-sm placeholder-neutral-500" />
-          <button onClick={handleGrant}
-            className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-sm rounded-lg">크레딧 부여</button>
+          <button onClick={handleGrant} disabled={granting}
+            className="px-4 py-2 bg-amber-600 hover:bg-amber-500 disabled:bg-neutral-700 disabled:cursor-not-allowed text-white text-sm rounded-lg">{granting ? '처리 중...' : '크레딧 부여'}</button>
         </div>
       </main>
     </div>

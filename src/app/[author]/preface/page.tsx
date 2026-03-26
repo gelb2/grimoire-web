@@ -1,17 +1,12 @@
-import type { Metadata } from "next"
-import { PrefaceViewer } from "@/features/universe/ui/PrefaceViewer"
-import { prefaceData } from "@/features/universe/data/contentDataSource/preface"
+import { redirect } from "next/navigation"
 
-export const metadata: Metadata = {
-  title: "일러두기",
-  description: "사슴악마 단편소설 — 편집자 서문",
+// preface는 작품(work)의 에피소드로 관리되어야 한다.
+// 하드코딩된 DeerDevil 로컬 데이터 대신 작가 공간으로 리다이렉트.
+interface Props {
+  params: Promise<{ author: string }>
 }
 
-export default function PrefacePage() {
-  return (
-    <PrefaceViewer
-      paragraphs={prefaceData.paragraphs}
-      lastLine={prefaceData.lastLine}
-    />
-  )
+export default async function PrefacePage({ params }: Props) {
+  const { author } = await params
+  redirect(`/${author}`)
 }

@@ -1,39 +1,20 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
 
 class ApiClient {
-  private token: string | null = null
-
-  setToken(token: string | null) {
-    this.token = token
-    if (token) {
-      if (typeof window !== 'undefined') localStorage.setItem('grimoire_token', token)
-    } else {
-      if (typeof window !== 'undefined') localStorage.removeItem('grimoire_token')
-    }
-  }
-
-  getToken(): string | null {
-    if (this.token) return this.token
-    if (typeof window !== 'undefined') {
-      this.token = localStorage.getItem('grimoire_token')
-    }
-    return this.token
-  }
-
   private async fetch<T>(path: string, options?: RequestInit): Promise<T> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...((options?.headers as Record<string, string>) || {}),
     }
 
-    const token = this.getToken()
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`
-    }
+    // SSR 환경에서 타임아웃 설정 (서버 미연결 시 빠른 폴백)
+    const signal = options?.signal ?? AbortSignal.timeout(5000)
 
     const res = await fetch(`${API_BASE}${path}`, {
       ...options,
+      credentials: 'include',
       headers,
+      signal,
     })
 
     if (!res.ok) {
@@ -46,29 +27,25 @@ class ApiClient {
 
   // 인증
   async register(data: { email: string; password: string; name: string; slug: string }) {
-    const result = await this.fetch<{ user: any; token: string }>('/auth/register', {
+    return this.fetch<{ user: any }>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
     })
-    this.setToken(result.token)
-    return result
   }
 
   async login(data: { email: string; password: string }) {
-    const result = await this.fetch<{ user: any; token: string }>('/auth/login', {
+    return this.fetch<{ user: any }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(data),
     })
-    this.setToken(result.token)
-    return result
   }
 
   async getProfile() {
     return this.fetch<any>('/auth/profile')
   }
 
-  logout() {
-    this.setToken(null)
+  async logout() {
+    return this.fetch<void>('/auth/logout', { method: 'POST' })
   }
 
   // 테마
@@ -100,12 +77,10 @@ class ApiClient {
 
   // Google 로그인
   async googleLogin(googleToken: string) {
-    const result = await this.fetch<{ user: any; token: string }>('/auth/google', {
+    return this.fetch<{ user: any }>('/auth/google', {
       method: 'POST',
       body: JSON.stringify({ token: googleToken }),
     })
-    this.setToken(result.token)
-    return result
   }
 
   // 결제/크레딧

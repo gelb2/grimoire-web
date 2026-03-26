@@ -1,50 +1,181 @@
 # Data Model — ProjectGrimoire
 
 > 정본: grimoire-server → grimoire-web에 동기화
-> Phase 1 구현 시 Prisma 스키마로 구체화 예정
+> 단일 진실 공급원 (Single Source of Truth) — Prisma 스키마와 1:1 대응
 
-## 테이블 (초안)
+---
+
+## 테이블 (13개)
 
 ### authors
-| 컬럼 | 타입 | 설명 |
-|------|------|------|
-| id | uuid | PK |
-| slug | text (unique) | URL 경로 |
-| name | text | 작가명 |
-| email | text (unique) | 이메일 |
-| theme_id | uuid (FK) | 테마 |
-| created_at | timestamptz | 생성일 |
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 작가 고유 식별자 |
+| slug | text | unique | URL 경로 (`/{slug}/`) |
+| name | text | - | 작가명 |
+| email | text | unique | 이메일 |
+| password_hash | text (nullable) | - | 비밀번호 해시 (bcryptjs) |
+| credits | integer | default(3) | 크레딧 잔액 |
+| created_at | timestamptz | default(now()) | 가입일 |
+
+관계: Theme (1:1), Work (1:N), SocialAccount (1:N)
 
 ### themes
-| 컬럼 | 타입 | 설명 |
-|------|------|------|
-| id | uuid | PK |
-| author_id | uuid (FK) | 작가 |
-| preset | text | 프리셋명 (midnight, parchment 등) |
-| overrides | jsonb | 커스텀 값 |
-| raw_description | text | 작가 원본 구술 텍스트 |
-| updated_at | timestamptz | 수정일 |
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 테마 식별자 |
+| author_id | uuid | unique, FK→authors | 작가 (1:1) |
+| preset | text | default("midnight") | 프리셋명 |
+| overrides | jsonb (nullable) | - | AuthorTheme 커스텀 값 |
+| raw_description | text (nullable) | - | 작가 원본 구술 텍스트 |
+| baked_css_url | text (nullable) | - | Baking된 CSS 파일 URL |
+| updated_at | timestamptz | auto-update | 수정일 |
 
 ### works
-| 컬럼 | 타입 | 설명 |
-|------|------|------|
-| id | uuid | PK |
-| author_id | uuid (FK) | 작가 |
-| slug | text | URL 경로 |
-| title | text | 작품 제목 |
-| subtitle | text | 부제 |
-| description | text | 설명 |
-| created_at | timestamptz | 생성일 |
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 작품 식별자 |
+| author_id | uuid | FK→authors | 작가 |
+| slug | text | unique(author_id, slug) | URL 경로 |
+| title | text | - | 작품 제목 |
+| subtitle | text (nullable) | - | 부제 |
+| description | text (nullable) | - | 설명 |
+| view_count | integer | default(0) | 조회수 |
+| created_at | timestamptz | default(now()) | 생성일 |
+
+관계: Episode (1:N)
 
 ### episodes
-| 컬럼 | 타입 | 설명 |
-|------|------|------|
-| id | uuid | PK |
-| work_id | uuid (FK) | 작품 |
-| slug | text | URL 경로 |
-| title | text | 제목 |
-| subtitle | text | 부제 |
-| order_num | integer | 순서 |
-| blocks | jsonb | 파싱된 Block[] |
-| raw_md | text | 원본 마크다운 |
-| created_at | timestamptz | 생성일 |
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 에피소드 식별자 |
+| work_id | uuid | FK→works | 작품 |
+| slug | text | unique(work_id, slug) | URL 경로 |
+| title | text | - | 제목 |
+| subtitle | text (nullable) | - | 부제 |
+| order_num | integer | - | 순서 |
+| blocks | jsonb | - | 파싱된 Block[] |
+| raw_md | text | - | 원본 마크다운 |
+| view_count | integer | default(0) | 조회수 |
+| source_format | text | default("markdown") | 원고 포맷 (markdown/txt/docx) |
+| created_at | timestamptz | default(now()) | 생성일 |
+
+### credit_logs
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 로그 식별자 |
+| author_id | text | - | 작가 ID (FK 없음 — 감사 로그) |
+| amount | integer | - | 양수: 적립, 음수: 차감 |
+| reason | text | - | 변동 사유 코드 |
+| created_at | timestamptz | default(now()) | 기록일 |
+
+### social_accounts
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 식별자 |
+| author_id | uuid | FK→authors | 작가 |
+| provider | text | unique(provider, provider_id) | OAuth 제공자 |
+| provider_id | text | unique(provider, provider_id) | 제공자별 고유 ID |
+| provider_email | text (nullable) | - | 제공자 이메일 |
+| created_at | timestamptz | default(now()) | 연동일 |
+
+### signup_history
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| provider_id | text | PK | OAuth provider ID |
+| first_signup_at | timestamptz | default(now()) | 최초 가입일 |
+| signup_count | integer | default(1) | 가입 횟수 |
+
+### bookmarks
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 식별자 |
+| author_id | text | unique(author_id, episode_id) | 독자(작가) ID |
+| episode_id | text | unique(author_id, episode_id) | 에피소드 ID |
+| created_at | timestamptz | default(now()) | 북마크 생성일 |
+
+### reading_progress
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 식별자 |
+| author_id | text | unique(author_id, episode_id) | 독자(작가) ID |
+| episode_id | text | unique(author_id, episode_id) | 에피소드 ID |
+| block_index | integer | - | 마지막으로 읽은 블록 인덱스 |
+| updated_at | timestamptz | auto-update | 갱신일 |
+
+### likes
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 식별자 |
+| author_id | text | unique(author_id, episode_id) | 독자(작가) ID |
+| episode_id | text | unique(author_id, episode_id) | 에피소드 ID |
+| created_at | timestamptz | default(now()) | 좋아요 생성일 |
+
+### subscriptions
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 식별자 |
+| subscriber_id | text | unique(subscriber_id, target_author_id) | 구독자 ID |
+| target_author_id | text | unique(subscriber_id, target_author_id) | 구독 대상 작가 ID |
+| created_at | timestamptz | default(now()) | 구독일 |
+
+### comments
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 식별자 |
+| author_id | text | - | 작성자 ID |
+| episode_id | text | - | 에피소드 ID |
+| content | text | - | 댓글 내용 (1~500자) |
+| created_at | timestamptz | default(now()) | 작성일 |
+
+### payments
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 결제 식별자 |
+| author_id | text | - | 결제 작가 ID |
+| product_id | text | - | 상품 ID |
+| amount | integer | - | 결제 금액 (원) |
+| credits | integer | - | 부여 크레딧 수 |
+| payapp_trade_no | text (nullable) | unique | PAYAPP 거래 번호 |
+| status | text | default("pending") | 결제 상태 (pending/completed/failed) |
+| created_at | timestamptz | default(now()) | 결제 요청일 |
+| completed_at | timestamptz (nullable) | - | 결제 완료일 |
+
+---
+
+## 관계 다이어그램
+
+```
+Author ──1:1── Theme
+Author ──1:N── Work ──1:N── Episode
+Author ──1:N── SocialAccount
+Author ──1:N── CreditLog (비정규화)
+SignupHistory (독립 — 재가입 방지)
+Bookmark (독자 행위 기록)
+ReadingProgress (독자 행위 기록)
+Like (독자 행위 기록)
+Subscription (구독 관계)
+Comment (소셜 기록)
+Payment (결제 기록)
+```
+
+---
+
+## 참조
+
+- `server/SCHEMA.md` — Prisma 구현 상세
+- `docs/glossary.md` — Block 타입, 크레딧 사유 코드 정의
+- `docs/theme-spec.md` — AuthorTheme JSON 스키마 (overrides 필드 형식)

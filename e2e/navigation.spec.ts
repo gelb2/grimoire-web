@@ -1,24 +1,24 @@
 import { test, expect } from "@playwright/test"
 
 test.describe("네비게이션", () => {
-  test("루트(/)에서 /deerdevil로 리다이렉트된다", async ({ page }) => {
+  test("루트(/)에서 /explore로 리다이렉트된다", async ({ page }) => {
     await page.goto("/")
-    await expect(page).toHaveURL(/\/deerdevil/)
+    await expect(page).toHaveURL(/\/explore/)
   })
 
-  test("일러두기 페이지가 로드된다", async ({ page }) => {
-    await page.goto("/deerdevil/preface")
-    await expect(page.locator("p").first()).toBeVisible({ timeout: 15000 })
-  })
-
-  test("후기 페이지가 로드된다", async ({ page }) => {
-    await page.goto("/deerdevil/afterword")
-    await expect(page).toHaveURL("/deerdevil/afterword")
-  })
-
-  test("랜딩에서 일러두기 탭 클릭 시 이동한다", async ({ page }) => {
+  test("작가 공간 페이지가 로드된다", async ({ page }) => {
+    // AuthorSpace 컴포넌트가 렌더링된다 (API 연결 여부와 무관하게 로딩 UI 표시)
     await page.goto("/deerdevil")
-    await page.getByRole("button", { name: "일러두기" }).click()
-    await expect(page).toHaveURL("/deerdevil/preface", { timeout: 10000 })
+    await expect(page.locator("div").first()).toBeVisible({ timeout: 15000 })
+  })
+
+  test("preface 경로는 작가 공간으로 리다이렉트된다", async ({ page }) => {
+    await page.goto("/deerdevil/preface")
+    await expect(page).toHaveURL(/\/deerdevil$/)
+  })
+
+  test("afterword 경로는 작가 공간으로 리다이렉트된다", async ({ page }) => {
+    await page.goto("/deerdevil/afterword")
+    await expect(page).toHaveURL(/\/deerdevil$/)
   })
 })

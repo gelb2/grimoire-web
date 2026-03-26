@@ -7,11 +7,15 @@ COPY package*.json ./
 RUN npm ci
 COPY . .
 
-# 빌드 시 환경 변수 주입 (NEXT_PUBLIC_ 접두사는 빌드 시 인라인됨)
+# 빌드 시 환경 변수 주입 (NEXT_PUBLIC_ 접두사는 .env.production 파일로 인라인 보장)
 ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_APP_ENV=production
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NEXT_PUBLIC_APP_ENV=${NEXT_PUBLIC_APP_ENV}
+
+# .env.production 파일 생성 — Next.js가 빌드 시 확실히 읽어감
+RUN echo "NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}" > .env.production && \
+    echo "NEXT_PUBLIC_APP_ENV=${NEXT_PUBLIC_APP_ENV}" >> .env.production
 
 RUN npm run build
 
@@ -23,10 +27,16 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3001
 
-# standalone 서버 + static 파일 복사
+# SSR 런타임에서 API URL 사용 (NEXT_PUBLIC_은 빌드 시 클라이언트에 인라인되지만,
+# SSR 서버 코드는 런타임 process.env에서 읽으므로 여기서도 설정 필요)
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+
+# standalone 서버 + static 파일 + .env.production 복사
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/.env.production ./.env.production
 
 EXPOSE 3001
 
