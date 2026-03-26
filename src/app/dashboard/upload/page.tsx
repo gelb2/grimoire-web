@@ -14,6 +14,7 @@ export default function UploadPage() {
   const [content, setContent] = useState('')
   const [title, setTitle] = useState('')
   const [format, setFormat] = useState<string>('')
+  const [rawFile, setRawFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<any[]>([])
   const [parsing, setParsing] = useState(false)
   const [error, setError] = useState('')
@@ -24,12 +25,23 @@ export default function UploadPage() {
 
   // 파일 드롭/선택 핸들러
   const handleFile = async (file: File) => {
+    const ext = file.name.split('.').pop()?.toLowerCase()
+
+    // DOCX는 바이너리이므로 서버사이드 파싱 필요
+    if (ext === 'docx') {
+      setTitle(file.name.replace(/\.docx$/, ''))
+      setFormat('docx (Word)')
+      setContent('[DOCX 파일 — 서버에서 파싱됩니다]\n\nDOCX 파싱은 서버 연동 후 지원 예정입니다.')
+      setRawFile(file)
+      return
+    }
+
     const text = await file.text()
     setContent(text)
+    setRawFile(null)
     setTitle(file.name.replace(/\.(md|txt|html)$/, ''))
 
     // 포맷 감지
-    const ext = file.name.split('.').pop()?.toLowerCase()
     if (ext === 'md') setFormat('markdown')
     else if (ext === 'txt') setFormat('txt')
     else if (ext === 'html' || ext === 'htm') setFormat('html')
@@ -79,9 +91,18 @@ export default function UploadPage() {
       <main className="max-w-4xl mx-auto px-6 py-8">
         <h1 className="text-2xl font-bold text-white mb-2">원고 업로드</h1>
         <p className="text-neutral-400 mb-6">
-          MD, TXT 파일을 업로드하거나 텍스트를 직접 붙여넣으세요.
+          MD, TXT, DOCX 파일을 업로드하거나 텍스트를 직접 붙여넣으세요.
           에디팅이 아닌 <span className="text-amber-500">업로드</span>입니다 — 글은 작가님의 앱에서 쓰세요.
         </p>
+
+        <div className="bg-amber-900/20 border border-amber-800/50 rounded-lg px-4 py-3 mb-6">
+          <p className="text-amber-400 text-sm font-medium mb-1">권장 업로드 포맷</p>
+          <p className="text-amber-300/70 text-xs">
+            .md (Markdown), .txt (텍스트), .docx (Word) 를 권장합니다.
+            Bear, Obsidian, Notion, VS Code 등 대부분의 글쓰기 앱에서 이 포맷으로 내보내기를 지원합니다.
+            Pages 파일은 Word(.docx)로 내보내기 후 업로드해 주세요.
+          </p>
+        </div>
 
         {error && (
           <div className="bg-red-900/30 border border-red-800 text-red-300 px-4 py-3 rounded-lg text-sm mb-4">
@@ -111,11 +132,11 @@ export default function UploadPage() {
               className="border-2 border-dashed border-neutral-700 hover:border-amber-600 rounded-xl p-8 text-center cursor-pointer transition"
             >
               <p className="text-neutral-400 mb-2">파일을 드래그하거나 클릭하여 업로드</p>
-              <p className="text-neutral-600 text-sm">.md, .txt 지원</p>
+              <p className="text-neutral-600 text-sm">.md, .txt, .docx 지원</p>
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".md,.txt,.html"
+                accept=".md,.txt,.docx"
                 className="hidden"
                 onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
               />

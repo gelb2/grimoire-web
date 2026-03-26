@@ -8,7 +8,7 @@ import Link from 'next/link'
 export default function RegisterPage() {
   const router = useRouter()
   const { register } = useAuth()
-  const [form, setForm] = useState({ email: '', password: '', name: '', slug: '' })
+  const [form, setForm] = useState({ email: '', password: '', passwordConfirm: '', name: '', slug: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -24,9 +24,15 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    if (form.password !== form.passwordConfirm) {
+      setError('비밀번호가 일치하지 않습니다')
+      return
+    }
+
     setLoading(true)
     try {
-      await register(form)
+      await register({ email: form.email, password: form.password, name: form.name, slug: form.slug })
       router.push('/dashboard')
     } catch (err: any) {
       setError(err.message || '회원가입에 실패했습니다')
@@ -70,6 +76,19 @@ export default function RegisterPage() {
               minLength={6}
               className="w-full px-4 py-3 bg-neutral-900 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-amber-500 transition"
               placeholder="6자 이상"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-neutral-300 mb-1">비밀번호 확인</label>
+            <input
+              type="password"
+              value={form.passwordConfirm}
+              onChange={e => updateField('passwordConfirm', e.target.value)}
+              required
+              minLength={6}
+              className="w-full px-4 py-3 bg-neutral-900 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-amber-500 transition"
+              placeholder="비밀번호를 다시 입력하세요"
             />
           </div>
 
