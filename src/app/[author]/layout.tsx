@@ -1,8 +1,6 @@
 import type { ReactNode } from "react"
 import { EB_Garamond, Noto_Serif_KR } from "next/font/google"
-import { UniverseNav } from "@/features/universe/ui/UniverseNav"
 import { CardTransitionProvider } from "@/features/universe/ui/CardTransition"
-// PageFlipTransition은 에피소드 간 전환용 — 레이아웃 전체에 씌우면 안 됨
 import { ThemeProvider } from "@/features/theme"
 import type { AuthorTheme } from "@/features/theme"
 
@@ -75,7 +73,6 @@ export default async function AuthorLayout({ params, children }: Props) {
     <div className={`${garamond.variable} ${notoSerifKR.variable}`}>
       <ThemeProvider theme={theme}>
         <CardTransitionProvider>
-          <UniverseNav />
           {children}
         </CardTransitionProvider>
       </ThemeProvider>
