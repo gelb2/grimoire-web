@@ -4,7 +4,6 @@ import { UniverseNav } from "@/features/universe/ui/UniverseNav"
 import { CardTransitionProvider } from "@/features/universe/ui/CardTransition"
 // PageFlipTransition은 에피소드 간 전환용 — 레이아웃 전체에 씌우면 안 됨
 import { ThemeProvider } from "@/features/theme"
-import { getThemeForAuthor } from "@/features/theme"
 import type { AuthorTheme } from "@/features/theme"
 
 // 완전 동적 — SSR on every request
@@ -25,7 +24,24 @@ const notoSerifKR = Noto_Serif_KR({
   display: "swap",
 })
 
-// 서버에서 테마 로드 시도, 실패 시 로컬 프리셋 폴백
+// API 실패 시 기본 다크 테마 (로컬 프리셋 사용 안 함)
+const DEFAULT_THEME: AuthorTheme = {
+  bgPrimary: "#07070a",
+  bgSecondary: "#0d0d12",
+  textPrimary: "#cdc8bc",
+  textMuted: "#7a7570",
+  textDim: "#4a4740",
+  textBright: "#e8e3d8",
+  accent: "#9a8060",
+  accent2: "#c4a46a",
+  border: "#1e1e26",
+  fontBody: "serif",
+  fontHeading: "serif",
+  animation: "typing",
+  tone: "dark",
+}
+
+// API에서 테마를 로드한다. API가 단일 진실 공급원.
 async function loadTheme(authorSlug: string): Promise<AuthorTheme> {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
@@ -35,14 +51,15 @@ async function loadTheme(authorSlug: string): Promise<AuthorTheme> {
     })
     if (res.ok) {
       const data = await res.json()
+      // API에서 받은 overrides를 그대로 사용 (로컬 프리셋과 머지하지 않음)
       if (data.overrides) {
-        return { ...getThemeForAuthor(authorSlug), ...data.overrides }
+        return data.overrides as AuthorTheme
       }
     }
   } catch {
-    // 서버 미연결 시 로컬 프리셋 사용
+    // API 연결 실패 — 기본 다크 테마 사용
   }
-  return getThemeForAuthor(authorSlug)
+  return DEFAULT_THEME
 }
 
 interface Props {
