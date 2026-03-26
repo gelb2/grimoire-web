@@ -4,6 +4,7 @@ import { CardTransitionProvider } from "@/features/universe/ui/CardTransition"
 import { ThemeProvider } from "@/features/theme"
 import type { AuthorTheme } from "@/features/theme"
 import { AuthProvider } from "@/features/auth"
+import { UniverseNav } from "@/features/universe/ui/UniverseNav"
 
 // 완전 동적 — SSR on every request
 export const dynamic = "force-dynamic"
@@ -84,15 +85,83 @@ interface Props {
   children: ReactNode
 }
 
+// 작가 정보 로드 — 이름 + 첫 작품 슬러그 + 에피소드 목록 (UniverseNav에 전달)
+interface NavEpisode {
+  slug: string
+  num?: string
+  type?: string
+}
+
+interface AuthorInfo {
+  name: string
+  workSlug?: string
+  episodes?: NavEpisode[]
+}
+
+async function loadAuthorInfo(authorSlug: string): Promise<AuthorInfo> {
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
+    const res = await fetch(`${apiUrl}/authors/${authorSlug}`, {
+      next: { revalidate: 60 },
+      signal: AbortSignal.timeout(3000),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      const name = data.author?.name ?? data.name ?? authorSlug
+      const workSlug = data.works?.[0]?.slug
+
+      // 첫 작품의 에피소드 목록도 로드 (UniverseNav 탭용)
+      let episodes: NavEpisode[] | undefined
+      if (workSlug) {
+        try {
+          const workRes = await fetch(`${apiUrl}/works/${authorSlug}/${workSlug}`, {
+            next: { revalidate: 60 },
+            signal: AbortSignal.timeout(3000),
+          })
+          if (workRes.ok) {
+            const workData = await workRes.json()
+            const rawEpisodes = workData.episodes ?? workData.work?.episodes ?? []
+            episodes = rawEpisodes.map((ep: { slug: string; orderNum?: number; type?: string }) => ({
+              slug: ep.slug,
+              num: ep.orderNum != null ? String(ep.orderNum).padStart(2, '0') : undefined,
+              type: ep.type,
+            }))
+          }
+        } catch {
+          // 에피소드 로드 실패 — 로컬 데이터 폴백
+        }
+      }
+
+      return { name, workSlug, episodes }
+    }
+  } catch {
+    // 작가 정보 로드 실패 — slug 폴백
+  }
+  return { name: authorSlug }
+}
+
 export default async function AuthorLayout({ params, children }: Props) {
   const { author } = await params
-  const theme = await loadTheme(author)
+  const [theme, authorInfo] = await Promise.all([
+    loadTheme(author),
+    loadAuthorInfo(author),
+  ])
+
+  const isUniverse = theme.layout === 'universe'
 
   return (
     <div className={`${garamond.variable} ${notoSerifKR.variable}`}>
       <AuthProvider>
         <ThemeProvider theme={theme}>
           <CardTransitionProvider>
+            {/* universe 레이아웃: UniverseNav를 모든 하위 페이지에 표시 (원본 DeerDevil 동작) */}
+            {isUniverse && (
+              <UniverseNav
+                authorName={authorInfo.name}
+                workSlug={authorInfo.workSlug}
+                apiEpisodes={authorInfo.episodes}
+              />
+            )}
             {children}
           </CardTransitionProvider>
         </ThemeProvider>

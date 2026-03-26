@@ -2,7 +2,7 @@
 
 // AuthorSpace — 모든 작가의 통합 공간 컴포넌트
 // theme.layout에 따라 다른 UI를 렌더링한다:
-// - "universe": DeerDevil 스타일 (UniverseNav + UniverseLanding)
+// - "universe": DeerDevil 스타일 (UniverseNav는 layout에서 렌더링 + UniverseLanding)
 // - "grid": 기본 작품 카드 그리드
 
 import { useState, useEffect, useCallback } from 'react'
@@ -11,7 +11,6 @@ import { useTheme } from '@/features/theme'
 import { PlatformNav } from '@/components/PlatformNav'
 import { WorkCard } from '@/components/WorkCard'
 import { ErrorPopup } from '@/components/ErrorPopup'
-import { UniverseNav } from '@/features/universe/ui/UniverseNav'
 import { UniverseLanding } from '@/features/universe/ui/UniverseLanding'
 
 interface Episode {
@@ -58,22 +57,36 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
     setError(false)
 
     api.getAuthorSpace(authorSlug)
-      .then(async (data) => {
+      .then(async (res) => {
+        // API 응답: { author: {...}, works: [...], theme?: {...} }
+        // AuthorData 형태로 평탄화
+        const authorInfo = res.author ?? res
+        const works: Work[] = res.works ?? authorInfo.works ?? []
+
         // 작품별 에피소드 목록을 추가 로드
-        if (data.works && data.works.length > 0) {
-          const worksWithEpisodes = await Promise.all(
-            data.works.map(async (work: Work) => {
-              try {
-                const workData = await api.getWork(authorSlug, work.slug)
-                return { ...work, episodes: workData.episodes ?? [] }
-              } catch {
-                return work
-              }
-            })
-          )
-          data.works = worksWithEpisodes
+        const worksWithEpisodes = works.length > 0
+          ? await Promise.all(
+              works.map(async (work: Work) => {
+                try {
+                  const workRes = await api.getWork(authorSlug, work.slug)
+                  // API 응답: { work: {...}, episodes: [...] }
+                  const episodes = workRes.episodes ?? workRes.work?.episodes ?? []
+                  return { ...work, episodes }
+                } catch {
+                  return work
+                }
+              })
+            )
+          : works
+
+        const authorData: AuthorData = {
+          id: authorInfo.id,
+          slug: authorInfo.slug ?? authorSlug,
+          name: authorInfo.name ?? authorSlug,
+          description: authorInfo.description,
+          works: worksWithEpisodes,
         }
-        setAuthor(data)
+        setAuthor(authorData)
         setLoading(false)
       })
       .catch(() => {
@@ -140,7 +153,7 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
 
     return (
       <div className="min-h-screen bg-u-bg text-u-text">
-        <UniverseNav authorName={author.name} />
+        {/* UniverseNav는 [author]/layout.tsx에서 렌더링 — 여기서는 생략 */}
         <UniverseLanding
           authorName={author.name}
           workSlug={firstWork?.slug}
