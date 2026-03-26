@@ -1,6 +1,7 @@
 # TESTING.md — grimoire-web
 
-> 테스트 전략 + 현황.
+> 테스트 전략과 패턴.
+> 현재 테스트 수: `npm test` 및 `npm run test:e2e` 실행으로 확인.
 
 ---
 
@@ -8,9 +9,9 @@
 
 | 도구 | 용도 |
 |------|------|
-| Vitest 4.x | 유닛 테스트 |
+| Vitest | 유닛 테스트 |
 | @testing-library/react | React 컴포넌트 테스트 |
-| Playwright 1.58+ | E2E 테스트 |
+| Playwright | E2E 테스트 |
 
 ---
 
@@ -28,44 +29,18 @@ npm run test:all      # 유닛 + E2E 전체
 
 ## 3. 테스트 구조
 
-```
-src/
-├── features/universe/ui/
-│   ├── ChapterBlock.test.tsx      # 챕터 블록 렌더링 (16개)
-│   └── EpisodeViewer.test.tsx     # 에피소드 뷰어 (9개)
-├── features/universe/data/
-│   └── contents.test.ts           # 콘텐츠 데이터 (14개)
-scripts/
-└── parse-md.test.ts               # MD 파서 (27개)
+테스트 파일 목록: `find src -name "*.test.*" && find e2e -name "*.spec.*"` 실행으로 확인.
 
-e2e/
-├── landing.spec.ts                # 랜딩 페이지 (6개)
-├── episode.spec.ts                # 에피소드 뷰어 (7개)
-├── navigation.spec.ts             # 네비게이션
-└── navigation-state.spec.ts       # 네비게이션 상태
-```
+### 유닛 테스트 위치
+- `src/features/` 하위 — 도메인 로직 및 UI 컴포넌트 테스트
+- `scripts/` — MD 파서 테스트
+
+### E2E 테스트 위치
+- `e2e/` — Playwright 시나리오 테스트
 
 ---
 
-## 4. 현황
-
-| 구분 | 테스트 수 | 상태 |
-|------|----------|------|
-| ChapterBlock | 16 | 통과 |
-| EpisodeViewer | 9 | 통과 |
-| contents | 14 | 통과 |
-| parse-md | 27 | 통과 |
-| **유닛 소계** | **66** | **통과** |
-| landing (E2E) | 6 | 통과 |
-| episode (E2E) | 7 | 통과 |
-| navigation (E2E) | 5+ | 통과 |
-| navigation-state (E2E) | 4+ | 통과 |
-| **E2E 소계** | **22+** | **통과** |
-| **총합** | **88+** | **통과** |
-
----
-
-## 5. 테스트 환경 설정
+## 4. 테스트 환경 설정
 
 ### Vitest
 
@@ -83,7 +58,7 @@ e2e/
 
 ---
 
-## 6. 테스트 패턴
+## 5. 테스트 패턴
 
 ### Mock 전략
 
@@ -99,10 +74,22 @@ e2e/
 
 ---
 
-## 7. 커밋 전 검증
+## 6. 필수 검증 규칙
+
+### 커밋 전 검증
 
 ```bash
 npm test && npm run build
 ```
 
-테스트 미통과 상태로 커밋 금지 (루트 CLAUDE.md §2).
+테스트 미통과 상태로 커밋 금지 (루트 `CLAUDE.md` §2).
+
+### 크롬 브라우저 실제 확인
+
+모든 작업(기능 추가, 수정, 버그픽스) 후 크롬 브라우저에서 실제 동작을 확인한다.
+자동 테스트만으로는 시각적 결함이나 레이아웃 깨짐을 잡을 수 없다.
+
+### 고아 페이지 검증
+
+모든 페이지가 네비게이션(PlatformNav, UniverseNav, 대시보드 사이드바 등)에서 도달 가능한지 확인한다.
+네비게이션에서 접근 불가능한 페이지는 고아 페이지로 간주하고, 네비게이션에 링크를 추가하거나 페이지를 제거한다.

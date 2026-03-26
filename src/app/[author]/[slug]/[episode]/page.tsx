@@ -1,0 +1,132 @@
+import type { Metadata } from "next"
+import { notFound } from "next/navigation"
+import { api } from "@/lib/api"
+import { EpisodeViewer } from "@/features/universe/ui/EpisodeViewer"
+import { EpisodeFooter } from "@/features/universe/ui/EpisodeFooter"
+import { WorkNav } from "@/features/universe/ui/WorkNav"
+
+// 완전 동적 — SSR on every request
+export const dynamic = "force-dynamic"
+
+interface Props {
+  params: Promise<{ author: string; slug: string; episode: string }>
+}
+
+// 테마 레이아웃만 빠르게 확인 — universe 여부 판별용
+async function getThemeLayout(authorSlug: string): Promise<string> {
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
+    const res = await fetch(`${apiUrl}/themes/${authorSlug}`, {
+      next: { revalidate: 60 },
+      signal: AbortSignal.timeout(3000),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      return data.overrides?.layout ?? 'grid'
+    }
+  } catch {
+    // 테마 로드 실패 — 기본 grid
+  }
+  return 'grid'
+}
+
+// 에피소드 메타데이터
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { author, slug, episode } = await params
+
+  try {
+    const episodeData = await api.getEpisode(author, slug, episode)
+    const title = episodeData.title || episode
+    const description = episodeData.description ?? `${author} — ${title}`
+
+    // 루트 레이아웃 template이 "| Grimoire"를 자동 추가하므로 여기서는 제목만
+    return {
+      title,
+      description,
+      openGraph: {
+        title: `${title} | Grimoire`,
+        description,
+        type: "article",
+      },
+      twitter: {
+        card: "summary",
+        title: `${title} | Grimoire`,
+        description,
+      },
+    }
+  } catch {
+    return { title: episode }
+  }
+}
+
+export default async function EpisodePage({ params }: Props) {
+  const { author, slug, episode } = await params
+
+  try {
+    // 에피소드 + 작가 정보 + 테마 레이아웃 + 작품(에피소드 목록) 동시 로드
+    const [episodeData, authorRes, themeLayout, workData] = await Promise.all([
+      api.getEpisode(author, slug, episode),
+      api.getAuthorSpace(author).catch(() => null),
+      getThemeLayout(author),
+      api.getWork(author, slug).catch(() => null),
+    ])
+
+    // API 응답에서 num 파싱: orderNum → 2자리 zero-padded 문자열
+    const episodeNum = episodeData.num
+      ?? (episodeData.orderNum != null ? String(episodeData.orderNum).padStart(2, '0') : undefined)
+
+    const meta = {
+      slug: episodeData.slug || episode,
+      type: episodeData.type || "episode" as const,
+      num: episodeNum,
+      title: episodeData.title,
+      subtitle: episodeData.subtitle,
+      description: episodeData.description,
+    }
+
+    // 작가 이름: API 응답 > 작가 공간(중첩 구조) > slug 폴백
+    const authorName = episodeData.authorName || authorRes?.author?.name || authorRes?.name || author
+    // 작품 제목: 에피소드 응답에 포함된 workTitle 또는 slug 폴백
+    const workTitle = episodeData.workTitle || slug
+
+    const isUniverse = themeLayout === 'universe'
+
+    // 작품의 에피소드 목록 추출 (WorkNav pill 표시용)
+    const workEpisodes: { slug: string; orderNum: number; title: string; type?: string }[] =
+      (workData?.episodes ?? workData?.work?.episodes ?? [])
+        .map((ep: { slug: string; orderNum?: number; order_num?: number; title: string; type?: string }) => ({
+          slug: ep.slug,
+          orderNum: ep.orderNum ?? ep.order_num ?? 0,
+          title: ep.title,
+          type: ep.type,
+        }))
+        .sort((a: { orderNum: number }, b: { orderNum: number }) => a.orderNum - b.orderNum)
+
+    return (
+      <>
+        {/* universe 레이아웃: UniverseNav는 AuthorSpace 레이아웃에서 이미 렌더링됨 */}
+        {/* grid 레이아웃: WorkNav (pill 스타일 에피소드 네비게이션) 표시 */}
+        {!isUniverse && workEpisodes.length > 0 && (
+          <WorkNav
+            authorSlug={author}
+            authorName={authorName}
+            workSlug={slug}
+            workTitle={workTitle}
+            episodes={workEpisodes}
+            currentEpisodeSlug={episode}
+          />
+        )}
+        <EpisodeViewer meta={meta} data={episodeData} authorName={authorName} />
+        <EpisodeFooter
+          episodeId={episodeData.id || episode}
+          authorSlug={author}
+          workSlug={slug}
+          prevEpisodeSlug={episodeData.prevSlug ?? null}
+          nextEpisodeSlug={episodeData.nextSlug ?? null}
+        />
+      </>
+    )
+  } catch {
+    notFound()
+  }
+}

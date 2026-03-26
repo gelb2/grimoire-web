@@ -1,4 +1,4 @@
-# DESIGN.md — 사슴악마 UI 디자인 시스템
+# DESIGN.md — Grimoire UI 디자인 시스템
 
 > 이 문서는 `docs/design-tokens.md` (정본)에서 파생된 Tailwind 구현 가이드이다.
 > 디자인 토큰의 정의 및 변경은 반드시 `docs/design-tokens.md`에서 먼저 수행한다.
@@ -7,6 +7,17 @@
 
 A24 영화 감성의 다크 판타지 소설 뷰어.
 최소한의 UI, 최대한의 몰입감. 장식보다 타이포그래피.
+
+---
+
+## 멀티 작가 테마 시스템
+
+각 작가는 고유한 테마를 가진다. 테마는 CSS Variables (`--u-*`)로 `[author]/layout.tsx`에서 동적 주입된다.
+
+- 작가가 텍스트로 분위기를 구술 → Claude API가 테마 JSON 생성 → CSS Variables로 동적 렌더링
+- 아래 DeerDevil 토큰은 **기본(baseline) 테마**이자 디자인 시스템의 참조 기준이다
+- 작가별 테마가 로드되면 해당 `--u-*` 변수가 오버라이드된다
+- 테마 파라미터 명세: `docs/theme-spec.md` 참조
 
 ---
 

@@ -10,33 +10,32 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "사슴악마 — K-다크 판타지 단편소설",
-    template: "%s | 사슴악마",
+    default: "Grimoire — 작가별 맞춤 소설 퍼블리싱 플랫폼",
+    template: "%s | Grimoire",
   },
   description:
-    "A24 감성의 K-다크 판타지. 전래동화 속 신수(神獸)의 눈으로 다시 읽는 단편소설 유니버스.",
+    "작가별 맞춤 공간을 제공하는 소설 퍼블리싱 플랫폼. 자신만의 시각적 공간에서 소설을 퍼블리시하세요.",
   keywords: [
-    "사슴악마",
-    "K-다크 판타지",
-    "단편소설",
-    "전래동화",
-    "A24",
+    "Grimoire",
+    "소설",
     "웹소설",
-    "한국 판타지",
+    "퍼블리싱",
+    "작가",
+    "플랫폼",
   ],
   openGraph: {
     type: "website",
     locale: "ko_KR",
-    siteName: "사슴악마",
-    title: "사슴악마 — K-다크 판타지 단편소설",
+    siteName: "Grimoire",
+    title: "Grimoire — 작가별 맞춤 소설 퍼블리싱 플랫폼",
     description:
-      "A24 감성의 K-다크 판타지. 전래동화 속 신수(神獸)의 눈으로 다시 읽는 단편소설 유니버스.",
+      "작가별 맞춤 공간을 제공하는 소설 퍼블리싱 플랫폼. 자신만의 시각적 공간에서 소설을 퍼블리시하세요.",
   },
   twitter: {
     card: "summary",
-    title: "사슴악마 — K-다크 판타지 단편소설",
+    title: "Grimoire — 작가별 맞춤 소설 퍼블리싱 플랫폼",
     description:
-      "A24 감성의 K-다크 판타지. 전래동화 속 신수(神獸)의 눈으로 다시 읽는 단편소설 유니버스.",
+      "작가별 맞춤 공간을 제공하는 소설 퍼블리싱 플랫폼. 자신만의 시각적 공간에서 소설을 퍼블리시하세요.",
   },
 }
 
