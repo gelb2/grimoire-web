@@ -3,7 +3,10 @@ export type ContentType = "episode" | "bonus" | "preface" | "afterword"
 export interface ContentMeta {
   slug: string
   type: ContentType
+  /** 표시용 번호 (로컬 데이터) */
   num?: string
+  /** 서버 API orderNum → num 매핑용 */
+  orderNum?: number
   title: string
   subtitle?: string
   description?: string
