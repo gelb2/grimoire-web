@@ -1,5 +1,24 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.5.0] - 2026-03-26
+
+### Added
+- EpisodeFooter 컴포넌트 (이전화/좋아요/다음화 + 댓글 UI)
+- 독자 서재 페이지 (`/library`) — 내 작품 + 구독 작품 탭
+- 프로필 설정 페이지 (`/dashboard/profile`)
+- 좋아요/구독/댓글 API 클라이언트 메서드
+- PageFlipTransition 작가 공간 레이아웃에 통합
+- 8개 페이지 SEO metadata 추가
+
+### Fixed
+- 전수조사: theme/page.tsx 타입 캐스팅 이중 캐스트 수정
+- 고아 컴포넌트 2개 통합 (EpisodeFooter, PageFlipTransition)
+- SCREENS.md 5개 라우트 추가
+- DESIGN.md design-tokens.md 참조 추가
+- docs/api-contract.md 서버와 동기화
+
+---
+
 ## 2026-03-26
 
 ### Phase 2 — 인증 화면 + 대시보드 + 원고 업로드
