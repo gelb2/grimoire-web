@@ -42,9 +42,27 @@ export default async function AuthorPage({ params }: Props) {
   try {
     // 서버 API에서 작가 공간 + 작품 목록 로드
     const authorData = await api.getAuthorSpace(author)
-    // API 응답의 works를 ContentMeta 형태로 변환하여 전달
+
+    // 작품이 있으면 첫 번째 작품의 에피소드 목록을 가져와서 표시
     if (authorData.works && authorData.works.length > 0) {
-      return <UniverseLanding contents={authorData.works} />
+      const work = authorData.works[0]
+      // 작품의 에피소드 목록 가져오기
+      try {
+        const workData = await api.getWork(author, work.slug)
+        if (workData.episodes && workData.episodes.length > 0) {
+          // 서버 에피소드를 ContentMeta 형태로 변환
+          const episodeContents = workData.episodes.map((ep: any) => ({
+            slug: ep.slug,
+            type: ep.slug.startsWith('bonus') ? 'bonus' : ep.slug === 'preface' ? 'preface' : ep.slug === 'afterword' ? 'afterword' : 'episode',
+            title: ep.title,
+            subtitle: ep.subtitle || undefined,
+            description: '',
+          }))
+          return <UniverseLanding contents={episodeContents} />
+        }
+      } catch {
+        // 에피소드 로드 실패 시 폴백
+      }
     }
   } catch {
     // API 연결 안 되면 DeerDevil 폴백 (레거시 호환)
