@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { api } from '@/lib/api'
+import { useDebounce } from '@/hooks/useThrottle'
 
 interface AuthorResult { id: string; slug: string; name: string }
 interface WorkResult { id: string; slug: string; title: string; authorSlug?: string; authorName?: string; viewCount?: number; episodeCount?: number }
@@ -13,6 +14,7 @@ export default function ExplorePage() {
   const [popularWorks, setPopularWorks] = useState<WorkResult[]>([])
   const [recentWorks, setRecentWorks] = useState<WorkResult[]>([])
   const [searching, setSearching] = useState(false)
+  const debounce = useDebounce(300)  // 검색 디바운스 300ms
 
   useEffect(() => {
     api.getPopularWorks(6).then(setPopularWorks).catch(() => {})
@@ -53,7 +55,11 @@ export default function ExplorePage() {
             <input
               type="text"
               value={query}
-              onChange={e => setQuery(e.target.value)}
+              onChange={e => {
+                setQuery(e.target.value)
+                const val = e.target.value
+                debounce(() => { if (val.trim()) handleSearch() })
+              }}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
               placeholder="작가 이름 또는 슬러그 검색..."
               className="flex-1 px-4 py-3 bg-neutral-900 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-amber-500 transition"
