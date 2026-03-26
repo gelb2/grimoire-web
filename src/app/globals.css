@@ -1,0 +1,97 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+ * 사슴악마 디자인 토큰
+ * Universe 스코프의 --u-* CSS 변수를 Tailwind 토큰으로 매핑
+ * 컴포넌트에서는 bg-u-bg, text-u-accent 등으로 사용
+ */
+
+@theme inline {
+  /* ── 색상 토큰 ── */
+  --color-u-bg: var(--u-bg);
+  --color-u-bg2: var(--u-bg2);
+  --color-u-text: var(--u-text);
+  --color-u-text-muted: var(--u-text-muted);
+  --color-u-text-dim: var(--u-text-dim);
+  --color-u-text-bright: #e8e3d8;
+  --color-u-text-warm: #b0a895;
+  --color-u-text-soft: #c8c3b8;
+  --color-u-accent: var(--u-accent);
+  --color-u-accent2: var(--u-accent2);
+  --color-u-border: var(--u-border);
+
+  /* ── 폰트 토큰 ── */
+  --font-u-serif: var(--u-serif);
+  --font-u-sans: var(--u-sans);
+
+  /* ── 간격 토큰 (방어책: 컴포넌트 간 통일된 스케일) ── */
+  --spacing-u-section: 3.5rem;
+  --spacing-u-block: 1.8rem;
+  --spacing-u-paragraph: 1.3rem;
+
+  /* ── 읽기 폭 토큰 ── */
+  --max-w-u-landing: 900px;
+  --max-w-u-reader: 700px;
+  --max-w-u-reader-narrow: 640px;
+
+  /* ── 타이포 크기 토큰 ── */
+  --font-size-u-label: 10px;
+  --font-size-u-caption: 11px;
+  --font-size-u-body-sm: 14px;
+
+  /* ── 자간 토큰 (흔들리던 값 통일) ── */
+  --tracking-u-wide: 0.25em;
+  --tracking-u-normal: 0.1em;
+  --tracking-u-tight: 0.05em;
+
+  /* ── 둥글기 토큰 ── */
+  --radius-u-card: 8px;
+  --radius-u-pill: 20px;
+}
+
+:root {
+  --background: #07070a;
+  --foreground: #cdc8bc;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 스크롤바 스타일 (다크 테마) */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #07070a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2a35;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a45;
+}
+
+/* 링크 기본 스타일 리셋 */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 가로 스크롤 탭 — 스크롤바 숨기기 */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
