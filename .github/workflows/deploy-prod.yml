@@ -1,44 +1,58 @@
+# 프로덕션 환경 배포 — main 브랜치 푸시 시 자동 실행
+# Docker 이미지 빌드 (prod API URL 주입) → ACR 푸시 → Azure Container Apps 업데이트
+
 name: Deploy Production
 
 on:
   push:
     branches: [main]
 
+# 동시 배포 방지
 concurrency:
   group: deploy-prod
   cancel-in-progress: false
 
 jobs:
   deploy:
+    name: Deploy to Production
     runs-on: ubuntu-latest
     environment: production
-    steps:
-      - uses: actions/checkout@v4
 
+    steps:
+      # 소스 코드 체크아웃
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Azure CLI 로그인
       - name: Azure Login
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: ACR Login
+      # ACR 로그인
+      - name: Login to ACR
         uses: azure/docker-login@v2
         with:
           login-server: ${{ secrets.ACR_LOGIN_SERVER }}
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
+      # Docker 이미지 빌드 (프로덕션 서버 API URL을 빌드 인자로 전달)
       - name: Build and push Docker image
         run: |
+          IMAGE=${{ secrets.ACR_LOGIN_SERVER }}/grimoire-web
           docker build \
-            --build-arg NEXT_PUBLIC_APP_ENV=production \
             --build-arg NEXT_PUBLIC_API_URL=${{ secrets.PROD_API_URL }} \
-            -t ${{ secrets.ACR_LOGIN_SERVER }}/grimoire-web:prod-${{ github.sha }} \
-            -t ${{ secrets.ACR_LOGIN_SERVER }}/grimoire-web:prod-latest .
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/grimoire-web:prod-${{ github.sha }}
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/grimoire-web:prod-latest
+            --build-arg NEXT_PUBLIC_APP_ENV=production \
+            -t $IMAGE:prod-${{ github.sha }} \
+            -t $IMAGE:prod-latest \
+            .
+          docker push $IMAGE:prod-${{ github.sha }}
+          docker push $IMAGE:prod-latest
 
-      - name: Deploy to Azure Container Apps
-        uses: azure/container-apps-deploy-action@v2
+      # Azure Container Apps 업데이트
+      - name: Deploy to Container Apps
+        uses: azure/container-apps-deploy-action@v1
         with:
           resourceGroup: grimoire-rg
           containerAppName: grimoire-web-prod
