@@ -7,6 +7,9 @@ import { ThemeProvider } from "@/features/theme"
 import { getThemeForAuthor } from "@/features/theme"
 import type { AuthorTheme } from "@/features/theme"
 
+// 완전 동적 — SSR on every request
+export const dynamic = "force-dynamic"
+
 const garamond = EB_Garamond({
   subsets: ["latin"],
   weight: ["400", "500"],

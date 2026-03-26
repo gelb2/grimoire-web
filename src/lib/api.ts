@@ -31,9 +31,13 @@ class ApiClient {
       headers['Authorization'] = `Bearer ${token}`
     }
 
+    // SSR 환경에서 타임아웃 설정 (서버 미연결 시 빠른 폴백)
+    const signal = options?.signal ?? AbortSignal.timeout(5000)
+
     const res = await fetch(`${API_BASE}${path}`, {
       ...options,
       headers,
+      signal,
     })
 
     if (!res.ok) {

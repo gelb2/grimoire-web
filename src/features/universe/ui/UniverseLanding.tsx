@@ -1,11 +1,16 @@
-import { contents } from "@/features/universe/data"
+import { contents as localContents, type ContentMeta } from "@/features/universe/data"
 import { EpisodeCard } from "./EpisodeCard"
 import { SpecialCard } from "./SpecialCard"
 import { SectionLabel } from "./SectionLabel"
 import { AntlerDivider } from "./AntlerDivider"
 import { AntlerSVG } from "./AntlerSVG"
 
-export function UniverseLanding() {
+interface UniverseLandingProps {
+  contents?: ContentMeta[]
+}
+
+// contents를 props로 받으면 사용, 없으면 로컬 데이터 폴백
+export function UniverseLanding({ contents = localContents }: UniverseLandingProps) {
   const preface = contents.find((c) => c.type === "preface")
   const episodes = contents.filter((c) => c.type === "episode")
   const bonuses = contents.filter((c) => c.type === "bonus")
