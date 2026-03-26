@@ -9,6 +9,8 @@ import type { ContentMeta } from "@/features/universe/data"
 
 export function EpisodeCard({ content }: { content: ContentMeta }) {
   const isBonus = content.type === "bonus"
+  // num이 없으면 orderNum에서 파생 (서버 API 데이터 호환)
+  const displayNum = content.num ?? (content.orderNum != null ? String(content.orderNum).padStart(2, "0") : undefined)
   const cardRef = useRef<HTMLDivElement>(null)
   const ctx = useCardTransition()
   const pathname = usePathname()
@@ -30,10 +32,12 @@ export function EpisodeCard({ content }: { content: ContentMeta }) {
       {/* 좌측 accent 라인 */}
       <div className="absolute top-0 left-0 w-[3px] h-full bg-u-border transition-colors duration-300 group-hover:bg-u-accent" />
 
-      {/* 번호 레이블 */}
-      <SectionLabel className="text-u-label text-u-text-dim mb-3">
-        {isBonus ? content.num : `Episode ${content.num}`}
-      </SectionLabel>
+      {/* 번호 레이블 — num/orderNum 모두 없으면 제목만 표시 */}
+      {displayNum && (
+        <SectionLabel className="text-u-label text-u-text-dim mb-3">
+          {isBonus ? displayNum : `Episode ${displayNum}`}
+        </SectionLabel>
+      )}
 
       {/* 제목 */}
       <div className="text-lg md:text-xl italic text-u-text-bright mb-2 leading-[1.3]">
