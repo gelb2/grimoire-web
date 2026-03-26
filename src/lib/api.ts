@@ -177,6 +177,36 @@ class ApiClient {
     return this.fetch<any[]>(`/discover/works/recent?limit=${limit}`)
   }
 
+  // 좋아요
+  async toggleLike(episodeId: string) {
+    return this.fetch<{ liked: boolean; likeCount: number }>(`/social/likes/${episodeId}`, { method: 'POST' })
+  }
+  async getLikeCount(episodeId: string) {
+    return this.fetch<{ count: number }>(`/social/likes/${episodeId}/count`)
+  }
+
+  // 구독
+  async toggleSubscription(authorId: string) {
+    return this.fetch<{ subscribed: boolean }>(`/social/subscriptions/${authorId}`, { method: 'POST' })
+  }
+  async getSubscriptions() {
+    return this.fetch<any[]>('/social/subscriptions')
+  }
+  async getSubscriberCount(authorId: string) {
+    return this.fetch<{ count: number }>(`/social/subscriptions/${authorId}/count`)
+  }
+
+  // 댓글
+  async createComment(episodeId: string, content: string) {
+    return this.fetch<any>(`/social/comments/${episodeId}`, { method: 'POST', body: JSON.stringify({ content }) })
+  }
+  async getComments(episodeId: string) {
+    return this.fetch<any[]>(`/social/comments/${episodeId}`)
+  }
+  async deleteComment(commentId: string) {
+    return this.fetch<void>(`/social/comments/${commentId}`, { method: 'DELETE' })
+  }
+
   // 관리자
   async getAdminStats() {
     return this.fetch<any>('/admin/stats')
