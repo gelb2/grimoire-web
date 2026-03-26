@@ -5,9 +5,14 @@ import Link from 'next/link'
 import { api } from '@/lib/api'
 import { useDebounce } from '@/hooks/useThrottle'
 import { PlatformNav } from '@/components/PlatformNav'
+import { WorkCard } from '@/components/WorkCard'
 
 interface AuthorResult { id: string; slug: string; name: string }
-interface WorkResult { id: string; slug: string; title: string; authorSlug?: string; authorName?: string; viewCount?: number; episodeCount?: number }
+interface WorkResult {
+  id: string; slug: string; title: string
+  authorSlug?: string; authorName?: string
+  genre?: string; viewCount?: number; episodeCount?: number
+}
 
 export default function ExplorePage() {
   const [query, setQuery] = useState('')
@@ -18,8 +23,8 @@ export default function ExplorePage() {
   const debounce = useDebounce(300)  // 검색 디바운스 300ms
 
   useEffect(() => {
-    api.getPopularWorks(6).then(setPopularWorks).catch(() => {})
-    api.getRecentWorks(6).then(setRecentWorks).catch(() => {})
+    api.getPopularWorks(10).then(setPopularWorks).catch(() => {})
+    api.getRecentWorks(10).then(setRecentWorks).catch(() => {})
   }, [])
 
   const handleSearch = async () => {
@@ -36,10 +41,11 @@ export default function ExplorePage() {
     <div className="min-h-screen bg-neutral-950">
       <PlatformNav />
 
-      <main className="max-w-5xl mx-auto px-6 py-8">
+      <main className="max-w-6xl mx-auto px-6 py-8">
         {/* 검색 */}
-        <div className="mb-10">
-          <h1 className="text-3xl font-bold text-white mb-6">작가와 작품을 탐색하세요</h1>
+        <div className="mb-12">
+          <h1 className="text-3xl font-bold text-white mb-2">작가와 작품을 탐색하세요</h1>
+          <p className="text-neutral-500 mb-6">그리모어에서 새로운 이야기를 발견하세요</p>
           <div className="flex gap-2">
             <input
               type="text"
@@ -56,7 +62,7 @@ export default function ExplorePage() {
             <button
               onClick={handleSearch}
               disabled={searching}
-              className="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition"
+              className="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition disabled:opacity-50"
             >
               {searching ? '...' : '검색'}
             </button>
@@ -75,49 +81,56 @@ export default function ExplorePage() {
         </div>
 
         {/* 인기 작품 */}
-        <section className="mb-10">
-          <h2 className="text-xl font-bold text-white mb-4">인기 작품</h2>
+        <section className="mb-12">
+          <div className="flex items-center gap-3 mb-6">
+            <h2 className="text-xl font-bold text-white">인기 작품</h2>
+            <div className="flex-1 h-px bg-neutral-800" />
+          </div>
           {popularWorks.length === 0 ? (
             <p className="text-neutral-500">아직 작품이 없습니다. 첫 번째 작가가 되어보세요!</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div
+              className="grid gap-4"
+              style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}
+            >
               {popularWorks.map(work => (
-                <Link
+                <WorkCard
                   key={work.id}
-                  href={work.authorSlug ? `/${work.authorSlug}/${work.slug}` : '#'}
-                  className="block p-4 bg-neutral-900 border border-neutral-800 rounded-xl hover:border-amber-600 transition"
-                >
-                  <h3 className="text-white font-medium">{work.title}</h3>
-                  <p className="text-neutral-500 text-sm mt-1">
-                    {work.authorName && <span>{work.authorName} · </span>}
-                    {work.episodeCount}화
-                    {work.viewCount ? ` · 조회 ${work.viewCount.toLocaleString()}` : ''}
-                  </p>
-                </Link>
+                  title={work.title}
+                  authorName={work.authorName ?? ''}
+                  authorSlug={work.authorSlug ?? ''}
+                  genre={work.genre}
+                  episodeCount={work.episodeCount ?? 0}
+                  viewCount={work.viewCount}
+                />
               ))}
             </div>
           )}
         </section>
 
         {/* 최신 작품 */}
-        <section>
-          <h2 className="text-xl font-bold text-white mb-4">최신 작품</h2>
+        <section className="mb-12">
+          <div className="flex items-center gap-3 mb-6">
+            <h2 className="text-xl font-bold text-white">최신 작품</h2>
+            <div className="flex-1 h-px bg-neutral-800" />
+          </div>
           {recentWorks.length === 0 ? (
             <p className="text-neutral-500">아직 작품이 없습니다.</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div
+              className="grid gap-4"
+              style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}
+            >
               {recentWorks.map(work => (
-                <Link
+                <WorkCard
                   key={work.id}
-                  href={work.authorSlug ? `/${work.authorSlug}/${work.slug}` : '#'}
-                  className="block p-4 bg-neutral-900 border border-neutral-800 rounded-xl hover:border-amber-600 transition"
-                >
-                  <h3 className="text-white font-medium">{work.title}</h3>
-                  <p className="text-neutral-500 text-sm mt-1">
-                    {work.authorName && <span>{work.authorName} · </span>}
-                    {work.episodeCount}화
-                  </p>
-                </Link>
+                  title={work.title}
+                  authorName={work.authorName ?? ''}
+                  authorSlug={work.authorSlug ?? ''}
+                  genre={work.genre}
+                  episodeCount={work.episodeCount ?? 0}
+                  viewCount={work.viewCount}
+                />
               ))}
             </div>
           )}
