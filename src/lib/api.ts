@@ -98,6 +98,47 @@ class ApiClient {
     return this.fetch<any>(`/episodes/${authorSlug}/${workSlug}/${episodeSlug}`)
   }
 
+  // Google 로그인
+  async googleLogin(googleToken: string) {
+    const result = await this.fetch<{ user: any; token: string }>('/auth/google', {
+      method: 'POST',
+      body: JSON.stringify({ token: googleToken }),
+    })
+    this.setToken(result.token)
+    return result
+  }
+
+  // 결제/크레딧
+  async getProducts() {
+    return this.fetch<any[]>('/payments/products')
+  }
+
+  async getCredits() {
+    return this.fetch<{ credits: number }>('/payments/credits')
+  }
+
+  // 작품 관리
+  async createWork(data: { title: string; slug: string; subtitle?: string; description?: string }) {
+    return this.fetch<any>('/works', { method: 'POST', body: JSON.stringify(data) })
+  }
+
+  async updateWork(id: string, data: { title?: string; subtitle?: string; description?: string }) {
+    return this.fetch<any>(`/works/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
+  }
+
+  async deleteWork(id: string) {
+    return this.fetch<void>(`/works/${id}`, { method: 'DELETE' })
+  }
+
+  // 에피소드 관리
+  async createEpisode(workId: string, data: { title: string; rawContent: string; sourceFormat?: string }) {
+    return this.fetch<any>(`/works/${workId}/episodes`, { method: 'POST', body: JSON.stringify(data) })
+  }
+
+  async deleteEpisode(id: string) {
+    return this.fetch<void>(`/episodes/${id}`, { method: 'DELETE' })
+  }
+
   // 원고 파싱
   async parseManuscript(rawText: string) {
     return this.fetch<any>('/manuscripts/parse', {
