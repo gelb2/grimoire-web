@@ -28,6 +28,7 @@ export function ThemeProvider({ theme, children }: ThemeProviderProps) {
           "--u-text": theme.textPrimary,
           "--u-text-muted": theme.textMuted,
           "--u-text-dim": theme.textDim,
+          "--u-text-bright": theme.textBright,
           "--u-accent": theme.accent,
           "--u-accent2": theme.accent2,
           "--u-border": theme.border,

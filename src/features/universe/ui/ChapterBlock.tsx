@@ -101,7 +101,7 @@ function SingleBlock({ block }: { block: Block }) {
 
     case "italic":
       return (
-        <p className="mb-u-paragraph italic text-u-text-warm">
+        <p className="mb-u-paragraph italic text-u-text-muted">
           {parseInlineText(block.text ?? "")}
         </p>
       )

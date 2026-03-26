@@ -17,6 +17,11 @@ export interface AuthorTheme {
   // 분위기
   animation: "typing" | "fade" | "slide" | "none"
   tone: "dark" | "light" | "sepia"
+
+  // 추가 시각 요소 (optional, 기본값 있음)
+  typingSpeed?: number     // ms per character (default: 50)
+  cardRadius?: string      // border radius (default: "12px")
+  navOpacity?: number      // nav bar opacity 0-1 (default: 0.95)
 }
 
 // Midnight — 사슴악마 기본 테마 (DeerDevil 원본 값 그대로)

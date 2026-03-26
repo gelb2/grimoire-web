@@ -66,31 +66,31 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
   return (
     <div className="max-w-2xl mx-auto mt-16 mb-8">
       {/* 이전화/좋아요/다음화 */}
-      <div className="flex items-center justify-center gap-4 py-6 border-t border-b" style={{ borderColor: 'var(--u-border, #333)' }}>
+      <div className="flex items-center justify-center gap-4 py-6 border-t border-b border-u-border">
         {prevEpisodeSlug ? (
-          <a href={`/${authorSlug}/${prevEpisodeSlug}`} className="px-4 py-2 rounded-lg text-sm transition hover:opacity-80" style={{ color: 'var(--u-text-muted, #999)' }}>
+          <a href={`/${authorSlug}/${prevEpisodeSlug}`} className="px-4 py-2 rounded-lg text-sm text-u-text-muted transition hover:opacity-80">
             &larr; 이전화
           </a>
         ) : (
-          <span className="px-4 py-2 text-sm opacity-30" style={{ color: 'var(--u-text-muted, #999)' }}>이전화</span>
+          <span className="px-4 py-2 text-sm text-u-text-muted opacity-30">이전화</span>
         )}
 
-        <button onClick={handleLike} disabled={likeThrottle.pending} className="px-6 py-2 rounded-full border text-sm transition hover:opacity-80 disabled:opacity-50" style={{ borderColor: liked ? 'var(--u-accent, #c8a96e)' : 'var(--u-border, #333)', color: liked ? 'var(--u-accent, #c8a96e)' : 'var(--u-text-muted, #999)' }}>
+        <button onClick={handleLike} disabled={likeThrottle.pending} className={`px-6 py-2 rounded-full border text-sm transition hover:opacity-80 disabled:opacity-50 ${liked ? 'border-u-accent text-u-accent' : 'border-u-border text-u-text-muted'}`}>
           {liked ? '\u2665' : '\u2661'} {likeCount} 좋아요
         </button>
 
         {nextEpisodeSlug ? (
-          <a href={`/${authorSlug}/${nextEpisodeSlug}`} className="px-4 py-2 rounded-lg text-sm transition hover:opacity-80" style={{ color: 'var(--u-text-muted, #999)' }}>
+          <a href={`/${authorSlug}/${nextEpisodeSlug}`} className="px-4 py-2 rounded-lg text-sm text-u-text-muted transition hover:opacity-80">
             다음화 &rarr;
           </a>
         ) : (
-          <span className="px-4 py-2 text-sm opacity-30" style={{ color: 'var(--u-text-muted, #999)' }}>다음화</span>
+          <span className="px-4 py-2 text-sm text-u-text-muted opacity-30">다음화</span>
         )}
       </div>
 
       {/* 댓글 */}
       <div className="mt-8">
-        <h3 className="text-sm font-medium mb-4" style={{ color: 'var(--u-text-muted, #999)' }}>
+        <h3 className="text-sm font-medium mb-4 text-u-text-muted">
           댓글 {comments.length}
         </h3>
 
@@ -102,36 +102,34 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
             onKeyDown={e => e.key === 'Enter' && handleComment()}
             placeholder="작품에 대한 감상을 남겨주세요..."
             maxLength={500}
-            className="flex-1 px-4 py-2 rounded-lg text-sm border focus:outline-none transition"
-            style={{ backgroundColor: 'var(--u-bg, #0a0a0a)', borderColor: 'var(--u-border, #333)', color: 'var(--u-text, #d4c5a0)' }}
+            className="flex-1 px-4 py-2 rounded-lg text-sm border border-u-border bg-u-bg text-u-text focus:outline-none transition"
           />
           <button
             onClick={handleComment}
             disabled={submitting || !newComment.trim()}
-            className="px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-30"
-            style={{ backgroundColor: 'var(--u-accent, #c8a96e)', color: 'var(--u-bg, #0a0a0a)' }}
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-u-accent text-u-bg transition disabled:opacity-30"
           >
             등록
           </button>
         </div>
 
         {comments.length === 0 ? (
-          <p className="text-center py-8 text-sm" style={{ color: 'var(--u-text-muted, #666)' }}>
+          <p className="text-center py-8 text-sm text-u-text-muted">
             아직 댓글이 없습니다. 첫 감상을 남겨보세요.
           </p>
         ) : (
           <div className="space-y-4">
             {comments.map((comment: any) => (
-              <div key={comment.id} className="py-3 border-b" style={{ borderColor: 'var(--u-border, #222)' }}>
+              <div key={comment.id} className="py-3 border-b border-u-border">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs" style={{ color: 'var(--u-text-muted, #999)' }}>
+                  <span className="text-xs text-u-text-muted">
                     {comment.authorName || '독자'}
                   </span>
-                  <span className="text-xs" style={{ color: 'var(--u-text-muted, #666)' }}>
+                  <span className="text-xs text-u-text-dim">
                     {new Date(comment.createdAt).toLocaleDateString('ko-KR')}
                   </span>
                 </div>
-                <p className="text-sm leading-relaxed" style={{ color: 'var(--u-text, #d4c5a0)' }}>
+                <p className="text-sm leading-relaxed text-u-text">
                   {comment.content}
                 </p>
               </div>
