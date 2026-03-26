@@ -32,9 +32,9 @@ export function UniverseNav({ authorName = "Grimoire", workSlug, apiEpisodes }: 
   const isLanding = pathname === base
 
   // 탭 데이터: API 에피소드가 있으면 사용, 없으면 로컬 데이터 폴백
-  const episodeContents = apiEpisodes
-    ? apiEpisodes.filter((c) => c.type === "episode" || c.type === "bonus" || !c.type)
-    : contents.filter((c) => c.type === "episode" || c.type === "bonus")
+  const allEpisodes: NavEpisode[] = apiEpisodes
+    ? apiEpisodes
+    : contents.map((c) => ({ slug: c.slug, num: c.num, type: c.type }))
 
   // 현재 에피소드 slug 감지:
   // 3단계 URL /{author}/{work}/{episode} → segments[2]
@@ -44,6 +44,26 @@ export function UniverseNav({ authorName = "Grimoire", workSlug, apiEpisodes }: 
   // 에피소드 URL 생성: workSlug가 있으면 3단계, 없으면 2단계
   const episodeUrl = (slug: string) =>
     workSlug ? `${base}/${workSlug}/${slug}` : `${base}/${slug}`
+
+  // 에피소드 타입별 pill 라벨 생성
+  const pillLabel = (ep: NavEpisode, idx: number): string => {
+    const type = ep.type ?? "episode"
+    switch (type) {
+      case "preface": return "일러두기"
+      case "afterword": return "후기"
+      case "bonus": {
+        // bonus1, bonus2, ... → 번외1, 번외2, ...
+        const bonusNum = ep.slug.replace("bonus", "")
+        return `번외${bonusNum}`
+      }
+      case "episode":
+      default:
+        // num이 있으면 그대로 사용, 없으면 slug에서 숫자 추출
+        if (ep.num) return ep.num
+        const match = ep.slug.match(/\d+/)
+        return match ? match[0].padStart(2, "0") : String(idx + 1).padStart(2, "0")
+    }
+  }
 
   return (
     <nav className="sticky top-0 z-50 bg-u-bg/95 backdrop-blur-sm border-b border-u-border px-4 md:px-8 py-2.5 md:py-3 flex items-center gap-4">
@@ -66,31 +86,21 @@ export function UniverseNav({ authorName = "Grimoire", workSlug, apiEpisodes }: 
         {authorName}
       </button>
 
-      {/* 탭 목록 — 모바일에서 가로 스크롤 */}
+      {/* 탭 목록 — 모바일에서 가로 스크롤, API 데이터 기반 */}
       <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
         <NavTab
           label="전체"
           active={isLanding}
           onClick={() => router.push(base)}
         />
-        <NavTab
-          label="일러두기"
-          active={currentEpisodeSlug === "preface"}
-          onClick={() => router.push(episodeUrl("preface"))}
-        />
-        {episodeContents.map((c) => (
+        {allEpisodes.map((ep, idx) => (
           <NavTab
-            key={c.slug}
-            label={c.num ?? c.slug}
-            active={currentEpisodeSlug === c.slug}
-            onClick={() => router.push(episodeUrl(c.slug))}
+            key={ep.slug}
+            label={pillLabel(ep, idx)}
+            active={currentEpisodeSlug === ep.slug}
+            onClick={() => router.push(episodeUrl(ep.slug))}
           />
         ))}
-        <NavTab
-          label="후기"
-          active={currentEpisodeSlug === "afterword"}
-          onClick={() => router.push(episodeUrl("afterword"))}
-        />
       </div>
     </nav>
   )

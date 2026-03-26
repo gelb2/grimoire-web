@@ -12,6 +12,7 @@ interface WorkNavEpisode {
   slug: string
   orderNum: number
   title: string
+  type?: string
 }
 
 interface WorkNavProps {
@@ -54,7 +55,20 @@ export function WorkNav({
       {/* 에피소드 pill 목록 — 모바일에서 가로 스크롤 */}
       <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
         {episodes.map((ep) => {
-          const label = String(ep.orderNum).padStart(2, "0")
+          const epType = ep.type ?? "episode"
+          let label: string
+          switch (epType) {
+            case "preface": label = "일러두기"; break
+            case "afterword": label = "후기"; break
+            case "bonus": {
+              const bonusNum = ep.slug.replace("bonus", "")
+              label = `번외${bonusNum}`; break
+            }
+            default: {
+              const match = ep.slug.match(/\d+/)
+              label = match ? match[0].padStart(2, "0") : String(ep.orderNum).padStart(2, "0")
+            }
+          }
           const active = ep.slug === currentEpisodeSlug
           return (
             <Link

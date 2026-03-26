@@ -92,12 +92,13 @@ export default async function EpisodePage({ params }: Props) {
     const isUniverse = themeLayout === 'universe'
 
     // 작품의 에피소드 목록 추출 (WorkNav pill 표시용)
-    const workEpisodes: { slug: string; orderNum: number; title: string }[] =
+    const workEpisodes: { slug: string; orderNum: number; title: string; type?: string }[] =
       (workData?.episodes ?? workData?.work?.episodes ?? [])
-        .map((ep: { slug: string; orderNum?: number; order_num?: number; title: string }) => ({
+        .map((ep: { slug: string; orderNum?: number; order_num?: number; title: string; type?: string }) => ({
           slug: ep.slug,
           orderNum: ep.orderNum ?? ep.order_num ?? 0,
           title: ep.title,
+          type: ep.type,
         }))
         .sort((a: { orderNum: number }, b: { orderNum: number }) => a.orderNum - b.orderNum)
 

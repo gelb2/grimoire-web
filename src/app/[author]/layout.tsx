@@ -121,11 +121,16 @@ async function loadAuthorInfo(authorSlug: string): Promise<AuthorInfo> {
           if (workRes.ok) {
             const workData = await workRes.json()
             const rawEpisodes = workData.episodes ?? workData.work?.episodes ?? []
-            episodes = rawEpisodes.map((ep: { slug: string; orderNum?: number; type?: string }) => ({
-              slug: ep.slug,
-              num: ep.orderNum != null ? String(ep.orderNum).padStart(2, '0') : undefined,
-              type: ep.type,
-            }))
+            episodes = rawEpisodes.map((ep: { slug: string; orderNum?: number; type?: string }) => {
+              // episode 타입: slug에서 번호 추출 (ep1 → "01")
+              const epType = ep.type ?? 'episode'
+              let num: string | undefined
+              if (epType === 'episode') {
+                const match = ep.slug.match(/\d+/)
+                num = match ? match[0].padStart(2, '0') : undefined
+              }
+              return { slug: ep.slug, num, type: ep.type }
+            })
           }
         } catch {
           // 에피소드 로드 실패 — 로컬 데이터 폴백
