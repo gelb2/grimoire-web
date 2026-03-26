@@ -19,6 +19,8 @@ interface UniverseLandingProps {
   contents?: ContentMeta[]
   /** 작가 이름 — 헤더에 표시 */
   authorName?: string
+  /** 작품 슬러그 — 에피소드 링크에 사용 */
+  workSlug?: string
   /** 장식 설정 — 테마에서 전달 */
   decorations?: DecorationConfig
 }
@@ -27,6 +29,7 @@ interface UniverseLandingProps {
 export function UniverseLanding({
   contents = localContents,
   authorName = "Grimoire",
+  workSlug,
   decorations = DEFAULT_DECORATIONS,
 }: UniverseLandingProps) {
   const preface = contents.find((c) => c.type === "preface")
@@ -73,7 +76,7 @@ export function UniverseLanding({
         <SectionLabel className="text-u-label text-u-text-dim mb-4 md:mb-6">에피소드</SectionLabel>
         <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4 md:gap-6">
           {episodes.map((ep) => (
-            <EpisodeCard key={ep.slug} content={ep} />
+            <EpisodeCard key={ep.slug} content={ep} workSlug={workSlug} />
           ))}
         </div>
       </section>

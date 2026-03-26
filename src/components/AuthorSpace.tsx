@@ -14,6 +14,15 @@ import { ErrorPopup } from '@/components/ErrorPopup'
 import { UniverseNav } from '@/features/universe/ui/UniverseNav'
 import { UniverseLanding } from '@/features/universe/ui/UniverseLanding'
 
+interface Episode {
+  slug: string
+  title: string
+  subtitle?: string
+  description?: string
+  orderNum?: number
+  type?: string
+}
+
 interface Work {
   id: string
   slug: string
@@ -23,6 +32,7 @@ interface Work {
   genre?: string
   episodeCount?: number
   viewCount?: number
+  episodes?: Episode[]
 }
 
 interface AuthorData {
@@ -102,11 +112,25 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
 
   // layout: "universe" — DeerDevil 스타일 렌더링
   if (theme.layout === "universe") {
+    // 작품이 1개이면 그 작품의 에피소드를 UniverseLanding에 전달
+    const firstWork = (author.works ?? [])[0]
+    const episodeContents = firstWork?.episodes?.map((ep: { slug: string; title: string; subtitle?: string; description?: string; orderNum?: number; type?: string }) => ({
+      slug: ep.slug,
+      title: ep.title,
+      subtitle: ep.subtitle,
+      description: ep.description,
+      type: (ep.type ?? 'episode') as 'episode' | 'bonus' | 'preface' | 'afterword',
+      num: ep.orderNum != null ? String(ep.orderNum).padStart(2, '0') : undefined,
+      orderNum: ep.orderNum,
+    }))
+
     return (
       <div className="min-h-screen bg-u-bg text-u-text">
         <UniverseNav authorName={author.name} />
         <UniverseLanding
           authorName={author.name}
+          workSlug={firstWork?.slug}
+          contents={episodeContents}
           decorations={theme.decorations}
         />
       </div>

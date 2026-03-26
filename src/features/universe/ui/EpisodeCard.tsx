@@ -7,7 +7,7 @@ import { SectionLabel } from "./SectionLabel"
 import { useCardTransition } from "./CardTransition"
 import type { ContentMeta } from "@/features/universe/data"
 
-export function EpisodeCard({ content }: { content: ContentMeta }) {
+export function EpisodeCard({ content, workSlug }: { content: ContentMeta; workSlug?: string }) {
   const isBonus = content.type === "bonus"
   // num이 없으면 orderNum에서 파생 (서버 API 데이터 호환)
   const displayNum = content.num ?? (content.orderNum != null ? String(content.orderNum).padStart(2, "0") : undefined)
@@ -18,8 +18,12 @@ export function EpisodeCard({ content }: { content: ContentMeta }) {
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()
+    // workSlug가 있으면 3단계 URL (/{author}/{work}/{episode}), 없으면 2단계 폴백
+    const href = workSlug
+      ? `/${authorSlug}/${workSlug}/${content.slug}`
+      : `/${authorSlug}/${content.slug}`
     if (ctx && cardRef.current) {
-      ctx.navigateWithTransition(`/${authorSlug}/${content.slug}`, cardRef.current)
+      ctx.navigateWithTransition(href, cardRef.current)
     }
   }
 
