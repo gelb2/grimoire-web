@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { api } from '@/lib/api'
+import { PlatformNav } from '@/components/PlatformNav'
 
 interface Work {
   id: string
@@ -17,7 +18,7 @@ interface Work {
 }
 
 export default function DashboardPage() {
-  const { user, loading, logout } = useAuth()
+  const { user, loading } = useAuth()
   const router = useRouter()
   const [works, setWorks] = useState<Work[]>([])
   const [worksLoading, setWorksLoading] = useState(true)
@@ -79,18 +80,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-neutral-950">
       {/* 헤더 */}
-      <header className="border-b border-neutral-800 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/" className="text-xl font-bold text-white">Grimoire</Link>
-          <span className="text-neutral-600">|</span>
-          <span className="text-neutral-400">작가 대시보드</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard/credits" className="text-amber-500 text-sm hover:text-amber-400">{user.credits} 크레딧</Link>
-          <span className="text-neutral-400 text-sm">{user.name}</span>
-          <button onClick={logout} className="text-neutral-500 hover:text-neutral-300 text-sm transition">로그아웃</button>
-        </div>
-      </header>
+      <PlatformNav />
 
       <main className="max-w-5xl mx-auto px-6 py-8">
         {/* 환영 카드 */}
@@ -102,7 +92,7 @@ export default function DashboardPage() {
         </div>
 
         {/* 빠른 액션 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
           <Link href="/dashboard/upload" className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:border-amber-600 transition group">
             <div className="text-2xl mb-2">📝</div>
             <h3 className="text-white font-medium group-hover:text-amber-500 transition">원고 업로드</h3>
@@ -117,6 +107,16 @@ export default function DashboardPage() {
             <div className="text-2xl mb-2">💳</div>
             <h3 className="text-white font-medium group-hover:text-amber-500 transition">크레딧 충전</h3>
             <p className="text-neutral-500 text-sm mt-1">크레딧을 충전하세요</p>
+          </Link>
+          <Link href="/dashboard/profile" className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:border-amber-600 transition group">
+            <div className="text-2xl mb-2">👤</div>
+            <h3 className="text-white font-medium group-hover:text-amber-500 transition">프로필 설정</h3>
+            <p className="text-neutral-500 text-sm mt-1">작가 정보 수정</p>
+          </Link>
+          <Link href="/library" className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:border-amber-600 transition group">
+            <div className="text-2xl mb-2">📚</div>
+            <h3 className="text-white font-medium group-hover:text-amber-500 transition">서재</h3>
+            <p className="text-neutral-500 text-sm mt-1">내 작품 + 구독 관리</p>
           </Link>
         </div>
 

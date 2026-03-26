@@ -5,6 +5,7 @@ import { useAuth } from '@/features/auth'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { api } from '@/lib/api'
+import { PlatformNav } from '@/components/PlatformNav'
 
 interface Product {
   id: string
@@ -38,11 +39,7 @@ export default function CreditsPage() {
 
   return (
     <div className="min-h-screen bg-neutral-950">
-      <header className="border-b border-neutral-800 px-6 py-4 flex items-center gap-4">
-        <Link href="/dashboard" className="text-neutral-400 hover:text-white transition">&larr; 대시보드</Link>
-        <span className="text-neutral-600">|</span>
-        <span className="text-white font-medium">크레딧 충전</span>
-      </header>
+      <PlatformNav />
 
       <main className="max-w-3xl mx-auto px-6 py-8">
         <div className="text-center mb-8">

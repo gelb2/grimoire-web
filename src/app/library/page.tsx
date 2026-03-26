@@ -5,6 +5,7 @@ import { useAuth } from '@/features/auth'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { api } from '@/lib/api'
+import { PlatformNav } from '@/components/PlatformNav'
 
 export default function LibraryPage() {
   const { user, loading } = useAuth()
@@ -30,14 +31,7 @@ export default function LibraryPage() {
 
   return (
     <div className="min-h-screen bg-neutral-950">
-      <header className="border-b border-neutral-800 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/" className="text-xl font-bold text-white">Grimoire</Link>
-          <span className="text-neutral-600">|</span>
-          <span className="text-neutral-400">서재</span>
-        </div>
-        <Link href="/dashboard" className="text-neutral-400 hover:text-white text-sm">대시보드</Link>
-      </header>
+      <PlatformNav />
 
       <main className="max-w-5xl mx-auto px-6 py-8">
         {/* 환영 */}

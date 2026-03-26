@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { api } from '@/lib/api'
+import { PlatformNav } from '@/components/PlatformNav'
 
 export default function UploadPage() {
   const { user, loading } = useAuth()
@@ -82,11 +83,7 @@ export default function UploadPage() {
 
   return (
     <div className="min-h-screen bg-neutral-950">
-      <header className="border-b border-neutral-800 px-6 py-4 flex items-center gap-4">
-        <Link href="/dashboard" className="text-neutral-400 hover:text-white transition">&larr; 대시보드</Link>
-        <span className="text-neutral-600">|</span>
-        <span className="text-white font-medium">원고 업로드</span>
-      </header>
+      <PlatformNav />
 
       <main className="max-w-4xl mx-auto px-6 py-8">
         <h1 className="text-2xl font-bold text-white mb-2">원고 업로드</h1>

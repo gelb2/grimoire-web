@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { api } from '@/lib/api'
+import { PlatformNav } from '@/components/PlatformNav'
 
 export default function AdminPage() {
   const [stats, setStats] = useState<any>(null)
@@ -30,11 +31,7 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-neutral-950">
-      <header className="border-b border-neutral-800 px-6 py-4 flex items-center gap-4">
-        <Link href="/" className="text-xl font-bold text-white">Grimoire</Link>
-        <span className="text-neutral-600">|</span>
-        <span className="text-red-400 font-medium">관리자 패널</span>
-      </header>
+      <PlatformNav />
 
       <main className="max-w-4xl mx-auto px-6 py-8">
         <h1 className="text-2xl font-bold text-white mb-6">플랫폼 통계</h1>

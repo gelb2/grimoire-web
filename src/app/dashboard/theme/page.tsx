@@ -5,6 +5,7 @@ import { useAuth } from '@/features/auth'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { api } from '@/lib/api'
+import { PlatformNav } from '@/components/PlatformNav'
 import { themePresets, AuthorTheme } from '@/features/theme'
 
 const colorFields = [
@@ -110,14 +111,12 @@ export default function ThemeEditorPage() {
 
   return (
     <div className="min-h-screen bg-neutral-950">
-      <header className="border-b border-neutral-800 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard" className="text-neutral-400 hover:text-white transition">&larr; 대시보드</Link>
-          <span className="text-neutral-600">|</span>
-          <span className="text-white font-medium">테마 에디터</span>
-        </div>
+      <PlatformNav />
+
+      {/* 테마 에디터 액션 바 */}
+      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between border-b border-neutral-800/50">
+        <span className="text-neutral-400 text-sm">테마 에디터</span>
         <div className="flex items-center gap-3">
-          <span className="text-amber-500 text-sm">{user.credits} 크레딧</span>
           <button
             onClick={handlePublish}
             disabled={saving}
@@ -126,7 +125,7 @@ export default function ThemeEditorPage() {
             {saving ? '저장 중...' : '퍼블리시'}
           </button>
         </div>
-      </header>
+      </div>
 
       {message && (
         <div className="max-w-7xl mx-auto px-6 mt-4">

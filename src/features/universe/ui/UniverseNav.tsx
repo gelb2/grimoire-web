@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { contents } from "@/features/universe/data"
 import { cn } from "@/lib/utils"
@@ -23,6 +24,14 @@ export function UniverseNav() {
 
   return (
     <nav className="sticky top-0 z-50 bg-u-bg/95 backdrop-blur-sm border-b border-u-border px-4 md:px-8 py-2.5 md:py-3 flex items-center gap-4">
+      {/* 플랫폼 복귀 링크 */}
+      <Link
+        href="/explore"
+        className="font-u-sans text-[11px] text-u-text-muted hover:text-u-accent2 transition-colors duration-200 shrink-0"
+      >
+        &larr; 탐색으로
+      </Link>
+      <span className="text-u-border">|</span>
       {/* 브랜드 */}
       <button
         onClick={() => router.push(base)}

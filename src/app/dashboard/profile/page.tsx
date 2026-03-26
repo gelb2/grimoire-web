@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/features/auth'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { PlatformNav } from '@/components/PlatformNav'
 
 export default function ProfilePage() {
   const { user, loading } = useAuth()
@@ -25,11 +26,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-neutral-950">
-      <header className="border-b border-neutral-800 px-6 py-4 flex items-center gap-4">
-        <Link href="/dashboard" className="text-neutral-400 hover:text-white transition">&larr; 대시보드</Link>
-        <span className="text-neutral-600">|</span>
-        <span className="text-white font-medium">프로필 설정</span>
-      </header>
+      <PlatformNav />
 
       <main className="max-w-2xl mx-auto px-6 py-8">
         <h1 className="text-2xl font-bold text-white mb-6">프로필 설정</h1>
