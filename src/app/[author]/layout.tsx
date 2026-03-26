@@ -38,6 +38,15 @@ const DEFAULT_THEME: AuthorTheme = {
   fontHeading: "serif",
   animation: "typing",
   tone: "dark",
+  layout: "grid",
+  decorations: {
+    dividerIcon: "dot",
+    dividerColor: "",
+    headerIcon: "none",
+    headerSubtitle: "",
+    cardAccentPosition: "left",
+    footerText: "",
+  },
 }
 
 // API에서 테마를 로드한다. API가 단일 진실 공급원.
@@ -50,9 +59,18 @@ async function loadTheme(authorSlug: string): Promise<AuthorTheme> {
     })
     if (res.ok) {
       const data = await res.json()
-      // API에서 받은 overrides를 그대로 사용 (로컬 프리셋과 머지하지 않음)
+      // API에서 받은 overrides를 사용, 누락 필드는 기본값으로 보완
       if (data.overrides) {
-        return data.overrides as AuthorTheme
+        const overrides = data.overrides as Partial<AuthorTheme>
+        return {
+          ...DEFAULT_THEME,
+          ...overrides,
+          layout: overrides.layout ?? DEFAULT_THEME.layout,
+          decorations: {
+            ...DEFAULT_THEME.decorations,
+            ...(overrides.decorations ?? {}),
+          },
+        }
       }
     }
   } catch {

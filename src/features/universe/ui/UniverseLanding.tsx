@@ -2,17 +2,33 @@ import { contents as localContents, type ContentMeta } from "@/features/universe
 import { EpisodeCard } from "./EpisodeCard"
 import { SpecialCard } from "./SpecialCard"
 import { SectionLabel } from "./SectionLabel"
-import { AntlerDivider } from "./AntlerDivider"
-import { AntlerSVG } from "./AntlerSVG"
+import { ThemeHeaderIcon, ThemeDivider } from "./ThemeDecorations"
+import type { ThemeDecorations as DecorationConfig } from "@/features/theme"
+
+// 기본 장식 — ThemeProvider에서 받지 못했을 때 폴백
+const DEFAULT_DECORATIONS: DecorationConfig = {
+  dividerIcon: "antler",
+  dividerColor: "#9a8060",
+  headerIcon: "antler",
+  headerSubtitle: "Short Fiction Anthology",
+  cardAccentPosition: "left",
+  footerText: "Inspired by the sensibility of A24",
+}
 
 interface UniverseLandingProps {
   contents?: ContentMeta[]
   /** 작가 이름 — 헤더에 표시 */
   authorName?: string
+  /** 장식 설정 — 테마에서 전달 */
+  decorations?: DecorationConfig
 }
 
 // contents를 props로 받으면 사용, 없으면 로컬 데이터 폴백
-export function UniverseLanding({ contents = localContents, authorName = "Grimoire" }: UniverseLandingProps) {
+export function UniverseLanding({
+  contents = localContents,
+  authorName = "Grimoire",
+  decorations = DEFAULT_DECORATIONS,
+}: UniverseLandingProps) {
   const preface = contents.find((c) => c.type === "preface")
   const episodes = contents.filter((c) => c.type === "episode")
   const bonuses = contents.filter((c) => c.type === "bonus")
@@ -22,21 +38,25 @@ export function UniverseLanding({ contents = localContents, authorName = "Grimoi
     <div className="max-w-u-landing mx-auto px-4 md:px-8 pt-12 md:pt-20 pb-16 md:pb-32">
       {/* 헤더 */}
       <header className="text-center mb-12 md:mb-20 pb-10 md:pb-16 border-b border-u-border">
-        <SectionLabel className="text-u-caption text-u-text-muted mb-4 md:mb-6">
-          Short Fiction Anthology
-        </SectionLabel>
+        {decorations.headerSubtitle && (
+          <SectionLabel className="text-u-caption text-u-text-muted mb-4 md:mb-6">
+            {decorations.headerSubtitle}
+          </SectionLabel>
+        )}
 
         <div className="flex justify-center mb-4">
-          <AntlerSVG size={48} opacity={0.6} />
+          <ThemeHeaderIcon decorations={decorations} size={48} opacity={0.6} />
         </div>
 
         <h1 className="text-3xl md:text-5xl font-normal italic text-u-text-bright leading-tight mb-4">
           {authorName}
         </h1>
 
-        <div className="font-u-sans text-[12px] text-u-text-dim tracking-u-normal">
-          Inspired by the sensibility of A24
-        </div>
+        {decorations.footerText && (
+          <div className="font-u-sans text-[12px] text-u-text-dim tracking-u-normal">
+            {decorations.footerText}
+          </div>
+        )}
       </header>
 
       {/* 일러두기 */}
@@ -70,8 +90,8 @@ export function UniverseLanding({ contents = localContents, authorName = "Grimoi
         </section>
       )}
 
-      {/* 구분선 */}
-      <AntlerDivider className="mb-8 md:mb-12" />
+      {/* 구분선 — 테마 장식 시스템 사용 */}
+      <ThemeDivider decorations={decorations} className="mb-8 md:mb-12" />
 
       {/* 후기 */}
       {afterword && (

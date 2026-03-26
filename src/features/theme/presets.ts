@@ -1,3 +1,13 @@
+// 장식 요소 — 테마 데코레이션 시스템
+export interface ThemeDecorations {
+  dividerIcon: "antler" | "star" | "dot" | "line" | "none"
+  dividerColor: string
+  headerIcon: "antler" | "quill" | "book" | "none"
+  headerSubtitle: string    // 예: "Short Fiction Anthology"
+  cardAccentPosition: "left" | "top" | "none"
+  footerText: string        // 예: "Inspired by the sensibility of A24"
+}
+
 export interface AuthorTheme {
   // 색상
   bgPrimary: string
@@ -18,10 +28,26 @@ export interface AuthorTheme {
   animation: "typing" | "fade" | "slide" | "none"
   tone: "dark" | "light" | "sepia"
 
+  // 레이아웃 — "universe" = DeerDevil 스타일, "grid" = 일반 그리드
+  layout: "universe" | "grid" | "classic"
+
+  // 장식 요소
+  decorations: ThemeDecorations
+
   // 추가 시각 요소 (optional, 기본값 있음)
   typingSpeed?: number     // ms per character (default: 50)
   cardRadius?: string      // border radius (default: "12px")
   navOpacity?: number      // nav bar opacity 0-1 (default: 0.95)
+}
+
+// 기본 장식 설정 — layout: "grid" 전용
+const defaultDecorations: ThemeDecorations = {
+  dividerIcon: "dot",
+  dividerColor: "",
+  headerIcon: "none",
+  headerSubtitle: "",
+  cardAccentPosition: "left",
+  footerText: "",
 }
 
 // Midnight — 사슴악마 기본 테마 (DeerDevil 원본 값 그대로)
@@ -39,6 +65,15 @@ const midnight: AuthorTheme = {
   fontHeading: "serif",
   animation: "typing",
   tone: "dark",
+  layout: "universe",
+  decorations: {
+    dividerIcon: "antler",
+    dividerColor: "#9a8060",
+    headerIcon: "antler",
+    headerSubtitle: "Short Fiction Anthology",
+    cardAccentPosition: "left",
+    footerText: "Inspired by the sensibility of A24",
+  },
 }
 
 // Parchment — 역사/고전 느낌
@@ -56,6 +91,8 @@ const parchment: AuthorTheme = {
   fontHeading: "serif",
   animation: "fade",
   tone: "sepia",
+  layout: "grid",
+  decorations: defaultDecorations,
 }
 
 // Morning — 로맨스/일상 밝은 톤
@@ -73,6 +110,8 @@ const morning: AuthorTheme = {
   fontHeading: "sans-serif",
   animation: "slide",
   tone: "light",
+  layout: "grid",
+  decorations: defaultDecorations,
 }
 
 // Neon — SF/사이버펑크
@@ -90,6 +129,8 @@ const neon: AuthorTheme = {
   fontHeading: "monospace",
   animation: "none",
   tone: "dark",
+  layout: "grid",
+  decorations: defaultDecorations,
 }
 
 // Cream — 에세이/시 따뜻한 톤
@@ -107,6 +148,8 @@ const cream: AuthorTheme = {
   fontHeading: "sans-serif",
   animation: "none",
   tone: "light",
+  layout: "grid",
+  decorations: defaultDecorations,
 }
 
 export const themePresets: Record<string, AuthorTheme> = {

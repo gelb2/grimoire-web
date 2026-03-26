@@ -15,7 +15,7 @@
   --color-u-text-muted: var(--u-text-muted);
   --color-u-text-dim: var(--u-text-dim);
   --color-u-text-bright: var(--u-text-bright);
-  --color-u-text-warm: var(--u-text-muted);
+  --color-u-text-warm: var(--u-text-warm, var(--u-text-muted));
   --color-u-text-soft: var(--u-text-muted);
   --color-u-accent: var(--u-accent);
   --color-u-accent2: var(--u-accent2);

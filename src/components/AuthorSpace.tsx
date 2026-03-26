@@ -1,14 +1,18 @@
 "use client"
 
 // AuthorSpace — 모든 작가의 통합 공간 컴포넌트
-// DeerDevil 포함 모든 작가에 동일한 UI를 사용한다.
-// 차이는 데이터 레이어(API vs 로컬 폴백)에서만 발생한다.
+// theme.layout에 따라 다른 UI를 렌더링한다:
+// - "universe": DeerDevil 스타일 (UniverseNav + UniverseLanding)
+// - "grid": 기본 작품 카드 그리드
 
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '@/lib/api'
+import { useTheme } from '@/features/theme'
 import { PlatformNav } from '@/components/PlatformNav'
 import { WorkCard } from '@/components/WorkCard'
 import { ErrorPopup } from '@/components/ErrorPopup'
+import { UniverseNav } from '@/features/universe/ui/UniverseNav'
+import { UniverseLanding } from '@/features/universe/ui/UniverseLanding'
 
 interface Work {
   id: string
@@ -34,6 +38,7 @@ interface AuthorSpaceProps {
 }
 
 export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
+  const theme = useTheme()
   const [author, setAuthor] = useState<AuthorData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
@@ -60,28 +65,28 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
   // 로딩 — 스켈레톤 UI
   if (loading) {
     return (
-      <div className="min-h-screen bg-neutral-950">
+      <div className="min-h-screen bg-u-bg">
         <PlatformNav />
         <main className="max-w-6xl mx-auto px-6 py-16">
           {/* 작가 헤더 스켈레톤 */}
           <div className="mb-12 text-center">
-            <div className="h-8 w-48 bg-neutral-800 rounded mx-auto mb-3 animate-pulse" />
-            <div className="h-4 w-80 bg-neutral-800/60 rounded mx-auto animate-pulse" />
+            <div className="h-8 w-48 bg-u-bg2 rounded mx-auto mb-3 animate-pulse" />
+            <div className="h-4 w-80 bg-u-bg2 rounded mx-auto animate-pulse" />
           </div>
           {/* 작품 그리드 스켈레톤 */}
           <div className="flex items-center gap-3 mb-6">
-            <div className="h-6 w-24 bg-neutral-800 rounded animate-pulse" />
-            <div className="flex-1 h-px bg-neutral-800" />
+            <div className="h-6 w-24 bg-u-bg2 rounded animate-pulse" />
+            <div className="flex-1 h-px bg-u-border" />
           </div>
           <div
             className="grid gap-4"
             style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}
           >
             {[1, 2, 3].map(i => (
-              <div key={i} className="rounded-xl border border-neutral-800 bg-neutral-900/80 p-5 h-40 animate-pulse">
-                <div className="h-4 w-16 bg-neutral-800 rounded mb-3" />
-                <div className="h-5 w-3/4 bg-neutral-800 rounded mb-2" />
-                <div className="h-4 w-1/2 bg-neutral-800/60 rounded" />
+              <div key={i} className="rounded-xl border border-u-border bg-u-bg2 p-5 h-40 animate-pulse">
+                <div className="h-4 w-16 bg-u-border rounded mb-3" />
+                <div className="h-5 w-3/4 bg-u-border rounded mb-2" />
+                <div className="h-4 w-1/2 bg-u-border rounded" />
               </div>
             ))}
           </div>
@@ -95,31 +100,45 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
     return <ErrorPopup message="작가를 찾을 수 없습니다. 서버에 연결할 수 없거나 존재하지 않는 작가입니다." />
   }
 
+  // layout: "universe" — DeerDevil 스타일 렌더링
+  if (theme.layout === "universe") {
+    return (
+      <div className="min-h-screen bg-u-bg text-u-text">
+        <UniverseNav authorName={author.name} />
+        <UniverseLanding
+          authorName={author.name}
+          decorations={theme.decorations}
+        />
+      </div>
+    )
+  }
+
+  // layout: "grid" (기본) — 일반 작품 카드 그리드
   const works = author.works ?? []
 
   return (
-    <div className="min-h-screen bg-neutral-950">
+    <div className="min-h-screen bg-u-bg">
       <PlatformNav />
 
       <main className="max-w-6xl mx-auto px-6 py-8">
         {/* 작가 헤더 */}
         <div className="mb-12 text-center">
-          <h1 className="text-3xl font-bold text-white mb-3">{author.name}</h1>
+          <h1 className="text-3xl font-bold text-u-text-bright mb-3">{author.name}</h1>
           {author.description && (
-            <p className="text-neutral-400 max-w-xl mx-auto">{author.description}</p>
+            <p className="text-u-text-muted max-w-xl mx-auto">{author.description}</p>
           )}
         </div>
 
         {/* 작품 그리드 */}
         <section>
           <div className="flex items-center gap-3 mb-6">
-            <h2 className="text-xl font-bold text-white">작품 목록</h2>
-            <div className="flex-1 h-px bg-neutral-800" />
-            <span className="text-sm text-neutral-500">{works.length}개</span>
+            <h2 className="text-xl font-bold text-u-text-bright">작품 목록</h2>
+            <div className="flex-1 h-px bg-u-border" />
+            <span className="text-sm text-u-text-dim">{works.length}개</span>
           </div>
 
           {works.length === 0 ? (
-            <p className="text-neutral-500 text-center py-12">
+            <p className="text-u-text-muted text-center py-12">
               아직 작품이 없습니다.
             </p>
           ) : (
