@@ -16,8 +16,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // 서버 API에서 작가 정보 로드
     const authorData = await api.getAuthorSpace(author)
     return {
-      title: `${authorData.name || author} | Grimoire`,
-      description: authorData.description || `${author}의 작가 공간 — Grimoire`,
+      title: authorData.name || author,
+      description: authorData.description || `${author}의 작가 공간`,
       openGraph: {
         title: `${authorData.name || author} | Grimoire`,
         description: authorData.description || `${author}의 작가 공간`,
@@ -26,8 +26,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   } catch {
     // API 연결 안 되면 기본 메타데이터
     return {
-      title: `${author} | Grimoire`,
-      description: `${author}의 작가 공간 — Grimoire`,
+      title: author,
+      description: `${author}의 작가 공간`,
       openGraph: {
         title: `${author} | Grimoire`,
         description: `${author}의 작가 공간`,

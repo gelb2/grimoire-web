@@ -32,6 +32,7 @@ interface WorkData {
   subtitle?: string
   description?: string
   genre?: string
+  authorName?: string
   episodes?: Episode[]
 }
 
@@ -116,7 +117,7 @@ export function WorkPage({ authorSlug, workSlug }: WorkPageProps) {
 
     return (
       <>
-        <EpisodeViewer meta={meta} data={data} />
+        <EpisodeViewer meta={meta} data={data} authorName={work.authorName} />
         <EpisodeFooter
           episodeId={singleEpisode.id || singleEpisode.slug}
           authorSlug={authorSlug}

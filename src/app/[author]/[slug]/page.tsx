@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const description = workData.description ?? `${author} — ${title}`
 
     return {
-      title: `${title} | Grimoire`,
+      title,
       description,
       openGraph: {
         title: `${title} | Grimoire`,
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   } catch {
     // API 실패 시 기본 메타데이터
     return {
-      title: `${slug} | Grimoire`,
+      title: slug,
       description: `${author} — ${slug}`,
     }
   }

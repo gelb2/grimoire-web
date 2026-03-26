@@ -68,7 +68,7 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
       {/* 이전화/좋아요/다음화 */}
       <div className="flex items-center justify-center gap-4 py-6 border-t border-b border-u-border">
         {prevEpisodeSlug ? (
-          <a href={`/${authorSlug}/${prevEpisodeSlug}`} className="px-4 py-2 rounded-lg text-sm text-u-text-muted transition hover:opacity-80">
+          <a href={`/${authorSlug}/${workSlug}/${prevEpisodeSlug}`} className="px-4 py-2 rounded-lg text-sm text-u-text-muted transition hover:opacity-80">
             &larr; 이전화
           </a>
         ) : (
@@ -80,7 +80,7 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
         </button>
 
         {nextEpisodeSlug ? (
-          <a href={`/${authorSlug}/${nextEpisodeSlug}`} className="px-4 py-2 rounded-lg text-sm text-u-text-muted transition hover:opacity-80">
+          <a href={`/${authorSlug}/${workSlug}/${nextEpisodeSlug}`} className="px-4 py-2 rounded-lg text-sm text-u-text-muted transition hover:opacity-80">
             다음화 &rarr;
           </a>
         ) : (
