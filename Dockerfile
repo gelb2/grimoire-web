@@ -27,10 +27,11 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3001
 
-# standalone 서버 + static 파일 복사
+# standalone 서버 + static 파일 + .env.production 복사
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/.env.production ./.env.production
 
 EXPOSE 3001
 
