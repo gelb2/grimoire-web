@@ -58,8 +58,24 @@
 ## 콘텐츠
 - [x] ep11 이름 없는 괴물 추가 (262개 블록)
 
-## 향후 계획 (사용자 설정 필요)
-- [ ] Vercel 배포 (vercel.com 로그인 → GitHub repo 연결)
-- [ ] Supabase 도입 (프로젝트 생성 → API 키 발급)
-- [ ] 백엔드 아키텍처 설계
+## Phase 2 (진행 중)
+- [x] API 클라이언트 (grimoire-server 연동)
+- [x] AuthProvider (JWT 토큰 기반 로그인 상태 관리)
+- [x] 로그인 페이지 (`/login`)
+- [x] 회원가입 페이지 (`/register`)
+- [x] 작가 대시보드 (`/dashboard`)
+- [x] 원고 업로드 페이지 (`/dashboard/upload`)
+- [x] TESTING.md 생성
+- [ ] 멀티테넌트 라우팅 서버 연동 (`/[author]/` → API에서 테마 로드)
+- [ ] 커스텀 테마 에디터 (Color Picker, 폰트 선택)
+- [ ] 테마 Baking 후 CDN CSS 로드
+
+## Phase 3 (예정)
+- [ ] 소셜 로그인 버튼 (Kakao/Google/Apple)
+- [ ] 프로필 설정 (슬러그, 소셜 계정 연동)
+- [ ] 작가 대시보드 고도화 (조회수 통계, 작품 CRUD)
+- [ ] 크레딧 충전 UI
+
+## 인프라 (예정)
+- [ ] Vercel 배포
 - [ ] 이미지/일러스트 추가
