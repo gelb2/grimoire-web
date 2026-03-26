@@ -26,8 +26,7 @@ ENV PORT=3001
 # standalone 서버 + static 파일 복사
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
-# public 폴더가 없을 수 있으므로 와일드카드 사용
-COPY --from=builder /app/public* ./public/
+COPY --from=builder /app/public ./public
 
 EXPOSE 3001
 

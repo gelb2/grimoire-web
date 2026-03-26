@@ -1,22 +1,26 @@
+"use client"
+
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 interface BackLinkProps {
-  href?: string
   label?: string
   className?: string
   variant?: "default" | "dim"
 }
 
 export function BackLink({
-  href = "/universe",
   label = "← 전체 에피소드",
   className,
   variant = "default",
 }: BackLinkProps) {
+  const pathname = usePathname()
+  const authorSlug = pathname.split("/").filter(Boolean)[0] ?? "deerdevil"
+
   return (
     <Link
-      href={href}
+      href={`/${authorSlug}`}
       className={cn(
         "inline-flex items-center gap-2 font-u-sans text-u-caption tracking-u-normal border border-u-border px-4 py-1.5 rounded-u-pill transition-all duration-200 hover:border-u-accent hover:text-u-accent2",
         variant === "dim"
