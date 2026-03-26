@@ -3,7 +3,7 @@ import { notFound } from "next/navigation"
 import { api } from "@/lib/api"
 import { EpisodeViewer } from "@/features/universe/ui/EpisodeViewer"
 import { EpisodeFooter } from "@/features/universe/ui/EpisodeFooter"
-import { EpisodeNav } from "@/features/universe/ui/EpisodeNav"
+import { WorkNav } from "@/features/universe/ui/WorkNav"
 
 // 완전 동적 — SSR on every request
 export const dynamic = "force-dynamic"
@@ -63,11 +63,12 @@ export default async function EpisodePage({ params }: Props) {
   const { author, slug, episode } = await params
 
   try {
-    // 에피소드 + 작가 정보 + 테마 레이아웃 동시 로드
-    const [episodeData, authorRes, themeLayout] = await Promise.all([
+    // 에피소드 + 작가 정보 + 테마 레이아웃 + 작품(에피소드 목록) 동시 로드
+    const [episodeData, authorRes, themeLayout, workData] = await Promise.all([
       api.getEpisode(author, slug, episode),
       api.getAuthorSpace(author).catch(() => null),
       getThemeLayout(author),
+      api.getWork(author, slug).catch(() => null),
     ])
 
     // API 응답에서 num 파싱: orderNum → 2자리 zero-padded 문자열
@@ -90,16 +91,28 @@ export default async function EpisodePage({ params }: Props) {
 
     const isUniverse = themeLayout === 'universe'
 
+    // 작품의 에피소드 목록 추출 (WorkNav pill 표시용)
+    const workEpisodes: { slug: string; orderNum: number; title: string }[] =
+      (workData?.episodes ?? workData?.work?.episodes ?? [])
+        .map((ep: { slug: string; orderNum?: number; order_num?: number; title: string }) => ({
+          slug: ep.slug,
+          orderNum: ep.orderNum ?? ep.order_num ?? 0,
+          title: ep.title,
+        }))
+        .sort((a: { orderNum: number }, b: { orderNum: number }) => a.orderNum - b.orderNum)
+
     return (
       <>
-        {/* universe 레이아웃: UniverseNav는 AuthorSpace 레이아웃에서 이미 렌더링됨 → EpisodeNav 생략 */}
-        {/* grid 레이아웃: EpisodeNav 표시 */}
-        {!isUniverse && (
-          <EpisodeNav
+        {/* universe 레이아웃: UniverseNav는 AuthorSpace 레이아웃에서 이미 렌더링됨 */}
+        {/* grid 레이아웃: WorkNav (pill 스타일 에피소드 네비게이션) 표시 */}
+        {!isUniverse && workEpisodes.length > 0 && (
+          <WorkNav
             authorSlug={author}
-            workSlug={slug}
             authorName={authorName}
+            workSlug={slug}
             workTitle={workTitle}
+            episodes={workEpisodes}
+            currentEpisodeSlug={episode}
           />
         )}
         <EpisodeViewer meta={meta} data={episodeData} authorName={authorName} />
