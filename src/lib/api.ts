@@ -146,6 +146,47 @@ class ApiClient {
       body: JSON.stringify({ rawText }),
     })
   }
+
+  // 북마크
+  async toggleBookmark(episodeId: string) {
+    return this.fetch<any>(`/reader/bookmarks/${episodeId}`, { method: 'POST' })
+  }
+  async getBookmarks() {
+    return this.fetch<any[]>('/reader/bookmarks')
+  }
+
+  // 읽은 위치
+  async saveProgress(episodeId: string, blockIndex: number) {
+    return this.fetch<any>('/reader/progress', {
+      method: 'POST',
+      body: JSON.stringify({ episodeId, blockIndex }),
+    })
+  }
+  async getProgress(episodeId: string) {
+    return this.fetch<any>(`/reader/progress/${episodeId}`)
+  }
+
+  // 탐색
+  async searchAuthors(query: string) {
+    return this.fetch<any[]>(`/discover/authors?q=${encodeURIComponent(query)}`)
+  }
+  async getPopularWorks(limit = 10) {
+    return this.fetch<any[]>(`/discover/works/popular?limit=${limit}`)
+  }
+  async getRecentWorks(limit = 10) {
+    return this.fetch<any[]>(`/discover/works/recent?limit=${limit}`)
+  }
+
+  // 관리자
+  async getAdminStats() {
+    return this.fetch<any>('/admin/stats')
+  }
+  async adminGrantCredits(authorId: string, amount: number, reason: string) {
+    return this.fetch<any>('/admin/credits', {
+      method: 'POST',
+      body: JSON.stringify({ authorId, amount, reason }),
+    })
+  }
 }
 
 export const api = new ApiClient()
