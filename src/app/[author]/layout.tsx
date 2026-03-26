@@ -2,6 +2,7 @@ import type { ReactNode } from "react"
 import { EB_Garamond, Noto_Serif_KR } from "next/font/google"
 import { UniverseNav } from "@/features/universe/ui/UniverseNav"
 import { CardTransitionProvider } from "@/features/universe/ui/CardTransition"
+import { PageFlipTransition } from "@/features/universe/ui/PageFlipTransition"
 import { ThemeProvider } from "@/features/theme"
 import { getThemeForAuthor } from "@/features/theme"
 import type { AuthorTheme } from "@/features/theme"
@@ -55,7 +56,9 @@ export default async function AuthorLayout({ params, children }: Props) {
       <ThemeProvider theme={theme}>
         <CardTransitionProvider>
           <UniverseNav />
-          {children}
+          <PageFlipTransition>
+            {children}
+          </PageFlipTransition>
         </CardTransitionProvider>
       </ThemeProvider>
     </div>

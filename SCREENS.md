@@ -26,6 +26,21 @@
 | `/dashboard` | `app/dashboard/page.tsx` | 작가 대시보드 (작품 목록, 크레딧, 빠른 액션) | `GET /api/auth/profile` |
 | `/dashboard/upload` | `app/dashboard/upload/page.tsx` | 원고 업로드 (드래그앤드롭, 포맷 감지, 미리보기) | `POST /api/manuscripts/parse` |
 | `/dashboard/theme` | (Phase 2 예정) | 테마 에디터 | `POST /api/themes/generate` |
+| `/dashboard/credits` | (예정) | 크레딧 충전 (상품 선택, 결제) | `GET /api/payments/products`, `GET /api/payments/credits` |
+| `/dashboard/profile` | (예정) | 프로필 설정 (이름, 슬러그, 비밀번호 변경) | `GET /api/auth/profile` |
+
+### 독자 공간
+
+| 경로 | 파일 | 설명 | API |
+|------|------|------|-----|
+| `/library` | (예정) | 독자 서재 (북마크 작품 + 구독 작가 작품) | `GET /api/reader/bookmarks`, `GET /api/social/subscriptions` |
+| `/explore` | (예정) | 작품 탐색 (검색, 인기, 최신) | `GET /api/discover/authors`, `GET /api/discover/works/popular`, `GET /api/discover/works/recent` |
+
+### 관리자
+
+| 경로 | 파일 | 설명 | API |
+|------|------|------|-----|
+| `/admin` | (예정) | 관리자 패널 (통계, 크레딧 부여) | `GET /api/admin/stats`, `POST /api/admin/credits` |
 
 ### 레이아웃
 - `app/layout.tsx` — 루트 레이아웃 (html/body, globals.css import, 메타데이터)

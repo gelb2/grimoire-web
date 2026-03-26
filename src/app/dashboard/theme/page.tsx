@@ -163,13 +163,13 @@ export default function ThemeEditorPage() {
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
-                      value={(theme as Record<string, unknown>)[field.key] as string || '#000000'}
+                      value={(theme as unknown as Record<string, unknown>)[field.key] as string || '#000000'}
                       onChange={e => updateTheme(field.key, e.target.value)}
                       className="w-8 h-8 rounded border border-neutral-700 cursor-pointer"
                     />
                     <input
                       type="text"
-                      value={(theme as Record<string, unknown>)[field.key] as string || ''}
+                      value={(theme as unknown as Record<string, unknown>)[field.key] as string || ''}
                       onChange={e => updateTheme(field.key, e.target.value)}
                       className="w-20 px-2 py-1 bg-neutral-900 border border-neutral-700 rounded text-white text-xs font-mono"
                     />

@@ -5,30 +5,207 @@
 
 ---
 
-## 엔드포인트 목록
+## 글로벌 규칙
 
-| Method | Path | 용도 | Phase | 상태 |
-|--------|------|------|-------|------|
-| GET | `/api/health` | 헬스체크 | 1 | 구현 완료 |
-| POST | `/api/themes/generate` | Claude API로 테마 생성 (1크레딧 차감) | 1 | 구현 완료 |
-| GET | `/api/themes/:authorSlug` | 작가 테마 조회 | 1 | 구현 완료 |
-| POST | `/api/manuscripts/parse` | MD 텍스트 → Block[] 파싱 | 1 | 구현 완료 |
-| GET | `/api/authors/:slug` | 작가 공간 데이터 (테마 + 작품 목록) | 1 | 구현 완료 |
-| GET | `/api/works/:authorSlug/:workSlug` | 작품 데이터 (에피소드 목록 포함) | 1 | 구현 완료 |
-| GET | `/api/episodes/:authorSlug/:workSlug/:episodeSlug` | 에피소드 데이터 (Block[] 포함) | 1 | 구현 완료 |
-| POST | `/api/auth/register` | 작가 가입 (JWT 발급) | 2 | 구현 완료 |
-| POST | `/api/auth/login` | 로그인 (JWT 발급) | 2 | 구현 완료 |
-| GET | `/api/auth/profile` | 인증된 유저 프로필 조회 | 2 | 구현 완료 |
+### 접두사
+
+모든 엔드포인트: `/api/` 접두사 (NestJS `setGlobalPrefix`)
+
+### 인증
+
+- `JWT` 표기가 있는 엔드포인트는 `Authorization: Bearer <token>` 헤더 필요
+- `admin` 표기가 있는 엔드포인트는 관리자 권한 추가 필요 (TODO: admin guard)
+- `크레딧 N` 표기가 있는 엔드포인트는 크레딧 N 차감
+
+### 입력 검증
+
+- `ValidationPipe`: whitelist + forbidNonWhitelisted + transform
+- 유효하지 않은 필드 → 400 에러
+
+### 에러 응답 형식 (NestJS 기본)
+
+```json
+{
+  "statusCode": 400,
+  "message": "에러 메시지",
+  "error": "Bad Request"
+}
+```
 
 ---
 
-## Phase 1 상세 명세
+## 엔드포인트 전체 목록
+
+### Health
+
+| Method | Path | 용도 | 인증 |
+|--------|------|------|------|
+| GET | `/api/health` | 헬스체크 | - |
+
+### Auth
+
+| Method | Path | 용도 | 인증 |
+|--------|------|------|------|
+| POST | `/api/auth/register` | 이메일 회원가입 (JWT 발급, 3크레딧 보너스) | - |
+| POST | `/api/auth/login` | 로그인 (JWT 발급) | - |
+| GET | `/api/auth/profile` | 내 프로필 조회 | JWT |
+| POST | `/api/auth/google` | Google OAuth 로그인 | - |
+
+### Theme
+
+| Method | Path | 용도 | 인증 |
+|--------|------|------|------|
+| POST | `/api/themes/generate` | AI 테마 생성 | JWT, 크레딧 1 |
+| GET | `/api/themes/:authorSlug` | 작가 테마 조회 | - |
+| POST | `/api/themes/publish/:authorSlug` | 테마 퍼블리시 (CSS 베이킹) | JWT |
+| GET | `/api/themes/css/:authorSlug` | Baked CSS 반환 | - |
+
+### Manuscript
+
+| Method | Path | 용도 | 인증 |
+|--------|------|------|------|
+| POST | `/api/manuscripts/parse` | 원고 파싱 (md/txt/docx → Block[]) | - |
+
+### Work Management
+
+| Method | Path | 용도 | 인증 |
+|--------|------|------|------|
+| POST | `/api/works` | 작품 생성 | JWT |
+| PATCH | `/api/works/:id` | 작품 수정 | JWT |
+| DELETE | `/api/works/:id` | 작품 삭제 | JWT |
+| POST | `/api/works/:workId/episodes` | 에피소드 생성 | JWT |
+| DELETE | `/api/episodes/:id` | 에피소드 삭제 | JWT |
+
+### Author (공개)
+
+| Method | Path | 용도 | 인증 |
+|--------|------|------|------|
+| GET | `/api/authors/:slug` | 작가 공간 데이터 (테마 + 작품 목록) | - |
+
+### Content (공개)
+
+| Method | Path | 용도 | 인증 |
+|--------|------|------|------|
+| GET | `/api/works/:authorSlug/:workSlug` | 작품 정보 + 에피소드 목록 | - |
+| GET | `/api/episodes/:authorSlug/:workSlug/:episodeSlug` | 에피소드 본문 (Block[] 포함) | - |
+
+### Social
+
+| Method | Path | 용도 | 인증 |
+|--------|------|------|------|
+| POST | `/api/social/likes/:episodeId` | 좋아요 토글 | JWT |
+| GET | `/api/social/likes/:episodeId/count` | 좋아요 수 조회 | - |
+| POST | `/api/social/subscriptions/:authorId` | 구독 토글 | JWT |
+| GET | `/api/social/subscriptions` | 내 구독 목록 | JWT |
+| GET | `/api/social/subscriptions/:authorId/count` | 구독자 수 조회 | - |
+| POST | `/api/social/comments/:episodeId` | 댓글 작성 | JWT |
+| GET | `/api/social/comments/:episodeId` | 댓글 목록 조회 | - |
+| DELETE | `/api/social/comments/:commentId` | 댓글 삭제 (본인만) | JWT |
+
+### Reader
+
+| Method | Path | 용도 | 인증 |
+|--------|------|------|------|
+| POST | `/api/reader/bookmarks/:episodeId` | 북마크 토글 | JWT |
+| GET | `/api/reader/bookmarks` | 내 북마크 목록 | JWT |
+| POST | `/api/reader/progress` | 읽은 위치 저장 | JWT |
+| GET | `/api/reader/progress/:episodeId` | 읽은 위치 조회 | JWT |
+
+### Discovery
+
+| Method | Path | 용도 | 인증 |
+|--------|------|------|------|
+| GET | `/api/discover/authors` | 작가 검색 (`?q=검색어&limit=10`) | - |
+| GET | `/api/discover/works/popular` | 인기 작품 (`?limit=10`) | - |
+| GET | `/api/discover/works/recent` | 최신 작품 (`?limit=10`) | - |
+
+### Payment
+
+| Method | Path | 용도 | 인증 |
+|--------|------|------|------|
+| GET | `/api/payments/products` | 크레딧 상품 목록 | - |
+| POST | `/api/payments/webhook` | PAYAPP 결제 콜백 | - |
+| GET | `/api/payments/credits` | 내 크레딧 잔액 | JWT |
+
+### Admin
+
+| Method | Path | 용도 | 인증 |
+|--------|------|------|------|
+| GET | `/api/admin/stats` | 플랫폼 통계 | JWT, admin |
+| POST | `/api/admin/credits` | 크레딧 수동 부여 | JWT, admin |
+
+### Analysis (RAG)
+
+| Method | Path | 용도 | 인증 |
+|--------|------|------|------|
+| POST | `/api/analysis/index` | 작품 벡터 인덱싱 | JWT |
+| POST | `/api/analysis/check` | 설정 일관성 검사 | JWT, 크레딧 1 |
+| GET | `/api/analysis/status/:workId` | 인덱싱 상태 조회 | JWT |
+
+---
+
+## 상세 명세
 
 ### GET /api/health
 
 ```
 Response 200:
 { "status": "ok", "timestamp": "2026-03-26T..." }
+```
+
+### POST /api/auth/register
+
+```
+Request:
+{ "email": "author@example.com", "password": "...", "name": "작가명", "slug": "author-slug" }
+
+Response 201:
+{
+  "user": { "id": "uuid", "slug": "author-slug", "name": "작가명", "email": "...", "credits": 3 },
+  "token": "jwt-token"
+}
+
+Error 400: 유효성 검증 실패
+Error 409: 이메일/슬러그 중복
+```
+
+### POST /api/auth/login
+
+```
+Request:
+{ "email": "author@example.com", "password": "..." }
+
+Response 200:
+{
+  "user": { "id": "uuid", "slug": "author-slug", "name": "작가명", "email": "...", "credits": 5 },
+  "token": "jwt-token"
+}
+
+Error 401: 이메일/비밀번호 불일치
+```
+
+### GET /api/auth/profile
+
+```
+Headers: Authorization: Bearer <token>
+
+Response 200:
+{ "id": "uuid", "slug": "author-slug", "name": "작가명", "email": "...", "credits": 5 }
+
+Error 401: 인증 실패
+```
+
+### POST /api/auth/google
+
+```
+Request:
+{ "token": "google-id-token" }
+
+Response 200:
+{
+  "user": { "id": "uuid", "slug": "...", "name": "...", "email": "...", "credits": 5 },
+  "token": "jwt-token"
+}
 ```
 
 ### POST /api/themes/generate
@@ -55,6 +232,22 @@ Response 200: Theme (id, authorId, preset, overrides, rawDescription, updatedAt)
 Error 404: 테마 없음
 ```
 
+### POST /api/themes/publish/:authorSlug
+
+테마를 CSS로 베이킹하고 bakedCssUrl을 갱신한다.
+
+```
+Response 200: { "bakedCssUrl": "..." }
+Error 404: 테마 없음
+```
+
+### GET /api/themes/css/:authorSlug
+
+```
+Response 200: text/css (베이킹된 CSS 문자열)
+Error 404: 테마 없음
+```
+
 ### POST /api/manuscripts/parse
 
 MD 텍스트를 파싱하여 Block[] 반환. DB 저장 없음 (순수 변환).
@@ -76,6 +269,55 @@ Error 400: MD 텍스트 비어있음 / frontmatter 누락
 ```
 
 Block 타입은 `docs/glossary.md` 참조.
+
+### POST /api/works
+
+```
+Headers: Authorization: Bearer <token>
+Request:
+{ "title": "작품 제목", "slug": "work-slug", "subtitle": "부제", "description": "설명" }
+
+Response 201: Work
+Error 409: 슬러그 중복
+```
+
+### PATCH /api/works/:id
+
+```
+Headers: Authorization: Bearer <token>
+Request:
+{ "title": "수정된 제목", "subtitle": "수정된 부제" }
+
+Response 200: Work
+Error 403: 본인 작품 아님
+Error 404: 작품 없음
+```
+
+### DELETE /api/works/:id
+
+```
+Headers: Authorization: Bearer <token>
+Response 200: { "deleted": true }
+Error 403: 본인 작품 아님
+```
+
+### POST /api/works/:workId/episodes
+
+```
+Headers: Authorization: Bearer <token>
+Request:
+{ "title": "에피소드 제목", "slug": "ep-slug", "blocks": Block[], "rawMd": "..." }
+
+Response 201: Episode
+```
+
+### DELETE /api/episodes/:id
+
+```
+Headers: Authorization: Bearer <token>
+Response 200: { "deleted": true }
+Error 403: 본인 에피소드 아님
+```
 
 ### GET /api/authors/:slug
 
@@ -111,25 +353,169 @@ Response 200: Episode (id, workId, slug, title, subtitle, orderNum, blocks, rawM
 Error 404: 에피소드 없음
 ```
 
----
+### POST /api/social/likes/:episodeId
 
-## 공통 규칙
+```
+Headers: Authorization: Bearer <token>
+Response 200: { "liked": true } 또는 { "liked": false }
+```
 
-### 글로벌 접두사
+### GET /api/social/likes/:episodeId/count
 
-모든 엔드포인트: `/api/` 접두사
+```
+Response 200: { "count": 42 }
+```
 
-### 입력 검증
+### POST /api/social/subscriptions/:authorId
 
-- `ValidationPipe`: whitelist + forbidNonWhitelisted + transform
-- 유효하지 않은 필드 → 400 에러
+```
+Headers: Authorization: Bearer <token>
+Response 200: { "subscribed": true } 또는 { "subscribed": false }
+```
 
-### 에러 응답 형식 (NestJS 기본)
+### GET /api/social/subscriptions
 
-```json
+```
+Headers: Authorization: Bearer <token>
+Response 200: [{ "authorId", "authorName", "authorSlug", "subscribedAt" }]
+```
+
+### GET /api/social/subscriptions/:authorId/count
+
+```
+Response 200: { "count": 128 }
+```
+
+### POST /api/social/comments/:episodeId
+
+```
+Headers: Authorization: Bearer <token>
+Request: { "content": "댓글 내용" }
+Response 201: Comment
+```
+
+### GET /api/social/comments/:episodeId
+
+```
+Response 200: [Comment]
+```
+
+### DELETE /api/social/comments/:commentId
+
+```
+Headers: Authorization: Bearer <token>
+Response 200: { "deleted": true }
+Error 403: 본인 댓글 아님
+```
+
+### POST /api/reader/bookmarks/:episodeId
+
+```
+Headers: Authorization: Bearer <token>
+Response 200: { "bookmarked": true } 또는 { "bookmarked": false }
+```
+
+### GET /api/reader/bookmarks
+
+```
+Headers: Authorization: Bearer <token>
+Response 200: [Bookmark]
+```
+
+### POST /api/reader/progress
+
+```
+Headers: Authorization: Bearer <token>
+Request: { "episodeId": "uuid", "blockIndex": 42 }
+Response 200: ReadingProgress
+```
+
+### GET /api/reader/progress/:episodeId
+
+```
+Headers: Authorization: Bearer <token>
+Response 200: ReadingProgress
+```
+
+### GET /api/discover/authors
+
+```
+Query: ?q=검색어&limit=10
+Response 200: [Author]
+```
+
+### GET /api/discover/works/popular
+
+```
+Query: ?limit=10
+Response 200: [Work]
+```
+
+### GET /api/discover/works/recent
+
+```
+Query: ?limit=10
+Response 200: [Work]
+```
+
+### GET /api/payments/products
+
+```
+Response 200: [{ "id", "name", "credits", "price", "description" }]
+```
+
+### POST /api/payments/webhook
+
+```
+Request: { "paymentId": "...", "productId": "...", "authorId": "...", "status": "success" }
+Response 200: { "processed": true }
+```
+
+### GET /api/payments/credits
+
+```
+Headers: Authorization: Bearer <token>
+Response 200: { "credits": 5 }
+```
+
+### GET /api/admin/stats
+
+```
+Response 200: { "totalAuthors", "totalWorks", "totalEpisodes", "totalCreditsUsed" }
+```
+
+### POST /api/admin/credits
+
+```
+Request: { "authorId": "uuid", "amount": 10, "reason": "이벤트 보상" }
+Response 200: CreditLog
+```
+
+### POST /api/analysis/index
+
+```
+Headers: Authorization: Bearer <token>
+Request: { "episodeId": "uuid", "workId": "uuid", "rawText": "에피소드 본문..." }
+Response 200: { "indexed": true }
+```
+
+### POST /api/analysis/check
+
+```
+Headers: Authorization: Bearer <token>
+Request:
 {
-  "statusCode": 400,
-  "message": "에러 메시지",
-  "error": "Bad Request"
+  "workId": "uuid",
+  "newEpisodeText": "새 에피소드 본문...",
+  "types": ["consistency", "tone", "character"]
 }
+
+Response 200: AnalysisResult
+```
+
+### GET /api/analysis/status/:workId
+
+```
+Headers: Authorization: Bearer <token>
+Response 200: { "workId": "uuid", "indexedEpisodes": 5, "totalEpisodes": 8 }
 ```
