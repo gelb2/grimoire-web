@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { api } from '@/lib/api'
+import { useThrottledAction } from '@/hooks/useThrottle'
 
 interface EpisodeFooterProps {
   episodeId: string
@@ -17,18 +18,22 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
   const [comments, setComments] = useState<any[]>([])
   const [newComment, setNewComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [deletingComments, setDeletingComments] = useState<Map<string, boolean>>(new Map())
+  const likeThrottle = useThrottledAction(1000)  // 좋아요 1초 쿨다운
 
   useEffect(() => {
     api.getLikeCount(episodeId).then(data => setLikeCount(data.count)).catch(() => {})
     api.getComments(episodeId).then(setComments).catch(() => {})
   }, [episodeId])
 
-  const handleLike = async () => {
-    try {
-      const result = await api.toggleLike(episodeId)
-      setLiked(result.liked)
-      setLikeCount(result.likeCount)
-    } catch { /* 로그인 필요 */ }
+  const handleLike = () => {
+    likeThrottle.execute(async () => {
+      try {
+        const result = await api.toggleLike(episodeId)
+        setLiked(result.liked)
+        setLikeCount(result.likeCount)
+      } catch { /* 로그인 필요 */ }
+    })
   }
 
   const handleComment = async () => {
@@ -43,10 +48,19 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
   }
 
   const handleDeleteComment = async (commentId: string) => {
+    if (deletingComments.get(commentId)) return  // 이미 삭제 중
+    setDeletingComments(prev => new Map(prev).set(commentId, true))
     try {
       await api.deleteComment(commentId)
       setComments(prev => prev.filter(c => c.id !== commentId))
     } catch {}
+    finally {
+      setDeletingComments(prev => {
+        const next = new Map(prev)
+        next.delete(commentId)
+        return next
+      })
+    }
   }
 
   return (
@@ -61,7 +75,7 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
           <span className="px-4 py-2 text-sm opacity-30" style={{ color: 'var(--u-text-muted, #999)' }}>이전화</span>
         )}
 
-        <button onClick={handleLike} className="px-6 py-2 rounded-full border text-sm transition hover:opacity-80" style={{ borderColor: liked ? 'var(--u-accent, #c8a96e)' : 'var(--u-border, #333)', color: liked ? 'var(--u-accent, #c8a96e)' : 'var(--u-text-muted, #999)' }}>
+        <button onClick={handleLike} disabled={likeThrottle.pending} className="px-6 py-2 rounded-full border text-sm transition hover:opacity-80 disabled:opacity-50" style={{ borderColor: liked ? 'var(--u-accent, #c8a96e)' : 'var(--u-border, #333)', color: liked ? 'var(--u-accent, #c8a96e)' : 'var(--u-text-muted, #999)' }}>
           {liked ? '\u2665' : '\u2661'} {likeCount} 좋아요
         </button>
 
