@@ -27,6 +27,11 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3001
 
+# SSR 런타임에서 API URL 사용 (NEXT_PUBLIC_은 빌드 시 클라이언트에 인라인되지만,
+# SSR 서버 코드는 런타임 process.env에서 읽으므로 여기서도 설정 필요)
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+
 # standalone 서버 + static 파일 + .env.production 복사
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
