@@ -3,6 +3,7 @@ import { EB_Garamond, Noto_Serif_KR } from "next/font/google"
 import { CardTransitionProvider } from "@/features/universe/ui/CardTransition"
 import { ThemeProvider } from "@/features/theme"
 import type { AuthorTheme } from "@/features/theme"
+import { AuthProvider } from "@/features/auth"
 
 // 완전 동적 — SSR on every request
 export const dynamic = "force-dynamic"
@@ -71,11 +72,13 @@ export default async function AuthorLayout({ params, children }: Props) {
 
   return (
     <div className={`${garamond.variable} ${notoSerifKR.variable}`}>
-      <ThemeProvider theme={theme}>
-        <CardTransitionProvider>
-          {children}
-        </CardTransitionProvider>
-      </ThemeProvider>
+      <AuthProvider>
+        <ThemeProvider theme={theme}>
+          <CardTransitionProvider>
+            {children}
+          </CardTransitionProvider>
+        </ThemeProvider>
+      </AuthProvider>
     </div>
   )
 }
