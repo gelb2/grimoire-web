@@ -204,9 +204,9 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
         </motion.div>
       </header>
 
-      {/* 본문 */}
+      {/* 본문 — 구분선과 텍스트 사이 충분한 여백 확보 */}
       {stage >= 3 && (
-        <main>
+        <main className="pt-8 md:pt-14">
           {data.blocks.map((block: Block, idx: number) => {
             // 이 블록이 타이핑 대상인지
             const typingOrder = typingTargets.indexOf(idx)
