@@ -16,8 +16,9 @@
 | GET | `/api/authors/:slug` | 작가 공간 데이터 (테마 + 작품 목록) | 1 | 구현 완료 |
 | GET | `/api/works/:authorSlug/:workSlug` | 작품 데이터 (에피소드 목록 포함) | 1 | 구현 완료 |
 | GET | `/api/episodes/:authorSlug/:workSlug/:episodeSlug` | 에피소드 데이터 (Block[] 포함) | 1 | 구현 완료 |
-| POST | `/api/auth/register` | 작가 가입 | 3 | 미구현 |
-| POST | `/api/auth/login` | 로그인 | 3 | 미구현 |
+| POST | `/api/auth/register` | 작가 가입 (JWT 발급) | 2 | 구현 완료 |
+| POST | `/api/auth/login` | 로그인 (JWT 발급) | 2 | 구현 완료 |
+| GET | `/api/auth/profile` | 인증된 유저 프로필 조회 | 2 | 구현 완료 |
 
 ---
 
