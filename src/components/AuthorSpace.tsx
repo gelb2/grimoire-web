@@ -58,7 +58,21 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
     setError(false)
 
     api.getAuthorSpace(authorSlug)
-      .then(data => {
+      .then(async (data) => {
+        // 작품별 에피소드 목록을 추가 로드
+        if (data.works && data.works.length > 0) {
+          const worksWithEpisodes = await Promise.all(
+            data.works.map(async (work: Work) => {
+              try {
+                const workData = await api.getWork(authorSlug, work.slug)
+                return { ...work, episodes: workData.episodes ?? [] }
+              } catch {
+                return work
+              }
+            })
+          )
+          data.works = worksWithEpisodes
+        }
         setAuthor(data)
         setLoading(false)
       })
