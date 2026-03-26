@@ -7,6 +7,7 @@ export interface WorkCardProps {
   title: string
   authorName: string
   authorSlug: string
+  workSlug?: string
   genre?: string
   episodeCount: number
   viewCount?: number
@@ -16,13 +17,17 @@ export function WorkCard({
   title,
   authorName,
   authorSlug,
+  workSlug,
   genre,
   episodeCount,
   viewCount,
 }: WorkCardProps) {
+  // workSlug가 있으면 작품 페이지로, 없으면 작가 공간으로
+  const href = workSlug ? `/${authorSlug}/${workSlug}` : `/${authorSlug}`
+
   return (
     <Link
-      href={`/${authorSlug}`}
+      href={href}
       className="group relative block overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900/80 p-5 transition-all duration-300 hover:border-amber-600/60 hover:shadow-[0_0_24px_rgba(217,119,6,0.08)] hover:-translate-y-0.5"
     >
       {/* 좌측 accent 라인 */}
