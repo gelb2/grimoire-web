@@ -57,10 +57,15 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
   // 활성 타이머 추적 — 언마운트 시 일괄 정리
   const timersRef = useRef<Set<ReturnType<typeof setTimeout | typeof setInterval>>>(new Set())
 
-  // num이 없으면 에피소드 번호 라벨 생략
-  const episodeLabel = meta.num
-    ? (meta.type === "bonus" ? meta.num : `Episode ${meta.num}`)
-    : null
+  // type별 라벨: preface→PREFACE, episode→EPISODE 01, bonus→BONUS 1, afterword→AFTERWORD
+  const episodeLabel = (() => {
+    switch (meta.type) {
+      case 'preface': return 'Preface'
+      case 'afterword': return 'Afterword'
+      case 'bonus': return meta.num ? `Bonus ${meta.num.replace(/\D/g, '')}` : 'Bonus'
+      default: return meta.num ? `Episode ${meta.num}` : null
+    }
+  })()
   const labelText = episodeLabel ? `${authorName} · ${episodeLabel}` : authorName
 
   // 타이핑 대상 블록 찾기 (paragraph 타입만, 최대 TYPING_BLOCKS개)
