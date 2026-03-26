@@ -4,7 +4,7 @@ import { prefaceData } from "@/features/universe/data/contentDataSource/preface"
 
 export const metadata: Metadata = {
   title: "일러두기",
-  description: "사슴악마 단편소설 — 편집자 서문",
+  description: "편집자 서문 — Grimoire",
 }
 
 export default function PrefacePage() {

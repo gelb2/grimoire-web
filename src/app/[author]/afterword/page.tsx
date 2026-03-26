@@ -4,7 +4,7 @@ import { afterwordData } from "@/features/universe/data/contentDataSource/afterw
 
 export const metadata: Metadata = {
   title: "후기",
-  description: "사슴악마 단편소설 — 후기",
+  description: "후기 — Grimoire",
 }
 
 export default function AfterwordPage() {

@@ -53,9 +53,12 @@ export default async function EpisodePage({ params }: Props) {
       description: episodeData.description,
     }
 
+    // 작가 이름: API 응답에 포함되어 있으면 사용, 없으면 slug를 폴백
+    const authorName = episodeData.authorName || author
+
     return (
       <>
-        <EpisodeViewer meta={meta} data={episodeData} />
+        <EpisodeViewer meta={meta} data={episodeData} authorName={authorName} />
         <EpisodeFooter
           episodeId={episodeData.id || episode}
           authorSlug={author}

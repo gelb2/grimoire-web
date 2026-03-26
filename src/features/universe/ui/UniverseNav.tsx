@@ -5,7 +5,12 @@ import { usePathname, useRouter } from "next/navigation"
 import { contents } from "@/features/universe/data"
 import { cn } from "@/lib/utils"
 
-export function UniverseNav() {
+interface UniverseNavProps {
+  /** 작가 이름 — 네비게이션 브랜드 표시 */
+  authorName?: string
+}
+
+export function UniverseNav({ authorName = "Grimoire" }: UniverseNavProps) {
   const pathname = usePathname()
   const router = useRouter()
 
@@ -40,7 +45,7 @@ export function UniverseNav() {
           isLanding ? "text-u-accent2" : "text-u-text"
         )}
       >
-        사슴악마
+        {authorName}
       </button>
 
       {/* 탭 목록 — 모바일에서 가로 스크롤 */}

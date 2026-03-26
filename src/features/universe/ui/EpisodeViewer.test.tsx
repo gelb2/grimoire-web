@@ -66,7 +66,7 @@ describe("EpisodeViewer", () => {
     sessionStorage.setItem("visited:ep-test", "true")
     render(<EpisodeViewer meta={mockMeta} data={mockData} />)
 
-    expect(screen.getByText("사슴악마 · Episode 01")).toBeInTheDocument()
+    expect(screen.getByText("Grimoire · Episode 01")).toBeInTheDocument()
     expect(screen.getByText("테스트 에피소드")).toBeInTheDocument()
     expect(screen.getByText("결핍은 질문을 삼킨다.")).toBeInTheDocument()
   })

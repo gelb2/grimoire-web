@@ -7,10 +7,12 @@ import { AntlerSVG } from "./AntlerSVG"
 
 interface UniverseLandingProps {
   contents?: ContentMeta[]
+  /** 작가 이름 — 헤더에 표시 */
+  authorName?: string
 }
 
 // contents를 props로 받으면 사용, 없으면 로컬 데이터 폴백
-export function UniverseLanding({ contents = localContents }: UniverseLandingProps) {
+export function UniverseLanding({ contents = localContents, authorName = "Grimoire" }: UniverseLandingProps) {
   const preface = contents.find((c) => c.type === "preface")
   const episodes = contents.filter((c) => c.type === "episode")
   const bonuses = contents.filter((c) => c.type === "bonus")
@@ -29,7 +31,7 @@ export function UniverseLanding({ contents = localContents }: UniverseLandingPro
         </div>
 
         <h1 className="text-3xl md:text-5xl font-normal italic text-u-text-bright leading-tight mb-4">
-          사슴악마
+          {authorName}
         </h1>
 
         <div className="font-u-sans text-[12px] text-u-text-dim tracking-u-normal">
