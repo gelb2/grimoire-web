@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { api } from '@/lib/api'
 import { useDebounce } from '@/hooks/useThrottle'
+import { PlatformNav } from '@/components/PlatformNav'
 
 interface AuthorResult { id: string; slug: string; name: string }
 interface WorkResult { id: string; slug: string; title: string; authorSlug?: string; authorName?: string; viewCount?: number; episodeCount?: number }
@@ -33,19 +34,7 @@ export default function ExplorePage() {
 
   return (
     <div className="min-h-screen bg-neutral-950">
-      <header className="border-b border-neutral-800 px-6 py-4">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="text-xl font-bold text-white">Grimoire</Link>
-            <span className="text-neutral-600">|</span>
-            <span className="text-neutral-400">탐색</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="text-neutral-400 hover:text-white text-sm">로그인</Link>
-            <Link href="/register" className="px-4 py-1.5 bg-amber-600 text-white text-sm rounded-lg hover:bg-amber-500">시작하기</Link>
-          </div>
-        </div>
-      </header>
+      <PlatformNav />
 
       <main className="max-w-5xl mx-auto px-6 py-8">
         {/* 검색 */}
@@ -93,14 +82,18 @@ export default function ExplorePage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {popularWorks.map(work => (
-                <div key={work.id} className="p-4 bg-neutral-900 border border-neutral-800 rounded-xl">
+                <Link
+                  key={work.id}
+                  href={work.authorSlug ? `/${work.authorSlug}/${work.slug}` : '#'}
+                  className="block p-4 bg-neutral-900 border border-neutral-800 rounded-xl hover:border-amber-600 transition"
+                >
                   <h3 className="text-white font-medium">{work.title}</h3>
                   <p className="text-neutral-500 text-sm mt-1">
                     {work.authorName && <span>{work.authorName} · </span>}
                     {work.episodeCount}화
                     {work.viewCount ? ` · 조회 ${work.viewCount.toLocaleString()}` : ''}
                   </p>
-                </div>
+                </Link>
               ))}
             </div>
           )}
@@ -114,13 +107,17 @@ export default function ExplorePage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {recentWorks.map(work => (
-                <div key={work.id} className="p-4 bg-neutral-900 border border-neutral-800 rounded-xl">
+                <Link
+                  key={work.id}
+                  href={work.authorSlug ? `/${work.authorSlug}/${work.slug}` : '#'}
+                  className="block p-4 bg-neutral-900 border border-neutral-800 rounded-xl hover:border-amber-600 transition"
+                >
                   <h3 className="text-white font-medium">{work.title}</h3>
                   <p className="text-neutral-500 text-sm mt-1">
                     {work.authorName && <span>{work.authorName} · </span>}
                     {work.episodeCount}화
                   </p>
-                </div>
+                </Link>
               ))}
             </div>
           )}
