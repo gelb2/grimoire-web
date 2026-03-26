@@ -27,16 +27,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // 토큰이 있으면 프로필 로드
-    const token = api.getToken()
-    if (token) {
-      api.getProfile()
-        .then(setUser)
-        .catch(() => { api.logout(); setUser(null) })
-        .finally(() => setLoading(false))
-    } else {
-      setLoading(false)
-    }
+    // 쿠키 기반: 프로필 요청으로 로그인 상태 확인
+    api.getProfile()
+      .then(setUser)
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false))
   }, [])
 
   const login = async (email: string, password: string) => {
@@ -54,8 +49,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(result.user)
   }
 
-  const logout = () => {
-    api.logout()
+  const logout = async () => {
+    try {
+      await api.logout()
+    } catch {
+      // 서버 오류 시에도 클라이언트 상태는 초기화
+    }
     setUser(null)
   }
 
