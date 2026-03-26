@@ -4,12 +4,12 @@ import { contents, episodeSlugs } from "@/features/universe/data"
 import { EpisodeViewer } from "@/features/universe/ui/EpisodeViewer"
 
 interface Props {
-  params: Promise<{ slug: string }>
+  params: Promise<{ author: string; slug: string }>
 }
 
-// 정적 경로 생성
+// 정적 경로 생성 — Phase 0에서는 deerdevil 작가만
 export function generateStaticParams() {
-  return episodeSlugs.map((slug) => ({ slug }))
+  return episodeSlugs.map((slug) => ({ author: "deerdevil", slug }))
 }
 
 // 에피소드별 동적 메타데이터

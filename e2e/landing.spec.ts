@@ -1,12 +1,12 @@
 import { test, expect } from "@playwright/test"
 
-test.describe("랜딩 페이지 (/universe)", () => {
+test.describe("랜딩 페이지 (/deerdevil)", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/universe")
+    await page.goto("/deerdevil")
   })
 
   test("페이지가 로드된다", async ({ page }) => {
-    await expect(page).toHaveURL("/universe")
+    await expect(page).toHaveURL("/deerdevil")
     await expect(page.getByRole("heading", { name: "사슴악마" })).toBeVisible()
   })
 
