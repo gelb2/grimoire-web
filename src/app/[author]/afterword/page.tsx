@@ -1,17 +1,12 @@
-import type { Metadata } from "next"
-import { AfterwrdViewer } from "@/features/universe/ui/AfterwrdViewer"
-import { afterwordData } from "@/features/universe/data/contentDataSource/afterword"
+import { redirect } from "next/navigation"
 
-export const metadata: Metadata = {
-  title: "후기",
-  description: "후기 — Grimoire",
+// afterword는 작품(work)의 에피소드로 관리되어야 한다.
+// 하드코딩된 DeerDevil 로컬 데이터 대신 작가 공간으로 리다이렉트.
+interface Props {
+  params: Promise<{ author: string }>
 }
 
-export default function AfterwordPage() {
-  return (
-    <AfterwrdViewer
-      glitchText={afterwordData.glitchText}
-      footnote={afterwordData.footnote}
-    />
-  )
+export default async function AfterwordPage({ params }: Props) {
+  const { author } = await params
+  redirect(`/${author}`)
 }
