@@ -22,8 +22,8 @@ export function WorkCard({
   episodeCount,
   viewCount,
 }: WorkCardProps) {
-  // workSlug가 있으면 작품 페이지로, 없으면 작가 공간으로
-  const href = workSlug ? `/${authorSlug}/${workSlug}` : `/${authorSlug}`
+  // 항상 작가 공간으로 이동 — 작가 공간에서 작품/에피소드 선택
+  const href = `/${authorSlug}`
 
   return (
     <Link
