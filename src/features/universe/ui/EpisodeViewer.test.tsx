@@ -4,6 +4,11 @@ import { render, screen, cleanup } from "@testing-library/react"
 import { EpisodeViewer } from "./EpisodeViewer"
 import type { ContentMeta, EpisodeData } from "@/features/universe/data"
 
+// next/navigation mock
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/deerdevil/ep-test",
+}))
+
 // framer-motion mock
 vi.mock("framer-motion", () => ({
   motion: {

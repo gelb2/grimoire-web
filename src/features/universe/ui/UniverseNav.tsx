@@ -8,21 +8,24 @@ export function UniverseNav() {
   const pathname = usePathname()
   const router = useRouter()
 
-  const isLanding = pathname === "/universe"
+  // URL에서 작가 slug 추출: /deerdevil/ep1 → "deerdevil"
+  const segments = pathname.split("/").filter(Boolean)
+  const authorSlug = segments[0] ?? "deerdevil"
+  const base = `/${authorSlug}`
+
+  const isLanding = pathname === base
 
   const episodeContents = contents.filter(
     (c) => c.type === "episode" || c.type === "bonus"
   )
 
-  const currentSlug = pathname.startsWith("/universe/")
-    ? pathname.replace("/universe/", "")
-    : null
+  const currentSlug = segments.length >= 2 ? segments[1] : null
 
   return (
     <nav className="sticky top-0 z-50 bg-u-bg/95 backdrop-blur-sm border-b border-u-border px-4 md:px-8 py-2.5 md:py-3 flex items-center gap-4">
       {/* 브랜드 */}
       <button
-        onClick={() => router.push("/universe")}
+        onClick={() => router.push(base)}
         className={cn(
           "font-u-sans text-[13px] font-medium tracking-u-tight bg-transparent border-none cursor-pointer transition-colors duration-200 hover:text-u-accent2 shrink-0",
           isLanding ? "text-u-accent2" : "text-u-text"
@@ -36,25 +39,25 @@ export function UniverseNav() {
         <NavTab
           label="전체"
           active={isLanding}
-          onClick={() => router.push("/universe")}
+          onClick={() => router.push(base)}
         />
         <NavTab
           label="일러두기"
           active={currentSlug === "preface"}
-          onClick={() => router.push("/universe/preface")}
+          onClick={() => router.push(`${base}/preface`)}
         />
         {episodeContents.map((c) => (
           <NavTab
             key={c.slug}
             label={c.num ?? c.slug}
             active={currentSlug === c.slug}
-            onClick={() => router.push(`/universe/${c.slug}`)}
+            onClick={() => router.push(`${base}/${c.slug}`)}
           />
         ))}
         <NavTab
           label="후기"
           active={currentSlug === "afterword"}
-          onClick={() => router.push("/universe/afterword")}
+          onClick={() => router.push(`${base}/afterword`)}
         />
       </div>
     </nav>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef } from "react"
+import { usePathname } from "next/navigation"
 import { AntlerSVG } from "./AntlerSVG"
 import { SectionLabel } from "./SectionLabel"
 import { useCardTransition } from "./CardTransition"
@@ -10,11 +11,13 @@ export function EpisodeCard({ content }: { content: ContentMeta }) {
   const isBonus = content.type === "bonus"
   const cardRef = useRef<HTMLDivElement>(null)
   const ctx = useCardTransition()
+  const pathname = usePathname()
+  const authorSlug = pathname.split("/").filter(Boolean)[0] ?? "deerdevil"
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()
     if (ctx && cardRef.current) {
-      ctx.navigateWithTransition(`/universe/${content.slug}`, cardRef.current)
+      ctx.navigateWithTransition(`/${authorSlug}/${content.slug}`, cardRef.current)
     }
   }
 
