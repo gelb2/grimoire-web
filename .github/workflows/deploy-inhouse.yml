@@ -6,6 +6,7 @@ name: Deploy Inhouse
 on:
   push:
     branches: [inhouse]
+  workflow_dispatch:
 
 # 동시 배포 방지
 concurrency:
@@ -33,15 +34,15 @@ jobs:
       - name: Login to ACR
         uses: azure/docker-login@v2
         with:
-          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          login-server: grimoireacr.azurecr.io
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
       # Docker 이미지 빌드 (API URL 불필요 — 런타임 환경변수로 주입)
       - name: Build and push Docker image
         run: |
-          IMAGE=${{ secrets.ACR_LOGIN_SERVER }}/grimoire-web
-          docker build \
+          IMAGE=grimoireacr.azurecr.io/grimoire-web
+          docker build --platform linux/amd64 \
             --build-arg NEXT_PUBLIC_APP_ENV=inhouse \
             -t $IMAGE:inhouse-${{ github.sha }} \
             -t $IMAGE:inhouse-latest \
@@ -52,8 +53,9 @@ jobs:
       # Azure Container Apps 업데이트
       # API_URL은 Container Apps 환경변수로 설정 (Azure Portal 또는 az cli)
       - name: Deploy to Container Apps
-        uses: azure/container-apps-deploy-action@v1
-        with:
-          resourceGroup: grimoire-rg
-          containerAppName: grimoire-web-inhouse
-          imageToDeploy: ${{ secrets.ACR_LOGIN_SERVER }}/grimoire-web:inhouse-${{ github.sha }}
+        run: |
+          az containerapp update \
+            --name grimoire-web-inhouse \
+            --resource-group zenith-rg \
+            --image grimoireacr.azurecr.io/grimoire-web:inhouse-${{ github.sha }} \
+            -o none

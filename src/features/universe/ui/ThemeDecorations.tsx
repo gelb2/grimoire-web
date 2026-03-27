@@ -4,30 +4,10 @@
 
 import { cn } from "@/lib/utils"
 import { AntlerSVG } from "./AntlerSVG"
+import { getDividerIcon } from "./DividerIcons"
 import type { ThemeDecorations as DecorationConfig } from "@/features/theme"
 
-// ── 구분선 아이콘 컴포넌트 ──
-
-function StarIcon({ size = 20, className }: { size?: number; className?: string }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 20 20"
-      fill="none"
-      className={cn("text-u-accent", className)}
-      aria-hidden="true"
-    >
-      <path
-        d="M10 2L12.5 7.5L18 8.5L14 12.5L15 18L10 15L5 18L6 12.5L2 8.5L7.5 7.5L10 2Z"
-        stroke="currentColor"
-        strokeWidth="1"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
+// ── 헤더 전용 아이콘 (퀼, 책) ──
 
 function QuillIcon({ size = 20, className }: { size?: number; className?: string }) {
   return (
@@ -81,186 +61,6 @@ function BookIcon({ size = 20, className }: { size?: number; className?: string 
       />
     </svg>
   )
-}
-
-// ── 꽃 (5잎) ──
-
-function FlowerIcon({ size = 20, className }: { size?: number; className?: string }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      className={cn("text-u-accent", className)}
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="8" r="3" stroke="currentColor" strokeWidth="1" />
-      <circle cx="8.5" cy="11" r="3" stroke="currentColor" strokeWidth="1" />
-      <circle cx="15.5" cy="11" r="3" stroke="currentColor" strokeWidth="1" />
-      <circle cx="9.5" cy="15" r="3" stroke="currentColor" strokeWidth="1" />
-      <circle cx="14.5" cy="15" r="3" stroke="currentColor" strokeWidth="1" />
-      <circle cx="12" cy="12" r="1.5" fill="currentColor" />
-    </svg>
-  )
-}
-
-// ── 기하학 (겹친 삼각형) ──
-
-function GeometricIcon({ size = 20, className }: { size?: number; className?: string }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      className={cn("text-u-accent", className)}
-      aria-hidden="true"
-    >
-      <path d="M12 3L20 17H4L12 3Z" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" />
-      <path d="M12 21L4 7H20L12 21Z" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-// ── 붓 (서예 붓 획) ──
-
-function BrushIcon({ size = 20, className }: { size?: number; className?: string }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      className={cn("text-u-accent", className)}
-      aria-hidden="true"
-    >
-      <path
-        d="M3 21C5 17 8 13 12 10C16 7 20 5 22 3"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <path
-        d="M3 21C4 19 6 17 9 15"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}
-
-// ── 나뭇잎 ──
-
-function LeafIcon({ size = 20, className }: { size?: number; className?: string }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      className={cn("text-u-accent", className)}
-      aria-hidden="true"
-    >
-      <path
-        d="M12 22C12 22 4 16 4 10C4 4 12 2 12 2C12 2 20 4 20 10C20 16 12 22 12 22Z"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinejoin="round"
-      />
-      <path d="M12 22V8" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
-      <path d="M8 13L12 10L16 13" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-// ── 동백꽃 ──
-
-function CamelliaIcon({ size = 20, className }: { size?: number; className?: string }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      className={cn("text-u-accent", className)}
-      aria-hidden="true"
-    >
-      <ellipse cx="12" cy="7" rx="3" ry="4" stroke="currentColor" strokeWidth="1" />
-      <ellipse cx="7" cy="13" rx="3" ry="4" stroke="currentColor" strokeWidth="1" transform="rotate(-30 7 13)" />
-      <ellipse cx="17" cy="13" rx="3" ry="4" stroke="currentColor" strokeWidth="1" transform="rotate(30 17 13)" />
-      <ellipse cx="9" cy="18" rx="3" ry="4" stroke="currentColor" strokeWidth="1" transform="rotate(-60 9 18)" />
-      <ellipse cx="15" cy="18" rx="3" ry="4" stroke="currentColor" strokeWidth="1" transform="rotate(60 15 18)" />
-      <circle cx="12" cy="13" r="2" fill="currentColor" />
-    </svg>
-  )
-}
-
-// ── 우산 ──
-
-function UmbrellaIcon({ size = 20, className }: { size?: number; className?: string }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      className={cn("text-u-accent", className)}
-      aria-hidden="true"
-    >
-      <path
-        d="M12 2C6 2 2 8 2 12H22C22 8 18 2 12 2Z"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinejoin="round"
-      />
-      <path d="M12 2V19" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-      <path d="M12 19C12 21 10 22 9 21" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-// ── 물레방아 ──
-
-function WaterwheelIcon({ size = 20, className }: { size?: number; className?: string }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      className={cn("text-u-accent", className)}
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1" />
-      <circle cx="12" cy="12" r="2" fill="currentColor" />
-      <path d="M12 4V12" stroke="currentColor" strokeWidth="1" />
-      <path d="M12 12V20" stroke="currentColor" strokeWidth="1" />
-      <path d="M4 12H12" stroke="currentColor" strokeWidth="1" />
-      <path d="M12 12H20" stroke="currentColor" strokeWidth="1" />
-      <path d="M6.34 6.34L12 12" stroke="currentColor" strokeWidth="1" />
-      <path d="M12 12L17.66 17.66" stroke="currentColor" strokeWidth="1" />
-      <path d="M6.34 17.66L12 12" stroke="currentColor" strokeWidth="1" />
-      <path d="M12 12L17.66 6.34" stroke="currentColor" strokeWidth="1" />
-    </svg>
-  )
-}
-
-// ── 아이콘 이름 → 컴포넌트 매핑 헬퍼 ──
-
-function DividerIconComponent({ name, size }: { name: string; size: number }) {
-  switch (name) {
-    case "flower": return <FlowerIcon size={size} />
-    case "geometric": return <GeometricIcon size={size} />
-    case "brush": return <BrushIcon size={size} />
-    case "leaf": return <LeafIcon size={size} />
-    case "camellia": return <CamelliaIcon size={size} />
-    case "umbrella": return <UmbrellaIcon size={size} />
-    case "waterwheel": return <WaterwheelIcon size={size} />
-    case "star": return <StarIcon size={size} />
-    default: return null
-  }
 }
 
 // ── 헤더 아이콘 ──
@@ -322,19 +122,8 @@ export function ThemeDivider({ decorations, size = 20, className }: DividerProps
     )
   }
 
-  // antler은 AntlerSVG 전용 컴포넌트 사용
-  if (iconName === "antler") {
-    return (
-      <div className={cn("flex items-center gap-4 opacity-30", className)}>
-        <div className="flex-1 h-px bg-u-accent" />
-        <AntlerSVG size={size} opacity={1} />
-        <div className="flex-1 h-px bg-u-accent" />
-      </div>
-    )
-  }
-
-  // 나머지 아이콘들: 공통 레이아웃 (선 — 아이콘 — 선)
-  const icon = <DividerIconComponent name={iconName} size={size} />
+  // 아이콘 매핑 (antler 포함 9종)
+  const icon = getDividerIcon(iconName, size)
   if (!icon) return null
 
   return (

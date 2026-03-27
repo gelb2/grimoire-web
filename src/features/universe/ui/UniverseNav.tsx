@@ -77,7 +77,7 @@ export function UniverseNav({ authorName = "Grimoire", workSlug, apiEpisodes }: 
       <span className="text-u-border">|</span>
       {/* 브랜드 */}
       <button
-        onClick={() => router.push(base)}
+        onClick={() => router.replace(base)}
         className={cn(
           "font-u-sans text-[13px] font-medium tracking-u-tight bg-transparent border-none cursor-pointer transition-colors duration-200 hover:text-u-accent2 shrink-0",
           isLanding ? "text-u-accent2" : "text-u-text"
@@ -91,14 +91,14 @@ export function UniverseNav({ authorName = "Grimoire", workSlug, apiEpisodes }: 
         <NavTab
           label="전체"
           active={isLanding}
-          onClick={() => router.push(base)}
+          onClick={() => router.replace(base)}
         />
         {allEpisodes.map((ep, idx) => (
           <NavTab
             key={ep.slug}
             label={pillLabel(ep, idx)}
             active={currentEpisodeSlug === ep.slug}
-            onClick={() => router.push(episodeUrl(ep.slug))}
+            onClick={() => router.replace(episodeUrl(ep.slug))}
           />
         ))}
       </div>
