@@ -128,10 +128,10 @@ export default function ExplorePage() {
     <div className="min-h-screen bg-neutral-950">
       <PlatformNav />
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* 검색 */}
         <div className="mb-12">
-          <h1 className="text-3xl font-bold text-white mb-2">작가와 작품을 탐색하세요</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">작가와 작품을 탐색하세요</h1>
           <p className="text-neutral-500 mb-6">그리모어에서 새로운 이야기를 발견하세요</p>
           <div className="flex gap-2">
             <input
