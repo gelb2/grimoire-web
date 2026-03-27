@@ -141,6 +141,22 @@ class ApiClient {
     return this.fetch<void>(`/works/${id}`, { method: 'DELETE' })
   }
 
+  async uploadWorkCover(workId: string, file: File) {
+    const formData = new FormData()
+    formData.append('file', file)
+    const res = await fetch(`${getApiBase()}/works/${workId}/cover`, {
+      method: 'PUT',
+      credentials: 'include',
+      body: formData,
+      signal: AbortSignal.timeout(30000),
+    })
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}))
+      throw new Error(body.message || `API 오류: ${res.status}`)
+    }
+    return res.json()
+  }
+
   // 에피소드 관리
   async createEpisode(workId: string, data: { title: string; rawContent: string; sourceFormat?: string }) {
     return this.fetch<any>(`/works/${workId}/episodes`, { method: 'POST', body: JSON.stringify(data) })

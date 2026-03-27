@@ -119,7 +119,7 @@ function NavTab({
     <button
       onClick={onClick}
       className={cn(
-        "font-u-sans text-u-caption tracking-u-normal px-3 py-1 md:px-3.5 md:py-1.5 rounded-u-pill cursor-pointer transition-all duration-200 whitespace-nowrap border shrink-0",
+        "font-u-sans text-u-caption tracking-u-normal px-3 py-2 md:px-3.5 md:py-2 rounded-u-pill cursor-pointer transition-all duration-200 whitespace-nowrap border shrink-0 min-h-[36px] flex items-center",
         active
           ? "text-u-accent2 border-u-accent bg-u-accent/10"
           : "text-u-text-muted border-u-border bg-transparent hover:text-u-accent2 hover:border-u-accent"
