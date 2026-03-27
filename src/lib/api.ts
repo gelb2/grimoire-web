@@ -228,6 +228,14 @@ class ApiClient {
     return this.fetch<void>(`/social/comments/${commentId}`, { method: 'DELETE' })
   }
 
+  // 크레딧 선물
+  async giftCredits(authorSlug: string, amount: number) {
+    return this.fetch<{ senderCredits: number; receiverCredits: number }>(`/social/gift/${authorSlug}`, {
+      method: 'POST',
+      body: JSON.stringify({ amount }),
+    })
+  }
+
   // 서재
   async getLibrary() {
     return this.fetch<{

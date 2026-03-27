@@ -33,6 +33,9 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
   const [deletingComments, setDeletingComments] = useState<Map<string, boolean>>(new Map())
   const [replyingTo, setReplyingTo] = useState<string | null>(null) // 답글 대상 댓글 ID
   const [replyContent, setReplyContent] = useState('')
+  const [showGiftPopup, setShowGiftPopup] = useState(false)
+  const [giftSending, setGiftSending] = useState(false)
+  const [giftMessage, setGiftMessage] = useState<string | null>(null)
   const likeThrottle = useThrottledAction(1000)  // 좋아요 1초 쿨다운
 
   useEffect(() => {
@@ -90,6 +93,22 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
     }
   }
 
+  const handleGift = async (amount: number) => {
+    if (giftSending) return
+    setGiftSending(true)
+    try {
+      const result = await api.giftCredits(authorSlug, amount)
+      setGiftMessage(`${amount} 크레딧을 선물했습니다!`)
+      setShowGiftPopup(false)
+      setTimeout(() => setGiftMessage(null), 3000)
+    } catch {
+      setGiftMessage('선물 실패 — 로그인 또는 크레딧을 확인하세요')
+      setTimeout(() => setGiftMessage(null), 3000)
+    } finally {
+      setGiftSending(false)
+    }
+  }
+
   // 댓글을 트리 구조로 분류 — 최상위 + 대댓글
   const topLevelComments = comments.filter(c => !c.parentId)
   const repliesByParent = comments.reduce<Record<string, CommentData[]>>((acc, c) => {
@@ -115,6 +134,38 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
         <button onClick={handleLike} disabled={likeThrottle.pending} className={`px-6 py-2 rounded-full border text-sm transition hover:opacity-80 disabled:opacity-50 ${liked ? 'border-u-accent text-u-accent' : 'border-u-border text-u-text-muted'}`}>
           {liked ? '\u2665' : '\u2661'} {likeCount} 좋아요
         </button>
+
+        <div className="relative">
+          <button
+            onClick={() => setShowGiftPopup(!showGiftPopup)}
+            className="px-4 py-2 rounded-full border border-u-border text-sm text-u-text-muted transition hover:border-u-accent hover:text-u-accent"
+          >
+            응원 보내기
+          </button>
+          {showGiftPopup && (
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-3 rounded-xl border border-u-border bg-u-bg2 shadow-lg z-10">
+              <p className="text-xs text-u-text-muted mb-2 text-center whitespace-nowrap">크레딧 선물</p>
+              <div className="flex gap-2">
+                {[1, 3, 5].map(amount => (
+                  <button
+                    key={amount}
+                    onClick={() => handleGift(amount)}
+                    disabled={giftSending}
+                    className="px-3 py-1.5 rounded-lg text-sm border border-u-border text-u-text hover:bg-u-accent hover:text-u-bg transition disabled:opacity-30"
+                  >
+                    {amount}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {giftMessage && (
+          <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs text-u-accent whitespace-nowrap">
+            {giftMessage}
+          </span>
+        )}
 
         {nextEpisodeSlug ? (
           <a href={`/${authorSlug}/${workSlug}/${nextEpisodeSlug}`} className="px-4 py-2 rounded-lg text-sm text-u-text-muted transition hover:opacity-80">
