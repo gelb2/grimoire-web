@@ -14,7 +14,6 @@ interface Work {
   title: string
   subtitle: string | null
   description: string | null
-  coverImage?: string | null
   episodeCount: number
   viewCount?: number
 }
@@ -34,7 +33,6 @@ export default function DashboardPage() {
   const [newWork, setNewWork] = useState({ title: '', slug: '', description: '' })
   const [creating, setCreating] = useState(false)
   const [deletingWorks, setDeletingWorks] = useState<Set<string>>(new Set())
-  const [uploadingCover, setUploadingCover] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [selectedWorkId, setSelectedWorkId] = useState<string>('')
   const [statsData, setStatsData] = useState<WorkStatsData | null>(null)
@@ -90,18 +88,6 @@ export default function DashboardPage() {
     }
   }
 
-  const handleCoverUpload = async (workId: string, file: File) => {
-    setUploadingCover(workId)
-    try {
-      const updated = await api.uploadWorkCover(workId, file)
-      setWorks(prev => prev.map(w => w.id === workId ? { ...w, coverImage: updated.coverImage } : w))
-    } catch (err: any) {
-      alert(err.message || '커버 업로드에 실패했습니다')
-    } finally {
-      setUploadingCover(null)
-    }
-  }
-
   const handleDeleteWork = async (workId: string, title: string) => {
     if (deletingWorks.has(workId)) return  // 이미 삭제 중
     if (!confirm(`"${title}"을(를) 삭제하시겠습니까? 모든 에피소드가 함께 삭제됩니다.`)) return
@@ -135,7 +121,7 @@ export default function DashboardPage() {
       {/* 헤더 */}
       <PlatformNav />
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <main className="max-w-5xl mx-auto px-6 py-8">
         {/* 환영 카드 */}
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 mb-8">
           <h1 className="text-2xl font-bold text-white mb-2">환영합니다, {user.name}님!</h1>
@@ -145,31 +131,31 @@ export default function DashboardPage() {
         </div>
 
         {/* 빠른 액션 */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
-          <Link href="/dashboard/upload" className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 sm:p-6 hover:border-amber-600 transition group">
-            <div className="text-xl sm:text-2xl mb-1.5 sm:mb-2">📝</div>
-            <h3 className="text-white text-sm sm:text-base font-medium group-hover:text-amber-500 transition">원고 업로드</h3>
-            <p className="text-neutral-500 text-xs mt-1 hidden sm:block">MD, TXT, DOCX 파일 업로드</p>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+          <Link href="/dashboard/upload" className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:border-amber-600 transition group">
+            <div className="text-2xl mb-2">📝</div>
+            <h3 className="text-white font-medium group-hover:text-amber-500 transition">원고 업로드</h3>
+            <p className="text-neutral-500 text-sm mt-1">MD, TXT, DOCX 파일 업로드</p>
           </Link>
-          <Link href="/dashboard/theme" className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 sm:p-6 hover:border-amber-600 transition group">
-            <div className="text-xl sm:text-2xl mb-1.5 sm:mb-2">🎨</div>
-            <h3 className="text-white text-sm sm:text-base font-medium group-hover:text-amber-500 transition">테마 설정</h3>
-            <p className="text-neutral-500 text-xs mt-1 hidden sm:block">AI로 나만의 공간을 꾸미세요</p>
+          <Link href="/dashboard/theme" className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:border-amber-600 transition group">
+            <div className="text-2xl mb-2">🎨</div>
+            <h3 className="text-white font-medium group-hover:text-amber-500 transition">테마 설정</h3>
+            <p className="text-neutral-500 text-sm mt-1">AI로 나만의 공간을 꾸미세요</p>
           </Link>
-          <Link href="/dashboard/credits" className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 sm:p-6 hover:border-amber-600 transition group">
-            <div className="text-xl sm:text-2xl mb-1.5 sm:mb-2">💳</div>
-            <h3 className="text-white text-sm sm:text-base font-medium group-hover:text-amber-500 transition">크레딧 충전</h3>
-            <p className="text-neutral-500 text-xs mt-1 hidden sm:block">크레딧을 충전하세요</p>
+          <Link href="/dashboard/credits" className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:border-amber-600 transition group">
+            <div className="text-2xl mb-2">💳</div>
+            <h3 className="text-white font-medium group-hover:text-amber-500 transition">크레딧 충전</h3>
+            <p className="text-neutral-500 text-sm mt-1">크레딧을 충전하세요</p>
           </Link>
-          <Link href="/dashboard/profile" className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 sm:p-6 hover:border-amber-600 transition group">
-            <div className="text-xl sm:text-2xl mb-1.5 sm:mb-2">👤</div>
-            <h3 className="text-white text-sm sm:text-base font-medium group-hover:text-amber-500 transition">프로필 설정</h3>
-            <p className="text-neutral-500 text-xs mt-1 hidden sm:block">작가 정보 수정</p>
+          <Link href="/dashboard/profile" className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:border-amber-600 transition group">
+            <div className="text-2xl mb-2">👤</div>
+            <h3 className="text-white font-medium group-hover:text-amber-500 transition">프로필 설정</h3>
+            <p className="text-neutral-500 text-sm mt-1">작가 정보 수정</p>
           </Link>
-          <Link href="/library" className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 sm:p-6 hover:border-amber-600 transition group">
-            <div className="text-xl sm:text-2xl mb-1.5 sm:mb-2">📚</div>
-            <h3 className="text-white text-sm sm:text-base font-medium group-hover:text-amber-500 transition">서재</h3>
-            <p className="text-neutral-500 text-xs mt-1 hidden sm:block">내 작품 + 구독 관리</p>
+          <Link href="/library" className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:border-amber-600 transition group">
+            <div className="text-2xl mb-2">📚</div>
+            <h3 className="text-white font-medium group-hover:text-amber-500 transition">서재</h3>
+            <p className="text-neutral-500 text-sm mt-1">내 작품 + 구독 관리</p>
           </Link>
         </div>
 
@@ -227,23 +213,8 @@ export default function DashboardPage() {
                       {work.episodeCount}화{work.viewCount ? ` · 조회 ${work.viewCount.toLocaleString()}` : ''}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 flex-wrap justify-end">
+                  <div className="flex items-center gap-2">
                     <Link href={`/dashboard/upload?work=${work.id}`} className="text-xs text-neutral-400 hover:text-amber-500 px-3 py-1 bg-neutral-700 rounded">에피소드 추가</Link>
-                    {/* 커버 이미지 업로드 */}
-                    <label className="cursor-pointer text-xs text-neutral-400 hover:text-amber-500 px-3 py-1 bg-neutral-700 rounded">
-                      {uploadingCover === work.id ? '업로드 중...' : work.coverImage ? '커버 변경' : '커버 추가'}
-                      <input
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp"
-                        className="hidden"
-                        disabled={uploadingCover === work.id}
-                        onChange={e => {
-                          const file = e.target.files?.[0]
-                          if (file) handleCoverUpload(work.id, file)
-                          e.target.value = ''
-                        }}
-                      />
-                    </label>
                     <button onClick={() => handleDeleteWork(work.id, work.title)} disabled={deletingWorks.has(work.id)} className="text-xs text-red-500 hover:text-red-400 disabled:text-neutral-500 disabled:cursor-not-allowed px-3 py-1 bg-neutral-700 rounded">{deletingWorks.has(work.id) ? '삭제 중...' : '삭제'}</button>
                   </div>
                 </div>

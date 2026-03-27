@@ -61,7 +61,7 @@ export default function LibraryPage() {
     <div className="min-h-screen bg-neutral-950">
       <PlatformNav />
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <main className="max-w-5xl mx-auto px-6 py-8">
         {/* 헤더 */}
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 mb-6">
           <h1 className="text-2xl font-bold text-white">내 서재</h1>

@@ -105,7 +105,7 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
     return (
       <div className="min-h-screen bg-u-bg">
         <PlatformNav />
-        <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+        <main className="max-w-6xl mx-auto px-6 py-16">
           {/* 작가 헤더 스켈레톤 */}
           <div className="mb-12 text-center">
             <div className="h-8 w-48 bg-u-bg2 rounded mx-auto mb-3 animate-pulse" />
@@ -172,7 +172,7 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
     <div className="min-h-screen bg-u-bg">
       <PlatformNav />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <main className="max-w-6xl mx-auto px-6 py-8">
         {/* 작가 헤더 — 이름 클릭 시 프로필 페이지 이동 */}
         <div className="mb-12 text-center">
           <Link href={`/${authorSlug}/profile`} className="inline-block group">
@@ -198,7 +198,10 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
               아직 작품이 없습니다.
             </p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div
+              className="grid gap-4"
+              style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}
+            >
               {works.map(work => (
                 <WorkCard
                   key={work.id}

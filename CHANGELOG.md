@@ -1,26 +1,5 @@
 # CHANGELOG.md — 변경 이력
 
-## [0.11.0] - 2026-03-27
-
-### 커버 이미지 + 모바일 반응형 + Tailwind 고도화
-
-#### Added
-- WorkCard 커버 이미지 렌더링 (3:4 비율, gradient overlay, 플레이스홀더)
-- 대시보드 작품별 커버 업로드 버튼 ("커버 추가/변경")
-- api.ts uploadWorkCover() 메서드
-- next.config.ts Azure Blob Storage 이미지 도메인 허용
-- PlatformNav 모바일 햄버거 메뉴 (sm 미만 토글)
-- prettier-plugin-tailwindcss 도입 (클래스 자동 정렬)
-
-#### Fixed
-- 모바일 반응형 전수점검 — 8개 파일 수정
-  - minmax(260-280px, 1fr) 가로 overflow → grid-cols-1 sm:grid-cols-2 대체
-  - UniverseNav 터치 타겟 확대 (py-1 → py-2 min-h-[36px])
-  - 대시보드 빠른 액션 모바일 패딩 축소 + 설명 텍스트 숨김
-  - 탐색/서재/프로필/작가공간 패딩 반응형 전환
-
----
-
 ## [0.10.0] - 2026-03-27
 
 ### 테마 장식 + 네비게이션 안정화

@@ -12,7 +12,6 @@ export function PlatformNav() {
   const { user, loading, logout } = useAuth()
   const pathname = usePathname()
   const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -27,37 +26,32 @@ export function PlatformNav() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // 라우트 변경 시 모바일 메뉴 닫기
-  useEffect(() => {
-    setMobileMenuOpen(false)
-  }, [pathname])
-
   const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/')
 
   return (
-    <header className="border-b border-neutral-800 px-4 sm:px-6 py-3 sm:py-4">
+    <header className="border-b border-neutral-800 px-6 py-4">
       <div className="max-w-5xl mx-auto flex items-center justify-between">
-        {/* 왼쪽: 로고 + 데스크톱 탐색 */}
+        {/* 왼쪽: 로고 + 탐색 */}
         <div className="flex items-center gap-4">
           <Link href="/" className="text-xl font-bold text-white hover:text-amber-500 transition">
             Grimoire
           </Link>
-
-          {/* 데스크톱 전용 메뉴 */}
-          <span className="hidden sm:block text-neutral-600">|</span>
+          <span className="text-neutral-600">|</span>
           <Link
             href="/explore"
-            className={`hidden sm:block text-sm transition ${
+            className={`text-sm transition ${
               isActive('/explore') ? 'text-amber-500' : 'text-neutral-400 hover:text-white'
             }`}
           >
             탐색
           </Link>
+
+          {/* 로그인 상태에서만 추가 메뉴 */}
           {!loading && user && (
             <>
               <Link
                 href="/library"
-                className={`hidden sm:block text-sm transition ${
+                className={`text-sm transition ${
                   isActive('/library') ? 'text-amber-500' : 'text-neutral-400 hover:text-white'
                 }`}
               >
@@ -65,7 +59,7 @@ export function PlatformNav() {
               </Link>
               <Link
                 href="/dashboard"
-                className={`hidden sm:block text-sm transition ${
+                className={`text-sm transition ${
                   isActive('/dashboard') ? 'text-amber-500' : 'text-neutral-400 hover:text-white'
                 }`}
               >
@@ -75,22 +69,25 @@ export function PlatformNav() {
           )}
         </div>
 
-        {/* 오른쪽: 로그인/유저 메뉴 + 모바일 햄버거 */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        {/* 오른쪽: 로그인/유저 메뉴 */}
+        <div className="flex items-center gap-3">
           {loading ? (
             <span className="text-neutral-600 text-sm">...</span>
           ) : user ? (
             <>
-              {/* 크레딧 — 데스크톱만 */}
+              {/* 크레딧 */}
               <Link
                 href="/dashboard/credits"
-                className="hidden sm:block text-amber-500 text-sm hover:text-amber-400 transition"
+                className="text-amber-500 text-sm hover:text-amber-400 transition"
               >
                 {user.credits} 크레딧
               </Link>
 
-              {/* 유저 드롭다운 — 데스크톱 */}
-              <div className="hidden sm:block relative" ref={dropdownRef}>
+              {/* 어드민 링크 */}
+              {/* TODO: 서버에서 role 필드 추가 시 admin 체크 */}
+
+              {/* 유저 드롭다운 */}
+              <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   className="flex items-center gap-1 text-neutral-300 hover:text-white text-sm transition"
@@ -145,23 +142,6 @@ export function PlatformNav() {
                   </div>
                 )}
               </div>
-
-              {/* 모바일 햄버거 버튼 */}
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="sm:hidden p-2 text-neutral-400 hover:text-white transition"
-                aria-label="메뉴"
-              >
-                {mobileMenuOpen ? (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                )}
-              </button>
             </>
           ) : (
             <>
@@ -170,7 +150,7 @@ export function PlatformNav() {
               </Link>
               <Link
                 href="/register"
-                className="px-3 py-1.5 sm:px-4 bg-amber-600 text-white text-sm rounded-lg hover:bg-amber-500 transition"
+                className="px-4 py-1.5 bg-amber-600 text-white text-sm rounded-lg hover:bg-amber-500 transition"
               >
                 시작하기
               </Link>
@@ -178,46 +158,6 @@ export function PlatformNav() {
           )}
         </div>
       </div>
-
-      {/* 모바일 드롭다운 메뉴 */}
-      {mobileMenuOpen && user && (
-        <div className="sm:hidden mt-3 pb-3 border-t border-neutral-800">
-          <nav className="flex flex-col">
-            <Link href="/explore" className={`px-4 py-3 text-sm transition ${isActive('/explore') ? 'text-amber-500' : 'text-neutral-400'}`}>
-              탐색
-            </Link>
-            <Link href="/library" className={`px-4 py-3 text-sm transition ${isActive('/library') ? 'text-amber-500' : 'text-neutral-400'}`}>
-              서재
-            </Link>
-            <Link href="/dashboard" className={`px-4 py-3 text-sm transition ${isActive('/dashboard') ? 'text-amber-500' : 'text-neutral-400'}`}>
-              대시보드
-            </Link>
-            <div className="border-t border-neutral-800 my-1" />
-            <Link href="/dashboard/credits" className="px-4 py-3 text-sm text-amber-500">
-              {user.credits} 크레딧
-            </Link>
-            <Link href="/dashboard/profile" className="px-4 py-3 text-sm text-neutral-400">
-              프로필 설정
-            </Link>
-            <Link href={`/${user.slug}`} className="px-4 py-3 text-sm text-neutral-400">
-              내 공간 보기
-            </Link>
-            <div className="border-t border-neutral-800 my-1" />
-            <button
-              onClick={() => {
-                if (loggingOut) return
-                setLoggingOut(true)
-                setMobileMenuOpen(false)
-                logout()
-              }}
-              disabled={loggingOut}
-              className="text-left px-4 py-3 text-sm text-neutral-500 disabled:cursor-not-allowed"
-            >
-              {loggingOut ? '로그아웃 중...' : '로그아웃'}
-            </button>
-          </nav>
-        </div>
-      )}
     </header>
   )
 }

@@ -125,10 +125,10 @@ export default function AuthorProfilePage() {
     <div className="min-h-screen bg-u-bg">
       <PlatformNav />
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <main className="max-w-4xl mx-auto px-6 py-12">
         {/* 작가 헤더 */}
-        <section className="text-center mb-8 sm:mb-12">
-          <h1 className="text-2xl sm:text-4xl font-bold text-u-text-bright mb-2">
+        <section className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-u-text-bright mb-2">
             {author.name}
           </h1>
           <p className="text-sm text-u-text-dim mb-6">
@@ -149,7 +149,7 @@ export default function AuthorProfilePage() {
           </div>
 
           {/* 통계 + 구독 */}
-          <div className="flex items-center justify-center gap-6 sm:gap-8 mb-8">
+          <div className="flex items-center justify-center gap-8 mb-8">
             <div className="text-center">
               <p className="text-2xl font-bold text-u-text-bright">{works.length}</p>
               <p className="text-xs text-u-text-muted">작품</p>
@@ -190,7 +190,10 @@ export default function AuthorProfilePage() {
               아직 작품이 없습니다.
             </p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div
+              className="grid gap-4"
+              style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}
+            >
               {works.map(work => (
                 <WorkCard
                   key={work.id}

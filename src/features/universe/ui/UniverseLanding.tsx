@@ -65,7 +65,7 @@ export function UniverseLanding({
       {/* 일러두기 */}
       {preface && (
         <section className="mb-8 md:mb-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4 md:gap-6">
             <SpecialCard content={preface} workSlug={workSlug} />
           </div>
         </section>
@@ -74,7 +74,7 @@ export function UniverseLanding({
       {/* 에피소드 그리드 */}
       <section className="mb-12 md:mb-16">
         <SectionLabel className="text-u-label text-u-text-dim mb-4 md:mb-6">에피소드</SectionLabel>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4 md:gap-6">
           {episodes.map((ep) => (
             <EpisodeCard key={ep.slug} content={ep} workSlug={workSlug} />
           ))}
@@ -85,7 +85,7 @@ export function UniverseLanding({
       {bonuses.length > 0 && (
         <section className="mb-12 md:mb-16">
           <SectionLabel className="text-u-label text-u-text-dim mb-4 md:mb-6">번외 에피소드</SectionLabel>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4 md:gap-6">
             {bonuses.map((b) => (
               <EpisodeCard key={b.slug} content={b} workSlug={workSlug} />
             ))}
@@ -99,7 +99,7 @@ export function UniverseLanding({
       {/* 후기 */}
       {afterword && (
         <section>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4 md:gap-6">
             <SpecialCard content={afterword} workSlug={workSlug} />
           </div>
         </section>
