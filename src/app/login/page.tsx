@@ -101,7 +101,7 @@ export default function LoginPage() {
           <p className="text-neutral-600 text-xs text-center mb-3">테스트 계정</p>
           <button
             type="button"
-            onClick={() => { setEmail('test@grimoire.app'); setPassword('password123') }}
+            onClick={() => { setEmail('test@grimoire.app'); setPassword('test1234') }}
             className="w-full py-2 bg-neutral-800 hover:bg-neutral-750 text-neutral-400 text-sm rounded-lg transition"
           >
             테스트 계정으로 채우기
