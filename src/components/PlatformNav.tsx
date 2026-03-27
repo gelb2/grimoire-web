@@ -12,6 +12,7 @@ export function PlatformNav() {
   const { user, loading, logout } = useAuth()
   const pathname = usePathname()
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [loggingOut, setLoggingOut] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   // 드롭다운 외부 클릭 시 닫기
@@ -128,12 +129,15 @@ export function PlatformNav() {
                     <div className="border-t border-neutral-700 my-1" />
                     <button
                       onClick={() => {
+                        if (loggingOut) return
+                        setLoggingOut(true)
                         setDropdownOpen(false)
                         logout()
                       }}
-                      className="block w-full text-left px-4 py-2 text-sm text-neutral-500 hover:bg-neutral-800 hover:text-neutral-300 transition"
+                      disabled={loggingOut}
+                      className="block w-full text-left px-4 py-2 text-sm text-neutral-500 hover:bg-neutral-800 hover:text-neutral-300 disabled:cursor-not-allowed transition"
                     >
-                      로그아웃
+                      {loggingOut ? '로그아웃 중...' : '로그아웃'}
                     </button>
                   </div>
                 )}

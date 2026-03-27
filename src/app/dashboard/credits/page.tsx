@@ -5,6 +5,7 @@ import { useAuth } from '@/features/auth'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { api } from '@/lib/api'
+import { useLoadingAction } from '@/hooks/useThrottle'
 import { PlatformNav } from '@/components/PlatformNav'
 
 interface Product {
@@ -19,6 +20,7 @@ export default function CreditsPage() {
   const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null)
+  const purchaseAction = useLoadingAction()  // 결제 버튼 더블클릭 방지
 
   useEffect(() => {
     if (!loading && !user) router.push('/login')
@@ -71,10 +73,17 @@ export default function CreditsPage() {
         </div>
 
         <button
-          disabled={!selectedProduct}
+          onClick={() => {
+            if (!selectedProduct) return
+            purchaseAction.execute(async () => {
+              // TODO: PAYAPP 결제 연동 후 활성화
+              // await api.initiatePayment(selectedProduct, window.location.href)
+            })
+          }}
+          disabled={!selectedProduct || purchaseAction.pending}
           className="w-full py-3 bg-amber-600 hover:bg-amber-500 disabled:bg-neutral-700 disabled:text-neutral-500 text-white font-medium rounded-lg transition"
         >
-          {selectedProduct ? '결제하기 (PAYAPP 연동 예정)' : '패키지를 선택하세요'}
+          {purchaseAction.pending ? '처리 중...' : selectedProduct ? '결제하기 (PAYAPP 연동 예정)' : '패키지를 선택하세요'}
         </button>
 
         <div className="mt-8 bg-neutral-900 border border-neutral-800 rounded-xl p-6">

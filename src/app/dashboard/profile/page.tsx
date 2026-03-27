@@ -5,21 +5,25 @@ import { useAuth } from '@/features/auth'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { PlatformNav } from '@/components/PlatformNav'
+import { useLoadingAction } from '@/hooks/useThrottle'
 
 export default function ProfilePage() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const [name, setName] = useState('')
   const [message, setMessage] = useState('')
+  const saveAction = useLoadingAction()
 
   useEffect(() => {
     if (!loading && !user) router.push('/login')
     if (user) setName(user.name)
   }, [user, loading, router])
 
-  const handleSave = async () => {
-    // TODO: 프로필 업데이트 API 연동
-    setMessage('프로필이 저장되었습니다 (서버 연동 후 활성화)')
+  const handleSave = () => {
+    saveAction.execute(async () => {
+      // TODO: 프로필 업데이트 API 연동
+      setMessage('프로필이 저장되었습니다 (서버 연동 후 활성화)')
+    })
   }
 
   if (loading || !user) return null
@@ -74,8 +78,8 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <button onClick={handleSave} className="w-full py-3 bg-amber-600 hover:bg-amber-500 text-white font-medium rounded-lg transition">
-            저장
+          <button onClick={handleSave} disabled={saveAction.pending} className="w-full py-3 bg-amber-600 hover:bg-amber-500 disabled:bg-neutral-700 text-white font-medium rounded-lg transition">
+            {saveAction.pending ? '저장 중...' : '저장'}
           </button>
         </div>
       </main>

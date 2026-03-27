@@ -205,8 +205,10 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
                   authorSlug={authorSlug}
                   workSlug={work.slug}
                   genre={work.genre}
-                  episodeCount={work.episodeCount ?? 0}
+                  episodeCount={work.episodeCount ?? work.episodes?.length ?? 0}
                   viewCount={work.viewCount}
+                  context="author-space"
+                  firstEpisodeSlug={work.episodes?.[0]?.slug}
                 />
               ))}
             </div>

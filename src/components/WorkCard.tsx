@@ -11,6 +11,10 @@ export interface WorkCardProps {
   genre?: string
   episodeCount: number
   viewCount?: number
+  /** "explore"면 작가 공간으로, "author-space"면 작품 상세/에피소드로 */
+  context?: 'explore' | 'author-space'
+  /** 단일 에피소드 작품일 때 바로 이동할 에피소드 slug */
+  firstEpisodeSlug?: string
 }
 
 export function WorkCard({
@@ -21,9 +25,19 @@ export function WorkCard({
   genre,
   episodeCount,
   viewCount,
+  context = 'explore',
+  firstEpisodeSlug,
 }: WorkCardProps) {
-  // workSlug가 있으면 작품 페이지로, 없으면 작가 공간으로
-  const href = workSlug ? `/${authorSlug}/${workSlug}` : `/${authorSlug}`
+  // explore: 작가 공간으로 이동
+  // author-space: 단일 에피소드면 바로 에피소드, 다중이면 작품 상세
+  let href = `/${authorSlug}`
+  if (context === 'author-space' && workSlug) {
+    if (episodeCount === 1 && firstEpisodeSlug) {
+      href = `/${authorSlug}/${workSlug}/${firstEpisodeSlug}`
+    } else {
+      href = `/${authorSlug}/${workSlug}`
+    }
+  }
 
   return (
     <Link
