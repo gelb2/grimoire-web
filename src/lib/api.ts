@@ -88,6 +88,19 @@ class ApiClient {
     return this.fetch<any>(`/authors/${slug}`)
   }
 
+  // 작가 공개 프로필
+  async getAuthorProfile(slug: string) {
+    return this.fetch<any>(`/authors/${slug}/profile`)
+  }
+
+  // 작가 bio 업데이트
+  async updateBio(slug: string, bio: string) {
+    return this.fetch<{ bio: string }>(`/authors/${slug}/profile`, {
+      method: 'PATCH',
+      body: JSON.stringify({ bio }),
+    })
+  }
+
   // 작품
   async getWork(authorSlug: string, workSlug: string) {
     return this.fetch<any>(`/works/${authorSlug}/${workSlug}`)
@@ -203,8 +216,10 @@ class ApiClient {
   }
 
   // 댓글
-  async createComment(episodeId: string, content: string) {
-    return this.fetch<any>(`/social/comments/${episodeId}`, { method: 'POST', body: JSON.stringify({ content }) })
+  async createComment(episodeId: string, content: string, parentId?: string) {
+    const body: { content: string; parentId?: string } = { content }
+    if (parentId) body.parentId = parentId
+    return this.fetch<any>(`/social/comments/${episodeId}`, { method: 'POST', body: JSON.stringify(body) })
   }
   async getComments(episodeId: string) {
     return this.fetch<any[]>(`/social/comments/${episodeId}`)

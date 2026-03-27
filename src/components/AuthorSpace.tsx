@@ -6,6 +6,7 @@
 // - "grid": 기본 작품 카드 그리드
 
 import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import { api } from '@/lib/api'
 import { useTheme } from '@/features/theme'
 import { PlatformNav } from '@/components/PlatformNav'
@@ -172,9 +173,13 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
       <PlatformNav />
 
       <main className="max-w-6xl mx-auto px-6 py-8">
-        {/* 작가 헤더 */}
+        {/* 작가 헤더 — 이름 클릭 시 프로필 페이지 이동 */}
         <div className="mb-12 text-center">
-          <h1 className="text-3xl font-bold text-u-text-bright mb-3">{author.name}</h1>
+          <Link href={`/${authorSlug}/profile`} className="inline-block group">
+            <h1 className="text-3xl font-bold text-u-text-bright mb-3 group-hover:text-u-accent transition-colors">
+              {author.name}
+            </h1>
+          </Link>
           {author.description && (
             <p className="text-u-text-muted max-w-xl mx-auto">{author.description}</p>
           )}

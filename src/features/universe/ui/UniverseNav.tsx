@@ -75,16 +75,16 @@ export function UniverseNav({ authorName = "Grimoire", workSlug, apiEpisodes }: 
         &larr; 탐색으로
       </Link>
       <span className="text-u-border">|</span>
-      {/* 브랜드 */}
-      <button
-        onClick={() => router.replace(base)}
+      {/* 브랜드 — 클릭 시 프로필 페이지 이동 */}
+      <Link
+        href={`${base}/profile`}
         className={cn(
-          "font-u-sans text-[13px] font-medium tracking-u-tight bg-transparent border-none cursor-pointer transition-colors duration-200 hover:text-u-accent2 shrink-0",
+          "font-u-sans text-[13px] font-medium tracking-u-tight transition-colors duration-200 hover:text-u-accent2 shrink-0",
           isLanding ? "text-u-accent2" : "text-u-text"
         )}
       >
         {authorName}
-      </button>
+      </Link>
 
       {/* 탭 목록 — 모바일에서 가로 스크롤, API 데이터 기반 */}
       <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
