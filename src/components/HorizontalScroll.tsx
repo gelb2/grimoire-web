@@ -1,7 +1,7 @@
 // Apple App Store 스타일 가로 스크롤 컴포넌트
-// - 페이지 단위 스냅 (데스크톱 4장, 태블릿 2장, 모바일 1장)
+// - 2행 그리드 페이지 단위 스냅 (데스크톱 2x4, 태블릿 2x2, 모바일 2x1)
 // - 좌우 화살표 버튼 (모바일 숨김)
-// - 스크롤 인디케이터 점
+// - 스크롤 인디케이터 점 (현재 로드된 페이지 수 기반)
 // - 터치 스와이프 지원
 // - 마지막 페이지 도달 시 추가 로드
 
@@ -11,7 +11,7 @@ import { useRef, useState, useEffect, useCallback, type ReactNode } from 'react'
 
 interface HorizontalScrollProps {
   children: ReactNode[]
-  /** 추가 페이지 로드 콜백 (없으면 인피니트 스크롤 비활성) */
+  /** 추가 페이지 로드 콜백 */
   onLoadMore?: () => void
   /** 더 불러올 데이터가 있는지 */
   hasMore?: boolean
@@ -31,28 +31,41 @@ export function HorizontalScroll({
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
 
-  // 현재 뷰포트에서 한 페이지당 카드 수 계산
-  const getCardsPerPage = useCallback(() => {
+  // 뷰포트에 따른 열 수 (행은 항상 2)
+  const getColumnsPerPage = useCallback(() => {
     if (typeof window === 'undefined') return 4
     const width = window.innerWidth
-    if (width < 640) return 1   // 모바일
-    if (width < 1024) return 2  // 태블릿
-    return 4                     // 데스크톱
+    if (width < 640) return 1   // 모바일: 2행 1열
+    if (width < 1024) return 2  // 태블릿: 2행 2열
+    return 4                     // 데스크톱: 2행 4열
   }, [])
+
+  // 한 페이지당 카드 수 (2행 x 열수)
+  const getCardsPerPage = useCallback(() => {
+    return getColumnsPerPage() * 2
+  }, [getColumnsPerPage])
+
+  // 카드를 2행 그리드 페이지로 그룹화
+  const pages = (() => {
+    const cardsPerPage = getCardsPerPage()
+    const result: ReactNode[][] = []
+    for (let i = 0; i < children.length; i += cardsPerPage) {
+      result.push(children.slice(i, i + cardsPerPage))
+    }
+    return result
+  })()
 
   // 스크롤 상태 업데이트
   const updateScrollState = useCallback(() => {
     const el = scrollRef.current
     if (!el) return
 
-    const cardsPerPage = getCardsPerPage()
-    const totalCards = children.length
-    const pages = Math.ceil(totalCards / cardsPerPage)
-    setTotalPages(pages)
+    const pagesCount = pages.length
+    setTotalPages(pagesCount)
 
-    // 현재 페이지 계산 (스크롤 위치 기반)
     const scrollLeft = el.scrollLeft
     const scrollWidth = el.scrollWidth - el.clientWidth
+
     if (scrollWidth <= 0) {
       setCurrentPage(0)
       setCanScrollLeft(false)
@@ -61,8 +74,8 @@ export function HorizontalScroll({
     }
 
     const progress = scrollLeft / scrollWidth
-    const page = Math.round(progress * (pages - 1))
-    setCurrentPage(page)
+    const page = Math.round(progress * (pagesCount - 1))
+    setCurrentPage(Math.min(page, pagesCount - 1))
 
     setCanScrollLeft(scrollLeft > 10)
     setCanScrollRight(scrollLeft < scrollWidth - 10)
@@ -71,9 +84,8 @@ export function HorizontalScroll({
     if (hasMore && !loading && scrollLeft >= scrollWidth - 50 && onLoadMore) {
       onLoadMore()
     }
-  }, [children.length, getCardsPerPage, hasMore, loading, onLoadMore])
+  }, [pages.length, hasMore, loading, onLoadMore])
 
-  // 스크롤 이벤트 리스너
   useEffect(() => {
     const el = scrollRef.current
     if (!el) return
@@ -88,7 +100,6 @@ export function HorizontalScroll({
     }
   }, [updateScrollState])
 
-  // children 변경 시 상태 재계산
   useEffect(() => {
     updateScrollState()
   }, [children.length, updateScrollState])
@@ -98,65 +109,70 @@ export function HorizontalScroll({
     const el = scrollRef.current
     if (!el) return
 
-    const cardsPerPage = getCardsPerPage()
-    // 카드 1개 너비 + gap 계산
-    const firstCard = el.querySelector('[data-scroll-card]') as HTMLElement | null
-    if (!firstCard) return
+    const pageEl = el.querySelector('[data-scroll-page]') as HTMLElement | null
+    if (!pageEl) return
 
-    const cardWidth = firstCard.offsetWidth
-    const gap = 16 // gap-4 = 1rem = 16px
-    const pageWidth = cardsPerPage * cardWidth + (cardsPerPage - 1) * gap
-
+    const pageWidth = pageEl.offsetWidth + 16 // gap-4
     const targetScroll = direction === 'right'
       ? el.scrollLeft + pageWidth
       : el.scrollLeft - pageWidth
 
     el.scrollTo({ left: targetScroll, behavior: 'smooth' })
-  }, [getCardsPerPage])
+  }, [])
 
   // 인디케이터 점 클릭
   const scrollToPageIndex = useCallback((pageIndex: number) => {
     const el = scrollRef.current
     if (!el) return
 
-    const cardsPerPage = getCardsPerPage()
-    const firstCard = el.querySelector('[data-scroll-card]') as HTMLElement | null
-    if (!firstCard) return
+    const pageEl = el.querySelector('[data-scroll-page]') as HTMLElement | null
+    if (!pageEl) return
 
-    const cardWidth = firstCard.offsetWidth
-    const gap = 16
-    const pageWidth = cardsPerPage * cardWidth + (cardsPerPage - 1) * gap
-
+    const pageWidth = pageEl.offsetWidth + 16
     el.scrollTo({ left: pageIndex * pageWidth, behavior: 'smooth' })
-  }, [getCardsPerPage])
+  }, [])
 
   if (children.length === 0) return null
 
+  const cols = typeof window !== 'undefined' ? getColumnsPerPage() : 4
+
   return (
     <div className="relative group/scroll">
-      {/* 스크롤 컨테이너 */}
+      {/* 스크롤 컨테이너 — 각 페이지가 2행 그리드 */}
       <div
         ref={scrollRef}
-        className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-hide pb-2"
+        className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2"
         style={{
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
           WebkitOverflowScrolling: 'touch',
         }}
       >
-        {children.map((child, i) => (
+        {pages.map((pageCards, pageIdx) => (
           <div
-            key={i}
-            data-scroll-card
-            className="snap-start shrink-0 w-[calc(100%-8px)] sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)]"
+            key={pageIdx}
+            data-scroll-page
+            className="snap-start shrink-0 w-full"
           >
-            {child}
+            <div
+              className="grid gap-4"
+              style={{
+                gridTemplateColumns: `repeat(${cols}, 1fr)`,
+                gridTemplateRows: 'repeat(2, 1fr)',
+              }}
+            >
+              {pageCards.map((child, cardIdx) => (
+                <div key={cardIdx}>
+                  {child}
+                </div>
+              ))}
+            </div>
           </div>
         ))}
 
         {/* 로딩 인디케이터 */}
         {loading && (
-          <div className="snap-start shrink-0 w-[calc(100%-8px)] sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)] flex items-center justify-center">
+          <div className="snap-start shrink-0 w-full flex items-center justify-center min-h-[200px]">
             <div className="w-6 h-6 border-2 border-amber-600 border-t-transparent rounded-full animate-spin" />
           </div>
         )}
@@ -195,10 +211,10 @@ export function HorizontalScroll({
             <button
               key={i}
               onClick={() => scrollToPageIndex(i)}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              className={`h-2 rounded-full transition-all duration-300 ${
                 i === currentPage
                   ? 'bg-amber-500 w-4'
-                  : 'bg-neutral-700 hover:bg-neutral-500'
+                  : 'bg-neutral-700 hover:bg-neutral-500 w-2'
               }`}
               aria-label={`페이지 ${i + 1}`}
             />
