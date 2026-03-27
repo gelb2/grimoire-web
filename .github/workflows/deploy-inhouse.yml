@@ -1,5 +1,5 @@
 # 인하우스 환경 배포 — inhouse 브랜치 푸시 시 자동 실행
-# Docker 이미지 빌드 (inhouse API URL 주입) → ACR 푸시 → Azure Container Apps 업데이트
+# BFF 패턴: Docker 이미지 1개, API_URL은 런타임 환경변수로 주입
 
 name: Deploy Inhouse
 
@@ -37,12 +37,11 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
-      # Docker 이미지 빌드 (인하우스 서버 API URL을 빌드 인자로 전달)
+      # Docker 이미지 빌드 (API URL 불필요 — 런타임 환경변수로 주입)
       - name: Build and push Docker image
         run: |
           IMAGE=${{ secrets.ACR_LOGIN_SERVER }}/grimoire-web
           docker build \
-            --build-arg NEXT_PUBLIC_API_URL=${{ secrets.INHOUSE_API_URL }} \
             --build-arg NEXT_PUBLIC_APP_ENV=inhouse \
             -t $IMAGE:inhouse-${{ github.sha }} \
             -t $IMAGE:inhouse-latest \
@@ -51,6 +50,7 @@ jobs:
           docker push $IMAGE:inhouse-latest
 
       # Azure Container Apps 업데이트
+      # API_URL은 Container Apps 환경변수로 설정 (Azure Portal 또는 az cli)
       - name: Deploy to Container Apps
         uses: azure/container-apps-deploy-action@v1
         with:

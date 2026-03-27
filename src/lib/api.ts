@@ -1,4 +1,27 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
+/** 페이지네이션 작품 응답 타입 */
+export interface PaginatedWorksResponse {
+  works: Array<{
+    id: string; slug: string; title: string; subtitle: string | null
+    description: string | null; viewCount: number; authorName: string
+    authorSlug: string; episodeCount: number; createdAt: string
+  }>
+  totalCount: number
+  page: number
+  pageSize: number
+  hasMore: boolean
+}
+
+// BFF 패턴:
+// - 클라이언트(브라우저): 같은 도메인의 /api 프록시로 호출
+// - 서버(SSR): API_URL 런타임 환경변수로 백엔드 직접 호출 (루프백 방지)
+function getApiBase(): string {
+  if (typeof window === 'undefined') {
+    // 서버 사이드 — 백엔드 직접 호출
+    return process.env.API_URL || 'http://localhost:3000/api'
+  }
+  // 클라이언트 사이드 — BFF 프록시 경유
+  return '/api'
+}
 
 class ApiClient {
   private async fetch<T>(path: string, options?: RequestInit): Promise<T> {
@@ -10,7 +33,7 @@ class ApiClient {
     // SSR 환경에서 타임아웃 설정 (서버 미연결 시 빠른 폴백)
     const signal = options?.signal ?? AbortSignal.timeout(5000)
 
-    const res = await fetch(`${API_BASE}${path}`, {
+    const res = await fetch(`${getApiBase()}${path}`, {
       ...options,
       credentials: 'include',
       headers,
@@ -150,6 +173,14 @@ class ApiClient {
   }
   async getRecentWorks(limit = 10) {
     return this.fetch<any[]>(`/discover/works/recent?limit=${limit}`)
+  }
+  /** 인기 작품 페이지네이션 조회 */
+  async getPopularWorksPaginated(page = 1, pageSize = 12) {
+    return this.fetch<PaginatedWorksResponse>(`/discover/works/popular?page=${page}&pageSize=${pageSize}`)
+  }
+  /** 최신 작품 페이지네이션 조회 */
+  async getRecentWorksPaginated(page = 1, pageSize = 12) {
+    return this.fetch<PaginatedWorksResponse>(`/discover/works/recent?page=${page}&pageSize=${pageSize}`)
   }
 
   // 좋아요

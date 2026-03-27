@@ -15,7 +15,8 @@ interface Props {
 // 테마 레이아웃만 빠르게 확인 — universe 여부 판별용
 async function getThemeLayout(authorSlug: string): Promise<string> {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'
+    // 서버 컴포넌트: 백엔드 직접 호출 (BFF 프록시 루프백 방지)
+    const apiUrl = process.env.API_URL || 'http://localhost:3000/api'
     const res = await fetch(`${apiUrl}/themes/${authorSlug}`, {
       next: { revalidate: 60 },
       signal: AbortSignal.timeout(3000),

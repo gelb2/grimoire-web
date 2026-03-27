@@ -51,6 +51,9 @@ PAYAPP_SECRET=...
 
 ### grimoire-web
 ```
+# 빌드 시 (선택)
 NEXT_PUBLIC_APP_ENV=development|inhouse|production
-NEXT_PUBLIC_API_URL=http://localhost:3000|https://inhouse-api.grimoire.app|https://api.grimoire.app
+
+# 런타임 (BFF 프록시 — 서버 사이드에서 백엔드 직접 호출용)
+API_URL=http://localhost:3000/api|https://inhouse-api.grimoire.app/api|https://api.grimoire.app/api
 ```
