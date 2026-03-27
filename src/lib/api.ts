@@ -196,6 +196,11 @@ class ApiClient {
     return this.fetch<PaginatedWorksResponse>(`/discover/works/recent?page=${page}&pageSize=${pageSize}`)
   }
 
+  /** 응원받는 작가 랭킹 */
+  async getMostGiftedAuthors(limit = 8) {
+    return this.fetch<{ id: string; slug: string; name: string; bio: string | null; totalGifted: number }[]>(`/discover/authors/most-gifted?limit=${limit}`)
+  }
+
   // 좋아요
   async toggleLike(episodeId: string) {
     return this.fetch<{ liked: boolean; likeCount: number }>(`/social/likes/${episodeId}`, { method: 'POST' })
