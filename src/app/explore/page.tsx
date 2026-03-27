@@ -40,11 +40,11 @@ export default function ExplorePage() {
         api.getRecentWorksPaginated(1, PAGE_SIZE),
       ])
 
-      setPopularWorks(popularRes.works)
-      setPopularHasMore(popularRes.hasMore)
+      setPopularWorks(popularRes.works ?? [])
+      setPopularHasMore(popularRes.hasMore ?? false)
       setPopularPage(1)
-      setRecentWorks(recentRes.works)
-      setRecentHasMore(recentRes.hasMore)
+      setRecentWorks(recentRes.works ?? [])
+      setRecentHasMore(recentRes.hasMore ?? false)
       setRecentPage(1)
 
       // 양쪽 모두 빈 배열이면 서버 콜드스타트 가능성 — 캐시 안 함
@@ -173,7 +173,7 @@ export default function ExplorePage() {
             <h2 className="text-xl font-bold text-white">인기 작품</h2>
             <div className="flex-1 h-px bg-neutral-800" />
           </div>
-          {popularWorks.length === 0 && !popularLoading ? (
+          {(popularWorks?.length ?? 0) === 0 && !popularLoading ? (
             <div className="flex items-center gap-4">
               <p className="text-neutral-500">아직 작품이 없습니다. 첫 번째 작가가 되어보세요!</p>
               <button
@@ -211,7 +211,7 @@ export default function ExplorePage() {
             <h2 className="text-xl font-bold text-white">최신 작품</h2>
             <div className="flex-1 h-px bg-neutral-800" />
           </div>
-          {recentWorks.length === 0 && !recentLoading ? (
+          {(recentWorks?.length ?? 0) === 0 && !recentLoading ? (
             <div className="flex items-center gap-4">
               <p className="text-neutral-500">아직 작품이 없습니다.</p>
               <button
