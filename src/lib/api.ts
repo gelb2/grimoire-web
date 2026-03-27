@@ -228,6 +228,28 @@ class ApiClient {
     return this.fetch<void>(`/social/comments/${commentId}`, { method: 'DELETE' })
   }
 
+  // 서재
+  async getLibrary() {
+    return this.fetch<{
+      bookmarked: Array<{
+        workId: string; workTitle: string; workSlug: string
+        authorName: string; authorSlug: string; episodeCount: number
+        readEpisodeCount: number; lastReadEpisodeTitle: string | null
+        lastReadEpisodeSlug: string | null; subscribed: boolean
+      }>
+      subscribed: Array<{
+        workId: string; workTitle: string; workSlug: string
+        authorName: string; authorSlug: string; episodeCount: number
+        latestEpisodeTitle: string | null; createdAt: string
+      }>
+    }>('/reader/library')
+  }
+
+  // 조회수 통계
+  async getWorkStats(workId: string) {
+    return this.fetch<{ dates: string[]; counts: number[]; totalViews: number }>(`/works/${workId}/stats`)
+  }
+
   // 관리자
   async getAdminStats() {
     return this.fetch<any>('/admin/stats')
