@@ -25,6 +25,7 @@ export default function DashboardPage() {
   const [showNewWork, setShowNewWork] = useState(false)
   const [newWork, setNewWork] = useState({ title: '', slug: '', description: '' })
   const [creating, setCreating] = useState(false)
+  const [deletingWorks, setDeletingWorks] = useState<Set<string>>(new Set())
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -58,12 +59,20 @@ export default function DashboardPage() {
   }
 
   const handleDeleteWork = async (workId: string, title: string) => {
+    if (deletingWorks.has(workId)) return  // 이미 삭제 중
     if (!confirm(`"${title}"을(를) 삭제하시겠습니까? 모든 에피소드가 함께 삭제됩니다.`)) return
+    setDeletingWorks(prev => new Set(prev).add(workId))
     try {
       await api.deleteWork(workId)
       setWorks(prev => prev.filter(w => w.id !== workId))
     } catch (err: any) {
       alert(err.message || '삭제에 실패했습니다')
+    } finally {
+      setDeletingWorks(prev => {
+        const next = new Set(prev)
+        next.delete(workId)
+        return next
+      })
     }
   }
 
@@ -176,7 +185,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Link href={`/dashboard/upload?work=${work.id}`} className="text-xs text-neutral-400 hover:text-amber-500 px-3 py-1 bg-neutral-700 rounded">에피소드 추가</Link>
-                    <button onClick={() => handleDeleteWork(work.id, work.title)} className="text-xs text-red-500 hover:text-red-400 px-3 py-1 bg-neutral-700 rounded">삭제</button>
+                    <button onClick={() => handleDeleteWork(work.id, work.title)} disabled={deletingWorks.has(work.id)} className="text-xs text-red-500 hover:text-red-400 disabled:text-neutral-500 disabled:cursor-not-allowed px-3 py-1 bg-neutral-700 rounded">{deletingWorks.has(work.id) ? '삭제 중...' : '삭제'}</button>
                   </div>
                 </div>
               ))}

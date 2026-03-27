@@ -26,6 +26,27 @@ export function useThrottledAction(cooldownMs = 1000) {
 }
 
 /**
+ * 비동기 액션 로딩 상태 관리 훅
+ * - pending 상태에서 재호출 차단 (더블클릭 방지)
+ * - 버튼 disabled 처리에 사용
+ */
+export function useLoadingAction() {
+  const [pending, setPending] = useState(false)
+
+  const execute = useCallback(async (fn: () => Promise<void>) => {
+    if (pending) return
+    setPending(true)
+    try {
+      await fn()
+    } finally {
+      setPending(false)
+    }
+  }, [pending])
+
+  return { pending, execute }
+}
+
+/**
  * 검색 입력 디바운스 훅
  */
 export function useDebounce(delayMs = 300) {

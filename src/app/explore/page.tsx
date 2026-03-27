@@ -6,9 +6,12 @@ import { api } from '@/lib/api'
 import { useDebounce } from '@/hooks/useThrottle'
 import { PlatformNav } from '@/components/PlatformNav'
 import { WorkCard } from '@/components/WorkCard'
+import { HorizontalScroll } from '@/components/HorizontalScroll'
 import { useExploreStore } from '@/stores/useExploreStore'
 
 interface AuthorResult { id: string; slug: string; name: string }
+
+const PAGE_SIZE = 12
 
 export default function ExplorePage() {
   const [query, setQuery] = useState('')
@@ -19,7 +22,13 @@ export default function ExplorePage() {
   // Zustand 스토어 — 뒤로가기 시 데이터/스크롤 복원
   const {
     popularWorks, recentWorks, scrollY, loaded,
-    setPopularWorks, setRecentWorks, setScrollY, setLoaded,
+    popularPage, recentPage, popularHasMore, recentHasMore,
+    popularLoading, recentLoading,
+    setPopularWorks, appendPopularWorks, setRecentWorks, appendRecentWorks,
+    setScrollY, setLoaded,
+    setPopularPage, setRecentPage,
+    setPopularHasMore, setRecentHasMore,
+    setPopularLoading, setRecentLoading,
   } = useExploreStore()
 
   useEffect(() => {
@@ -29,18 +38,53 @@ export default function ExplorePage() {
       return
     }
 
-    // 최초 로드 — API 호출
-    api.getPopularWorks(10).then(works => {
-      setPopularWorks(works)
+    // 최초 로드 — 페이지네이션 API 호출
+    api.getPopularWorksPaginated(1, PAGE_SIZE).then(res => {
+      setPopularWorks(res.works)
+      setPopularHasMore(res.hasMore)
+      setPopularPage(1)
     }).catch(() => {})
 
-    api.getRecentWorks(10).then(works => {
-      setRecentWorks(works)
+    api.getRecentWorksPaginated(1, PAGE_SIZE).then(res => {
+      setRecentWorks(res.works)
+      setRecentHasMore(res.hasMore)
+      setRecentPage(1)
       setLoaded(true)
     }).catch(() => {
       setLoaded(true)
     })
-  }, [loaded, scrollY, setPopularWorks, setRecentWorks, setLoaded])
+  }, [loaded, scrollY, setPopularWorks, setRecentWorks, setLoaded,
+      setPopularHasMore, setRecentHasMore, setPopularPage, setRecentPage])
+
+  // 인기 작품 추가 로드
+  const loadMorePopular = useCallback(async () => {
+    if (popularLoading || !popularHasMore) return
+    setPopularLoading(true)
+    try {
+      const nextPage = popularPage + 1
+      const res = await api.getPopularWorksPaginated(nextPage, PAGE_SIZE)
+      appendPopularWorks(res.works)
+      setPopularPage(nextPage)
+      setPopularHasMore(res.hasMore)
+    } catch { /* 에러 무시 */ }
+    finally { setPopularLoading(false) }
+  }, [popularLoading, popularHasMore, popularPage,
+      appendPopularWorks, setPopularPage, setPopularHasMore, setPopularLoading])
+
+  // 최신 작품 추가 로드
+  const loadMoreRecent = useCallback(async () => {
+    if (recentLoading || !recentHasMore) return
+    setRecentLoading(true)
+    try {
+      const nextPage = recentPage + 1
+      const res = await api.getRecentWorksPaginated(nextPage, PAGE_SIZE)
+      appendRecentWorks(res.works)
+      setRecentPage(nextPage)
+      setRecentHasMore(res.hasMore)
+    } catch { /* 에러 무시 */ }
+    finally { setRecentLoading(false) }
+  }, [recentLoading, recentHasMore, recentPage,
+      appendRecentWorks, setRecentPage, setRecentHasMore, setRecentLoading])
 
   // 스크롤 위치 저장
   const handleScroll = useCallback(() => {
@@ -111,12 +155,13 @@ export default function ExplorePage() {
             <h2 className="text-xl font-bold text-white">인기 작품</h2>
             <div className="flex-1 h-px bg-neutral-800" />
           </div>
-          {popularWorks.length === 0 ? (
+          {popularWorks.length === 0 && !popularLoading ? (
             <p className="text-neutral-500">아직 작품이 없습니다. 첫 번째 작가가 되어보세요!</p>
           ) : (
-            <div
-              className="grid gap-4"
-              style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}
+            <HorizontalScroll
+              onLoadMore={loadMorePopular}
+              hasMore={popularHasMore}
+              loading={popularLoading}
             >
               {popularWorks.map(work => (
                 <WorkCard
@@ -130,7 +175,7 @@ export default function ExplorePage() {
                   viewCount={work.viewCount}
                 />
               ))}
-            </div>
+            </HorizontalScroll>
           )}
         </section>
 
@@ -140,12 +185,13 @@ export default function ExplorePage() {
             <h2 className="text-xl font-bold text-white">최신 작품</h2>
             <div className="flex-1 h-px bg-neutral-800" />
           </div>
-          {recentWorks.length === 0 ? (
+          {recentWorks.length === 0 && !recentLoading ? (
             <p className="text-neutral-500">아직 작품이 없습니다.</p>
           ) : (
-            <div
-              className="grid gap-4"
-              style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}
+            <HorizontalScroll
+              onLoadMore={loadMoreRecent}
+              hasMore={recentHasMore}
+              loading={recentLoading}
             >
               {recentWorks.map(work => (
                 <WorkCard
@@ -159,7 +205,7 @@ export default function ExplorePage() {
                   viewCount={work.viewCount}
                 />
               ))}
-            </div>
+            </HorizontalScroll>
           )}
         </section>
       </main>

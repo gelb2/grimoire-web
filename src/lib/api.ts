@@ -1,3 +1,16 @@
+/** 페이지네이션 작품 응답 타입 */
+export interface PaginatedWorksResponse {
+  works: Array<{
+    id: string; slug: string; title: string; subtitle: string | null
+    description: string | null; viewCount: number; authorName: string
+    authorSlug: string; episodeCount: number; createdAt: string
+  }>
+  totalCount: number
+  page: number
+  pageSize: number
+  hasMore: boolean
+}
+
 // BFF 패턴:
 // - 클라이언트(브라우저): 같은 도메인의 /api 프록시로 호출
 // - 서버(SSR): API_URL 런타임 환경변수로 백엔드 직접 호출 (루프백 방지)
@@ -160,6 +173,14 @@ class ApiClient {
   }
   async getRecentWorks(limit = 10) {
     return this.fetch<any[]>(`/discover/works/recent?limit=${limit}`)
+  }
+  /** 인기 작품 페이지네이션 조회 */
+  async getPopularWorksPaginated(page = 1, pageSize = 12) {
+    return this.fetch<PaginatedWorksResponse>(`/discover/works/popular?page=${page}&pageSize=${pageSize}`)
+  }
+  /** 최신 작품 페이지네이션 조회 */
+  async getRecentWorksPaginated(page = 1, pageSize = 12) {
+    return this.fetch<PaginatedWorksResponse>(`/discover/works/recent?page=${page}&pageSize=${pageSize}`)
   }
 
   // 좋아요
