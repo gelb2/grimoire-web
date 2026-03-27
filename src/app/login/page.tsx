@@ -19,7 +19,7 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await login(email, password)
-      router.push('/dashboard')
+      router.replace('/dashboard')
     } catch (err: any) {
       setError(err.message || '로그인에 실패했습니다')
     } finally {

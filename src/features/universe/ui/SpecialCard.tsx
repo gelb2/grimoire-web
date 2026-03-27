@@ -6,7 +6,7 @@ import { SectionLabel } from "./SectionLabel"
 import { useCardTransition } from "./CardTransition"
 import type { ContentMeta } from "@/features/universe/data"
 
-export function SpecialCard({ content }: { content: ContentMeta }) {
+export function SpecialCard({ content, workSlug }: { content: ContentMeta; workSlug?: string }) {
   const isAfterword = content.type === "afterword"
   const cardRef = useRef<HTMLDivElement>(null)
   const ctx = useCardTransition()
@@ -15,8 +15,11 @@ export function SpecialCard({ content }: { content: ContentMeta }) {
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()
+    const href = workSlug
+      ? `/${authorSlug}/${workSlug}/${content.slug}`
+      : `/${authorSlug}/${content.slug}`
     if (ctx && cardRef.current) {
-      ctx.navigateWithTransition(`/${authorSlug}/${content.slug}`, cardRef.current)
+      ctx.navigateWithTransition(href, cardRef.current)
     }
   }
 

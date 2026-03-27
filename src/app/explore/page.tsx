@@ -29,32 +29,50 @@ export default function ExplorePage() {
     setPopularPage, setRecentPage,
     setPopularHasMore, setRecentHasMore,
     setPopularLoading, setRecentLoading,
+    isStale, reset,
   } = useExploreStore()
 
+  // 초기 데이터 로드
+  const fetchInitialData = useCallback(async () => {
+    try {
+      const [popularRes, recentRes] = await Promise.all([
+        api.getPopularWorksPaginated(1, PAGE_SIZE),
+        api.getRecentWorksPaginated(1, PAGE_SIZE),
+      ])
+
+      setPopularWorks(popularRes.works)
+      setPopularHasMore(popularRes.hasMore)
+      setPopularPage(1)
+      setRecentWorks(recentRes.works)
+      setRecentHasMore(recentRes.hasMore)
+      setRecentPage(1)
+
+      // 양쪽 모두 빈 배열이면 서버 콜드스타트 가능성 — 캐시 안 함
+      const hasData = popularRes.works.length > 0 || recentRes.works.length > 0
+      if (hasData) {
+        setLoaded(true)
+      }
+    } catch {
+      // API 실패 시 loaded 설정 안 함 — 다음 방문에서 재시도
+    }
+  }, [setPopularWorks, setRecentWorks, setLoaded,
+      setPopularHasMore, setRecentHasMore, setPopularPage, setRecentPage])
+
   useEffect(() => {
-    if (loaded) {
-      // 스토어에 데이터가 있으면 스크롤만 복원 (API 재호출 불필요)
+    // TTL 만료 시 캐시 무효화 후 재요청
+    if (loaded && !isStale()) {
+      // 스토어에 유효한 데이터가 있으면 스크롤만 복원
       window.scrollTo(0, scrollY)
       return
     }
 
-    // 최초 로드 — 페이지네이션 API 호출
-    api.getPopularWorksPaginated(1, PAGE_SIZE).then(res => {
-      setPopularWorks(res.works)
-      setPopularHasMore(res.hasMore)
-      setPopularPage(1)
-    }).catch(() => {})
+    // TTL 만료된 경우 리셋
+    if (loaded && isStale()) {
+      reset()
+    }
 
-    api.getRecentWorksPaginated(1, PAGE_SIZE).then(res => {
-      setRecentWorks(res.works)
-      setRecentHasMore(res.hasMore)
-      setRecentPage(1)
-      setLoaded(true)
-    }).catch(() => {
-      setLoaded(true)
-    })
-  }, [loaded, scrollY, setPopularWorks, setRecentWorks, setLoaded,
-      setPopularHasMore, setRecentHasMore, setPopularPage, setRecentPage])
+    fetchInitialData()
+  }, [loaded, scrollY, isStale, reset, fetchInitialData])
 
   // 인기 작품 추가 로드
   const loadMorePopular = useCallback(async () => {
@@ -156,7 +174,15 @@ export default function ExplorePage() {
             <div className="flex-1 h-px bg-neutral-800" />
           </div>
           {popularWorks.length === 0 && !popularLoading ? (
-            <p className="text-neutral-500">아직 작품이 없습니다. 첫 번째 작가가 되어보세요!</p>
+            <div className="flex items-center gap-4">
+              <p className="text-neutral-500">아직 작품이 없습니다. 첫 번째 작가가 되어보세요!</p>
+              <button
+                onClick={() => { reset(); fetchInitialData() }}
+                className="px-4 py-2 text-sm bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-lg transition"
+              >
+                새로고침
+              </button>
+            </div>
           ) : (
             <HorizontalScroll
               onLoadMore={loadMorePopular}
@@ -186,7 +212,15 @@ export default function ExplorePage() {
             <div className="flex-1 h-px bg-neutral-800" />
           </div>
           {recentWorks.length === 0 && !recentLoading ? (
-            <p className="text-neutral-500">아직 작품이 없습니다.</p>
+            <div className="flex items-center gap-4">
+              <p className="text-neutral-500">아직 작품이 없습니다.</p>
+              <button
+                onClick={() => { reset(); fetchInitialData() }}
+                className="px-4 py-2 text-sm bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-lg transition"
+              >
+                새로고침
+              </button>
+            </div>
           ) : (
             <HorizontalScroll
               onLoadMore={loadMoreRecent}

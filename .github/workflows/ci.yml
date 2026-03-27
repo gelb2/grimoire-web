@@ -1,13 +1,15 @@
-# CI 파이프라인 — PR 시 타입 체크 + 테스트 + 빌드 검증
-# develop/inhouse/main 대상 PR에서 실행되며, 모든 체크 통과 필수
+# CI 파이프라인 — PR + 푸시 시 타입 체크 + 테스트 + 빌드 검증
+# develop/inhouse/main 브랜치 푸시 및 develop 대상 PR에서 실행
 
 name: CI
 
 on:
-  pull_request:
+  push:
     branches: [develop, inhouse, main]
+  pull_request:
+    branches: [develop]
 
-# 동일 PR에 새 커밋이 푸시되면 이전 실행 취소
+# 동일 PR/브랜치에 새 커밋이 푸시되면 이전 실행 취소
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -45,9 +47,11 @@ jobs:
       - name: Run tests
         run: npm test
 
-      # Next.js 프로덕션 빌드
+      # Next.js 프로덕션 빌드 (BFF 패턴: 더미 API_URL로 빌드 통과)
       - name: Build
         run: npm run build
+        env:
+          API_URL: http://localhost:3000/api
 
       # Playwright 브라우저 설치
       - name: Install Playwright browsers

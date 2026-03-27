@@ -33,7 +33,7 @@ export default function RegisterPage() {
     setLoading(true)
     try {
       await register({ email: form.email, password: form.password, name: form.name, slug: form.slug })
-      router.push('/dashboard')
+      router.replace('/dashboard')
     } catch (err: any) {
       setError(err.message || '회원가입에 실패했습니다')
     } finally {
