@@ -8,7 +8,6 @@
 
 - [ ] frontmatter가 에피소드 블록에 노출되는 문제
 - [ ] EpisodeViewer에 DeerDevil 하드코딩 잔재 (범용화 필요)
-- [ ] 페이지 넘김 애니메이션(PageFlipTransition) 제거 후 대체 전환 효과 미구현
 
 ## 서버 연동
 
@@ -19,7 +18,7 @@
 ## 대시보드 고도화
 
 - [ ] 작가 대시보드 고도화 (조회수 통계 차트, 작품 CRUD UI)
-- [ ] 크레딧 충전 UI (PAYAPP 연동)
+- [ ] 크레딧 충전 UI (PAYAPP 실제 연동)
 - [ ] 크레딧-원화-AI토큰 비용 정밀 계산식 UI
 
 ## 테스트
@@ -31,6 +30,7 @@
 ## 기타
 
 - [ ] HTML 파서 (최후순위)
+- [ ] Cloudflare DNS 설정 완료 후 URL 검증
 
 ## 참조
 

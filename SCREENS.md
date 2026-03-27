@@ -68,6 +68,7 @@
 | WorkPage | 작품 페이지 |
 | PlatformNav | 플랫폼 네비게이션 |
 | ErrorPopup | 에러 팝업 |
+| HorizontalScroll | 가로 스크롤 컨테이너 (2행 그리드 + 인디케이터) |
 
 ### 작가 공간 뷰어 (`src/features/universe/ui/`)
 
@@ -101,3 +102,4 @@
 | 스토어 | 설명 |
 |--------|------|
 | useExploreStore | 탐색 페이지 상태 (Zustand) |
+| useNavigationStore | 뒤로가기 정책 + 네비게이션 상태 (Zustand) |
