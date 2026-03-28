@@ -9,12 +9,12 @@ import { PlatformNav } from '@/components/PlatformNav'
 import { themePresets, AuthorTheme } from '@/features/theme'
 
 const colorFields = [
-  { key: 'bgPrimary', label: '배경색', cssVar: '--u-bg' },
-  { key: 'bgSecondary', label: '카드 배경', cssVar: '--u-bg2' },
-  { key: 'textPrimary', label: '본문 텍스트', cssVar: '--u-text' },
-  { key: 'textMuted', label: '보조 텍스트', cssVar: '--u-text-muted' },
-  { key: 'accent', label: '강조색', cssVar: '--u-accent' },
-  { key: 'border', label: '경계선', cssVar: '--u-border' },
+  { key: 'bgPrimary', label: '배경색', cssVar: '--g-bg' },
+  { key: 'bgSecondary', label: '카드 배경', cssVar: '--g-bg2' },
+  { key: 'textPrimary', label: '본문 텍스트', cssVar: '--g-text' },
+  { key: 'textMuted', label: '보조 텍스트', cssVar: '--g-text-muted' },
+  { key: 'accent', label: '강조색', cssVar: '--g-accent' },
+  { key: 'border', label: '경계선', cssVar: '--g-border' },
 ]
 
 const fontOptions = [
@@ -123,12 +123,12 @@ export default function ThemeEditorPage() {
 
   // 미리보기용 인라인 스타일
   const previewStyle: Record<string, string> = {
-    '--u-bg': theme.bgPrimary,
-    '--u-bg2': theme.bgSecondary,
-    '--u-text': theme.textPrimary,
-    '--u-text-muted': theme.textMuted,
-    '--u-accent': theme.accent,
-    '--u-border': theme.border,
+    '--g-bg': theme.bgPrimary,
+    '--g-bg2': theme.bgSecondary,
+    '--g-text': theme.textPrimary,
+    '--g-text-muted': theme.textMuted,
+    '--g-accent': theme.accent,
+    '--g-border': theme.border,
   } as Record<string, string>
 
   return (
@@ -302,18 +302,18 @@ export default function ThemeEditorPage() {
           className="rounded-xl border border-neutral-800 overflow-hidden min-h-[600px]"
           style={previewStyle}
         >
-          <div className="h-full p-8" style={{ backgroundColor: 'var(--u-bg)', color: 'var(--u-text)' }}>
+          <div className="h-full p-8" style={{ backgroundColor: 'var(--g-bg)', color: 'var(--g-text)' }}>
             {/* 미리보기 헤더 */}
             <div className="text-center mb-12">
-              <p className="text-xs tracking-widest mb-4" style={{ color: 'var(--u-text-muted)' }}>PREVIEW</p>
+              <p className="text-xs tracking-widest mb-4" style={{ color: 'var(--g-text-muted)' }}>PREVIEW</p>
               <h1 className="text-3xl font-bold mb-2">{user.name}의 공간</h1>
-              <p className="text-sm" style={{ color: 'var(--u-text-muted)' }}>grimoire.app/{user.slug}</p>
+              <p className="text-sm" style={{ color: 'var(--g-text-muted)' }}>grimoire.app/{user.slug}</p>
             </div>
 
             {/* 미리보기 본문 */}
             <div className="max-w-lg mx-auto space-y-6">
-              <div className="p-6 rounded-lg" style={{ backgroundColor: 'var(--u-bg2)', borderColor: 'var(--u-border)', borderWidth: '1px', borderStyle: 'solid' }}>
-                <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--u-accent)' }}>제 1화. 시작</h3>
+              <div className="p-6 rounded-lg" style={{ backgroundColor: 'var(--g-bg2)', borderColor: 'var(--g-border)', borderWidth: '1px', borderStyle: 'solid' }}>
+                <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--g-accent)' }}>제 1화. 시작</h3>
                 <p className="leading-relaxed">
                   어둠 속에서 한 줄기 빛이 스며들었다.
                   그것은 오래전 잊혀진 이야기의 첫 페이지였다.
@@ -321,7 +321,7 @@ export default function ThemeEditorPage() {
                 </p>
               </div>
 
-              <hr style={{ borderColor: 'var(--u-border)' }} />
+              <hr style={{ borderColor: 'var(--g-border)' }} />
 
               <p className="leading-relaxed">
                 바람이 불어왔다. 차갑지도, 따뜻하지도 않은 바람.
@@ -329,12 +329,12 @@ export default function ThemeEditorPage() {
                 그녀는 책장을 넘기며 중얼거렸다.
               </p>
 
-              <p className="italic" style={{ color: 'var(--u-text-muted)' }}>
+              <p className="italic" style={{ color: 'var(--g-text-muted)' }}>
                 &ldquo;모든 이야기에는 시작이 있고, 모든 시작에는 용기가 필요하다.&rdquo;
               </p>
 
               <div className="text-center mt-8">
-                <span className="inline-block px-6 py-2 rounded-lg text-sm" style={{ backgroundColor: 'var(--u-accent)', color: 'var(--u-bg)' }}>
+                <span className="inline-block px-6 py-2 rounded-lg text-sm" style={{ backgroundColor: 'var(--g-accent)', color: 'var(--g-bg)' }}>
                   다음 화 읽기
                 </span>
               </div>

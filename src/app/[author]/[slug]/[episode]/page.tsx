@@ -1,9 +1,9 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { api } from "@/lib/api"
-import { EpisodeViewer } from "@/features/universe/ui/EpisodeViewer"
-import { EpisodeFooter } from "@/features/universe/ui/EpisodeFooter"
-import { WorkNav } from "@/features/universe/ui/WorkNav"
+import { EpisodeViewer } from "@/features/reader/ui/EpisodeViewer"
+import { EpisodeFooter } from "@/features/reader/ui/EpisodeFooter"
+import { WorkNav } from "@/features/reader/ui/WorkNav"
 
 // 완전 동적 — SSR on every request
 export const dynamic = "force-dynamic"
@@ -12,7 +12,7 @@ interface Props {
   params: Promise<{ author: string; slug: string; episode: string }>
 }
 
-// 테마 레이아웃만 빠르게 확인 — universe 여부 판별용
+// 테마 레이아웃만 빠르게 확인 — series 여부 판별용
 async function getThemeLayout(authorSlug: string): Promise<string> {
   try {
     // 서버 컴포넌트: 백엔드 직접 호출 (BFF 프록시 루프백 방지)
