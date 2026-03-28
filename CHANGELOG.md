@@ -1,5 +1,37 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.11.0] - 2026-03-28
+
+### 전역 리네이밍 + 테마 시스템 강화 + 네비게이션/훅 전수 수정
+
+#### Added
+- HTML 파서 연동 (sourceFormat 자동 감지)
+- 테마 animation 필드 실제 분기 (typing/fade/slide/none)
+- 플랫폼/작가 CSS 스코핑 분리 (bg-platform-bg 토큰)
+- UniverseNav/UniverseLanding 유닛테스트 22건
+- AdminGuard 유닛테스트 4건
+- ChapterBlock heading-2/separator/bold 블록 지원
+- 테마 에디터 서버 연동 (저장+퍼블리시)
+- 크레딧 선물 + 응원받는 작가 랭킹 API
+
+#### Changed
+- 전역 리네이밍: features/universe → features/reader, --u-* → --g-*, UniverseNav → SeriesNav
+- layout 값: "universe" → "series"
+- authorThemeMap dead code 삭제
+- EpisodeViewer 기본 장식 antler → dot (범용)
+- 테마 미지정 작가 기본 프리셋 midnight → cream
+
+#### Fixed
+- 에피소드 빠른 스크롤 시 깜박임/흔들림 (motion.div 정적 전환)
+- 타이핑 애니메이션 간헐적 미재생 (key prop + sessionStorage 복합 키)
+- 네비게이션 정책 통일 (router.replace → push, `<a>` → `<Link>`)
+- AuthorSpace API race condition (mounted 플래그)
+- CardTransition vw/vh 매 렌더 재계산 (useState + resize)
+- HorizontalScroll pages 배열 useMemo
+- 카드 제목 truncate (탐색 only, 작가공간 롤백)
+- 크레딧 충전 페이지 크래시 (priceKrw → price 필드명)
+- 프로필 WorkCard 목차 페이지 우회
+
 ## [0.10.0] - 2026-03-27
 
 ### 테마 장식 + 네비게이션 안정화
