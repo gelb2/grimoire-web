@@ -46,8 +46,8 @@ export function SpecialCard({ content, workSlug }: { content: ContentMeta; workS
           {isAfterword ? "Afterword" : "Preface"}
         </SectionLabel>
 
-        {/* 제목 — 최대 2줄 */}
-        <div className="text-[1.2rem] italic text-g-text-soft mb-2.5 truncate">
+        {/* 제목 */}
+        <div className="text-[1.2rem] italic text-g-text-soft mb-2.5">
           {content.title}
         </div>
 

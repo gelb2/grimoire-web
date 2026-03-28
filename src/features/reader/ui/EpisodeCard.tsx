@@ -43,8 +43,8 @@ export function EpisodeCard({ content, workSlug }: { content: ContentMeta; workS
         </SectionLabel>
       )}
 
-      {/* 제목 — 최대 2줄 */}
-      <div className="text-lg md:text-xl italic text-g-text-bright mb-2 leading-[1.3] truncate">
+      {/* 제목 */}
+      <div className="text-lg md:text-xl italic text-g-text-bright mb-2 leading-[1.3]">
         {content.title}
       </div>
 
