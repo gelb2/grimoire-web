@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
-import { UniverseLanding } from "./UniverseLanding"
-import type { ContentMeta } from "@/features/universe/data"
+import { SeriesLanding } from "./SeriesLanding"
+import type { ContentMeta } from "@/features/reader/data"
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/test-author",
@@ -35,37 +35,37 @@ const minimalDecorations = {
   footerText: "",
 }
 
-describe("UniverseLanding", () => {
+describe("SeriesLanding", () => {
   it("작가 이름을 헤더에 표시한다", () => {
-    render(<UniverseLanding contents={[]} authorName="윤동주" decorations={minimalDecorations} />)
+    render(<SeriesLanding contents={[]} authorName="윤동주" decorations={minimalDecorations} />)
     expect(screen.getByText("윤동주")).toBeInTheDocument()
   })
 
   it("기본 작가 이름은 Grimoire이다", () => {
-    render(<UniverseLanding contents={[]} decorations={minimalDecorations} />)
+    render(<SeriesLanding contents={[]} decorations={minimalDecorations} />)
     expect(screen.getByText("Grimoire")).toBeInTheDocument()
   })
 
   it("에피소드 섹션 라벨을 표시한다", () => {
-    render(<UniverseLanding contents={mockContents} decorations={minimalDecorations} />)
+    render(<SeriesLanding contents={mockContents} decorations={minimalDecorations} />)
     expect(screen.getAllByText("에피소드").length).toBeGreaterThanOrEqual(1)
   })
 
   it("에피소드 카드를 렌더링한다", () => {
-    render(<UniverseLanding contents={mockContents} decorations={minimalDecorations} />)
+    render(<SeriesLanding contents={mockContents} decorations={minimalDecorations} />)
     expect(screen.getAllByText("첫 화").length).toBeGreaterThanOrEqual(1)
     expect(screen.getAllByText("둘째 화").length).toBeGreaterThanOrEqual(1)
     expect(screen.getAllByText("셋째 화").length).toBeGreaterThanOrEqual(1)
   })
 
   it("번외 에피소드가 있으면 번외 섹션을 표시한다", () => {
-    render(<UniverseLanding contents={mockContents} decorations={minimalDecorations} />)
+    render(<SeriesLanding contents={mockContents} decorations={minimalDecorations} />)
     expect(screen.getAllByText(/번외/).length).toBeGreaterThanOrEqual(1)
   })
 
   it("번외가 없으면 번외 섹션이 DOM에 없다", () => {
     const noBonus = mockContents.filter(c => c.type !== "bonus")
-    const { container } = render(<UniverseLanding contents={noBonus} decorations={minimalDecorations} />)
+    const { container } = render(<SeriesLanding contents={noBonus} decorations={minimalDecorations} />)
     // SectionLabel로 "번외 에피소드"가 렌더되는 section이 없어야 함
     const sections = container.querySelectorAll("section")
     const hasBonusSection = Array.from(sections).some(s => s.textContent?.includes("번외 에피소드"))
@@ -73,29 +73,29 @@ describe("UniverseLanding", () => {
   })
 
   it("일러두기 카드를 렌더링한다", () => {
-    render(<UniverseLanding contents={mockContents} decorations={minimalDecorations} />)
+    render(<SeriesLanding contents={mockContents} decorations={minimalDecorations} />)
     expect(screen.getAllByText("일러두기").length).toBeGreaterThanOrEqual(1)
   })
 
   it("후기 카드를 렌더링한다", () => {
-    render(<UniverseLanding contents={mockContents} decorations={minimalDecorations} />)
+    render(<SeriesLanding contents={mockContents} decorations={minimalDecorations} />)
     expect(screen.getAllByText("후기").length).toBeGreaterThanOrEqual(1)
   })
 
   it("headerSubtitle이 있으면 표시한다", () => {
     const withSubtitle = { ...minimalDecorations, headerSubtitle: "Short Fiction Anthology" }
-    render(<UniverseLanding contents={[]} decorations={withSubtitle} />)
+    render(<SeriesLanding contents={[]} decorations={withSubtitle} />)
     expect(screen.getByText("Short Fiction Anthology")).toBeInTheDocument()
   })
 
   it("footerText가 있으면 표시한다", () => {
     const withFooter = { ...minimalDecorations, footerText: "Inspired by A24" }
-    render(<UniverseLanding contents={[]} decorations={withFooter} />)
+    render(<SeriesLanding contents={[]} decorations={withFooter} />)
     expect(screen.getByText("Inspired by A24")).toBeInTheDocument()
   })
 
   it("빈 콘텐츠 배열도 에러 없이 렌더링한다", () => {
-    const { container } = render(<UniverseLanding contents={[]} decorations={minimalDecorations} />)
+    const { container } = render(<SeriesLanding contents={[]} decorations={minimalDecorations} />)
     expect(container.querySelector("header")).toBeInTheDocument()
   })
 })

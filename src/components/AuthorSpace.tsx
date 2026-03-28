@@ -12,7 +12,7 @@ import { useTheme } from '@/features/theme'
 import { PlatformNav } from '@/components/PlatformNav'
 import { WorkCard } from '@/components/WorkCard'
 import { ErrorPopup } from '@/components/ErrorPopup'
-import { UniverseLanding } from '@/features/universe/ui/UniverseLanding'
+import { SeriesLanding } from '@/features/reader/ui/SeriesLanding'
 
 interface Episode {
   slug: string
@@ -137,7 +137,7 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
 
   // layout: "series" — 시리즈 소설 스타일 렌더링
   if (theme.layout === "series") {
-    // 작품이 1개이면 그 작품의 에피소드를 UniverseLanding에 전달
+    // 작품이 1개이면 그 작품의 에피소드를 SeriesLanding에 전달
     const firstWork = (author.works ?? [])[0]
     const episodeContents = firstWork?.episodes?.map((ep: { slug: string; title: string; subtitle?: string; description?: string; orderNum?: number; type?: string }) => ({
       slug: ep.slug,
@@ -151,8 +151,8 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
 
     return (
       <div className="min-h-screen bg-g-bg text-g-text">
-        {/* UniverseNav는 [author]/layout.tsx에서 렌더링 — 여기서는 생략 */}
-        <UniverseLanding
+        {/* SeriesNav는 [author]/layout.tsx에서 렌더링 — 여기서는 생략 */}
+        <SeriesLanding
           authorName={author.name}
           workSlug={firstWork?.slug}
           contents={episodeContents}

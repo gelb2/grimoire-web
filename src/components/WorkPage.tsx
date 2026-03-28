@@ -8,9 +8,9 @@ import Link from 'next/link'
 import { api } from '@/lib/api'
 import { PlatformNav } from '@/components/PlatformNav'
 import { ErrorPopup } from '@/components/ErrorPopup'
-import { EpisodeViewer } from '@/features/universe/ui/EpisodeViewer'
-import { EpisodeFooter } from '@/features/universe/ui/EpisodeFooter'
-import type { ContentMeta, EpisodeData } from '@/features/universe/data'
+import { EpisodeViewer } from '@/features/reader/ui/EpisodeViewer'
+import { EpisodeFooter } from '@/features/reader/ui/EpisodeFooter'
+import type { ContentMeta, EpisodeData } from '@/features/reader/data'
 
 interface Episode {
   id: string

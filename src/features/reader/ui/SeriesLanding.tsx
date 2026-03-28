@@ -1,4 +1,4 @@
-import { contents as localContents, type ContentMeta } from "@/features/universe/data"
+import { contents as localContents, type ContentMeta } from "@/features/reader/data"
 import { EpisodeCard } from "./EpisodeCard"
 import { SpecialCard } from "./SpecialCard"
 import { SectionLabel } from "./SectionLabel"
@@ -15,7 +15,7 @@ const DEFAULT_DECORATIONS: DecorationConfig = {
   footerText: "Inspired by the sensibility of A24",
 }
 
-interface UniverseLandingProps {
+interface SeriesLandingProps {
   contents?: ContentMeta[]
   /** 작가 이름 — 헤더에 표시 */
   authorName?: string
@@ -26,12 +26,12 @@ interface UniverseLandingProps {
 }
 
 // contents를 props로 받으면 사용, 없으면 로컬 데이터 폴백
-export function UniverseLanding({
+export function SeriesLanding({
   contents = localContents,
   authorName = "Grimoire",
   workSlug,
   decorations = DEFAULT_DECORATIONS,
-}: UniverseLandingProps) {
+}: SeriesLandingProps) {
   const preface = contents.find((c) => c.type === "preface")
   const episodes = contents.filter((c) => c.type === "episode")
   const bonuses = contents.filter((c) => c.type === "bonus")

@@ -1,4 +1,4 @@
-import type { ContentMeta } from "@/features/universe/data"
+import type { ContentMeta } from "@/features/reader/data"
 
 export const generatedContents: ContentMeta[] = [
   {     slug: "preface", type: "preface", title: `일러두기` },

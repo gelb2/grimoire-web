@@ -1,7 +1,7 @@
 "use client"
 
 // WorkNav — 범용 에피소드 pill 네비게이션
-// UniverseNav의 디자인을 그대로 사용하되, 에피소드 목록을 동적으로 받는다.
+// SeriesNav의 디자인을 그대로 사용하되, 에피소드 목록을 동적으로 받는다.
 // 작가 테마 CSS 변수(--g-*)가 ThemeProvider에 의해 설정되므로
 // 동일한 Tailwind 토큰(bg-g-bg, text-g-accent2 등)으로 자동 테마 적용.
 

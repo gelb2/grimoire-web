@@ -7,7 +7,7 @@ import { ChapterBlock } from "./ChapterBlock"
 import { TypeWriter } from "./TypeWriter"
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion } from "framer-motion"
-import type { EpisodeData, ContentMeta, Block } from "@/features/universe/data"
+import type { EpisodeData, ContentMeta, Block } from "@/features/reader/data"
 import type { ThemeDecorations as DecorationConfig } from "@/features/theme"
 import { useTheme } from "@/features/theme"
 

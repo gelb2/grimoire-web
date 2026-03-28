@@ -1,4 +1,4 @@
-import type { EpisodeData } from "@/features/universe/data"
+import type { EpisodeData } from "@/features/reader/data"
 
 const ep11: EpisodeData = {
   slug: "ep11",

@@ -2,7 +2,7 @@
 import { describe, it, expect } from "vitest"
 import { render, screen } from "@testing-library/react"
 import { ChapterBlock } from "./ChapterBlock"
-import type { Block } from "@/features/universe/data"
+import type { Block } from "@/features/reader/data"
 
 describe("ChapterBlock", () => {
   it("빈 블록 배열을 렌더한다", () => {

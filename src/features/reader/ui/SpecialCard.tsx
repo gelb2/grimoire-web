@@ -4,7 +4,7 @@ import { useRef } from "react"
 import { usePathname } from "next/navigation"
 import { SectionLabel } from "./SectionLabel"
 import { useCardTransition } from "./CardTransition"
-import type { ContentMeta } from "@/features/universe/data"
+import type { ContentMeta } from "@/features/reader/data"
 
 export function SpecialCard({ content, workSlug }: { content: ContentMeta; workSlug?: string }) {
   const isAfterword = content.type === "afterword"

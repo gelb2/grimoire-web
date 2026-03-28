@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { contents } from "@/features/universe/data"
+import { contents } from "@/features/reader/data"
 import { cn } from "@/lib/utils"
 
 interface NavEpisode {
@@ -11,7 +11,7 @@ interface NavEpisode {
   type?: string
 }
 
-interface UniverseNavProps {
+interface SeriesNavProps {
   /** 작가 이름 — 네비게이션 브랜드 표시 */
   authorName?: string
   /** 작품 슬러그 — 3단계 URL 생성에 사용 (/{author}/{work}/{episode}) */
@@ -20,7 +20,7 @@ interface UniverseNavProps {
   apiEpisodes?: NavEpisode[]
 }
 
-export function UniverseNav({ authorName = "Grimoire", workSlug, apiEpisodes }: UniverseNavProps) {
+export function SeriesNav({ authorName = "Grimoire", workSlug, apiEpisodes }: SeriesNavProps) {
   const pathname = usePathname()
   const router = useRouter()
 

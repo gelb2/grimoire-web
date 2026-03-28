@@ -1,4 +1,4 @@
-import type { Block } from "@/features/universe/data"
+import type { Block } from "@/features/reader/data"
 import type { ReactNode } from "react"
 import { SectionLabel } from "./SectionLabel"
 

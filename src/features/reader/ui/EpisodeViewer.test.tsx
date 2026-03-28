@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { render, screen, cleanup } from "@testing-library/react"
 import { EpisodeViewer } from "./EpisodeViewer"
-import type { ContentMeta, EpisodeData } from "@/features/universe/data"
+import type { ContentMeta, EpisodeData } from "@/features/reader/data"
 
 // next/navigation mock
 vi.mock("next/navigation", () => ({

@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { AntlerSVG } from "./AntlerSVG"
 import { SectionLabel } from "./SectionLabel"
 import { useCardTransition } from "./CardTransition"
-import type { ContentMeta } from "@/features/universe/data"
+import type { ContentMeta } from "@/features/reader/data"
 
 export function EpisodeCard({ content, workSlug }: { content: ContentMeta; workSlug?: string }) {
   const isBonus = content.type === "bonus"
