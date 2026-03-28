@@ -43,9 +43,10 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
   const decorations = decorationsProp ?? themeCtx.decorations ?? DEFAULT_DECORATIONS
   const tagline = taglineProp ?? themeCtx.tagline
 
-  // 세션 내 방문 여부 확인 — 재방문 시 타이핑 스킵
+  // 세션 내 방문 여부 확인 — 재방문 시 타이핑 스킵 (작가명 포함으로 slug 충돌 방지)
+  const visitedKey = `visited:${authorName}:${data.slug}`
   const isRevisit = typeof window !== "undefined"
-    && sessionStorage.getItem(`visited:${data.slug}`) === "true"
+    && sessionStorage.getItem(visitedKey) === "true"
 
   // 0: 대기, 1: 라벨 타이핑, 2: 제목 타이핑, 3: 본문 타이핑, 4: 본문 페이드인, 5: 완료
   const [stage, setStage] = useState(isRevisit ? 5 : 0)
@@ -155,7 +156,7 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
       // 페이드인할 블록이 없으면 즉시 완료
       setRevealedCount(data.blocks.length)
       setStage(5)
-      sessionStorage.setItem(`visited:${data.slug}`, "true")
+      sessionStorage.setItem(visitedKey, "true")
       return
     }
 
@@ -170,7 +171,7 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
         safeTimeout(() => {
           setRevealedCount(data.blocks.length)
           setStage(5)
-          sessionStorage.setItem(`visited:${data.slug}`, "true")
+          sessionStorage.setItem(visitedKey, "true")
         }, 100)
       }
     }, 80)

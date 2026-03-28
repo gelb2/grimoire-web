@@ -117,7 +117,7 @@ export default async function EpisodePage({ params }: Props) {
             currentEpisodeSlug={episode}
           />
         )}
-        <EpisodeViewer meta={meta} data={episodeData} authorName={authorName} />
+        <EpisodeViewer key={`${author}-${slug}-${episode}`} meta={meta} data={episodeData} authorName={authorName} />
         <EpisodeFooter
           episodeId={episodeData.id || episode}
           authorSlug={author}

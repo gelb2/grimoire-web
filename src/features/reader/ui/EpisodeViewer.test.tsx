@@ -78,7 +78,7 @@ describe("EpisodeViewer", () => {
   })
 
   it("재방문 시 라벨과 제목이 즉시 표시된다 (TypeWriter 없이)", () => {
-    sessionStorage.setItem("visited:ep-test", "true")
+    sessionStorage.setItem("visited:Grimoire:ep-test", "true")
     render(<EpisodeViewer meta={mockMeta} data={mockData} />)
 
     expect(screen.getByText("Grimoire · Episode 01")).toBeInTheDocument()
@@ -87,7 +87,7 @@ describe("EpisodeViewer", () => {
   })
 
   it("재방문 시 모든 본문 블록이 즉시 표시된다", () => {
-    sessionStorage.setItem("visited:ep-test", "true")
+    sessionStorage.setItem("visited:Grimoire:ep-test", "true")
     render(<EpisodeViewer meta={mockMeta} data={mockData} />)
 
     expect(screen.getByText("첫 번째 문단")).toBeInTheDocument()
@@ -96,7 +96,7 @@ describe("EpisodeViewer", () => {
   })
 
   it("tagline prop이 전달되면 해당 값을 표시한다", () => {
-    sessionStorage.setItem("visited:ep-test", "true")
+    sessionStorage.setItem("visited:Grimoire:ep-test", "true")
     render(<EpisodeViewer meta={mockMeta} data={mockData} tagline="커스텀 태그라인" />)
     expect(screen.getByText("커스텀 태그라인")).toBeInTheDocument()
   })
@@ -169,7 +169,7 @@ describe("EpisodeViewer 타이머 안전성", () => {
     vi.runAllTimers()
 
     // 방문 기록이 남으면 안 됨 — 타이핑이 완료되지 않았으니까
-    expect(sessionStorage.getItem("visited:ep-test")).toBeNull()
+    expect(sessionStorage.getItem("visited:Grimoire:ep-test")).toBeNull()
   })
 
   it("빠른 마운트/언마운트 반복에도 에러가 발생하지 않는다", () => {
