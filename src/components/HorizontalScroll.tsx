@@ -7,7 +7,7 @@
 
 'use client'
 
-import { useRef, useState, useEffect, useCallback, type ReactNode } from 'react'
+import { useRef, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react'
 
 interface HorizontalScrollProps {
   children: ReactNode[]
@@ -45,15 +45,15 @@ export function HorizontalScroll({
     return getColumnsPerPage() * 2
   }, [getColumnsPerPage])
 
-  // 카드를 2행 그리드 페이지로 그룹화
-  const pages = (() => {
+  // 카드를 2행 그리드 페이지로 그룹화 (메모이제이션)
+  const pages = useMemo(() => {
     const cardsPerPage = getCardsPerPage()
     const result: ReactNode[][] = []
     for (let i = 0; i < children.length; i += cardsPerPage) {
       result.push(children.slice(i, i + cardsPerPage))
     }
     return result
-  })()
+  }, [children, getCardsPerPage])
 
   // 스크롤 상태 업데이트
   const updateScrollState = useCallback(() => {

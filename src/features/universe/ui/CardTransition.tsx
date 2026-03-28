@@ -5,6 +5,7 @@ import {
   useContext,
   useState,
   useCallback,
+  useEffect,
   type ReactNode,
 } from "react"
 import { useRouter } from "next/navigation"
@@ -91,8 +92,14 @@ export function CardTransitionProvider({ children }: { children: ReactNode }) {
     }
   }, [phase])
 
-  const vw = typeof window !== "undefined" ? window.innerWidth : 1920
-  const vh = typeof window !== "undefined" ? window.innerHeight : 1080
+  const [vw, setVw] = useState(typeof window !== "undefined" ? window.innerWidth : 1920)
+  const [vh, setVh] = useState(typeof window !== "undefined" ? window.innerHeight : 1080)
+
+  useEffect(() => {
+    const handleResize = () => { setVw(window.innerWidth); setVh(window.innerHeight) }
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
 
   return (
     <CardTransitionContext.Provider value={{ navigateWithTransition }}>

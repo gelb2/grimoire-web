@@ -38,10 +38,10 @@ const TYPING_BLOCKS = 3
 const VIEWPORT_BLOCKS = 10
 
 export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations: decorationsProp, tagline: taglineProp }: EpisodeViewerProps) {
-  // 테마 컨텍스트에서 장식/태그라인 가져오기 (props 우선)
-  const theme = useTheme()
-  const decorations = decorationsProp ?? theme.decorations ?? DEFAULT_DECORATIONS
-  const tagline = taglineProp ?? theme.tagline
+  // 테마 컨텍스트에서 장식/태그라인 가져오기 (props 우선, props 있으면 context 무시)
+  const themeCtx = useTheme()
+  const decorations = decorationsProp ?? themeCtx.decorations ?? DEFAULT_DECORATIONS
+  const tagline = taglineProp ?? themeCtx.tagline
 
   // 세션 내 방문 여부 확인 — 재방문 시 타이핑 스킵
   const isRevisit = typeof window !== "undefined"
@@ -203,7 +203,7 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
         {meta.subtitle && (
           <motion.div
             className="font-u-sans text-u-caption text-u-text-muted tracking-u-normal"
-            initial={{ opacity: 0 }}
+            initial={isRevisit ? false : { opacity: 0 }}
             animate={{ opacity: stage >= 3 ? 1 : 0 }}
             transition={{ duration: 0.5 }}
           >
@@ -212,7 +212,7 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
         )}
 
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={isRevisit ? false : { opacity: 0 }}
           animate={{ opacity: stage >= 3 ? 1 : 0 }}
           transition={{ duration: 0.6 }}
         >

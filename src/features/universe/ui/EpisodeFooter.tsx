@@ -3,6 +3,7 @@
 // 에피소드 하단 — 이전화/좋아요/다음화 + 댓글 (대댓글 지원)
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { api } from '@/lib/api'
 import { useThrottledAction } from '@/hooks/useThrottle'
 
@@ -124,9 +125,9 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
       {/* 이전화/좋아요/다음화 */}
       <div className="flex items-center justify-center gap-4 py-6 border-t border-b border-u-border">
         {prevEpisodeSlug ? (
-          <a href={`/${authorSlug}/${workSlug}/${prevEpisodeSlug}`} className="px-4 py-2 rounded-lg text-sm text-u-text-muted transition hover:opacity-80">
+          <Link href={`/${authorSlug}/${workSlug}/${prevEpisodeSlug}`} className="px-4 py-2 rounded-lg text-sm text-u-text-muted transition hover:opacity-80">
             &larr; 이전화
-          </a>
+          </Link>
         ) : (
           <span className="px-4 py-2 text-sm text-u-text-muted opacity-30">이전화</span>
         )}
@@ -168,9 +169,9 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
         )}
 
         {nextEpisodeSlug ? (
-          <a href={`/${authorSlug}/${workSlug}/${nextEpisodeSlug}`} className="px-4 py-2 rounded-lg text-sm text-u-text-muted transition hover:opacity-80">
+          <Link href={`/${authorSlug}/${workSlug}/${nextEpisodeSlug}`} className="px-4 py-2 rounded-lg text-sm text-u-text-muted transition hover:opacity-80">
             다음화 &rarr;
-          </a>
+          </Link>
         ) : (
           <span className="px-4 py-2 text-sm text-u-text-muted opacity-30">다음화</span>
         )}

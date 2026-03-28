@@ -91,14 +91,14 @@ export function UniverseNav({ authorName = "Grimoire", workSlug, apiEpisodes }: 
         <NavTab
           label="전체"
           active={isLanding}
-          onClick={() => router.replace(base)}
+          onClick={() => router.push(base)}
         />
         {allEpisodes.map((ep, idx) => (
           <NavTab
             key={ep.slug}
             label={pillLabel(ep, idx)}
             active={currentEpisodeSlug === ep.slug}
-            onClick={() => router.replace(episodeUrl(ep.slug))}
+            onClick={() => router.push(episodeUrl(ep.slug))}
           />
         ))}
       </div>

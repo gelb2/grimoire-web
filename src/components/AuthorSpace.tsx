@@ -53,24 +53,22 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
-  const fetchAuthor = useCallback(() => {
+  useEffect(() => {
+    let mounted = true
     setLoading(true)
     setError(false)
 
     api.getAuthorSpace(authorSlug)
       .then(async (res) => {
-        // API 응답: { author: {...}, works: [...], theme?: {...} }
-        // AuthorData 형태로 평탄화
+        if (!mounted) return
         const authorInfo = res.author ?? res
         const works: Work[] = res.works ?? authorInfo.works ?? []
 
-        // 작품별 에피소드 목록을 추가 로드
         const worksWithEpisodes = works.length > 0
           ? await Promise.all(
               works.map(async (work: Work) => {
                 try {
                   const workRes = await api.getWork(authorSlug, work.slug)
-                  // API 응답: { work: {...}, episodes: [...] }
                   const episodes = workRes.episodes ?? workRes.work?.episodes ?? []
                   return { ...work, episodes }
                 } catch {
@@ -80,25 +78,24 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
             )
           : works
 
-        const authorData: AuthorData = {
+        if (!mounted) return
+        setAuthor({
           id: authorInfo.id,
           slug: authorInfo.slug ?? authorSlug,
           name: authorInfo.name ?? authorSlug,
           description: authorInfo.description,
           works: worksWithEpisodes,
-        }
-        setAuthor(authorData)
+        })
         setLoading(false)
       })
       .catch(() => {
+        if (!mounted) return
         setError(true)
         setLoading(false)
       })
-  }, [authorSlug])
 
-  useEffect(() => {
-    fetchAuthor()
-  }, [fetchAuthor])
+    return () => { mounted = false }
+  }, [authorSlug])
 
   // 로딩 — 스켈레톤 UI
   if (loading) {
