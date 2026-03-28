@@ -16,7 +16,7 @@ export function BackLink({
   variant = "default",
 }: BackLinkProps) {
   const pathname = usePathname()
-  const authorSlug = pathname.split("/").filter(Boolean)[0] ?? "deerdevil"
+  const authorSlug = pathname.split("/").filter(Boolean)[0] ?? ""
 
   return (
     <Link

@@ -11,11 +11,11 @@ import type { EpisodeData, ContentMeta, Block } from "@/features/universe/data"
 import type { ThemeDecorations as DecorationConfig } from "@/features/theme"
 import { useTheme } from "@/features/theme"
 
-// 기본 장식 설정 — DeerDevil 스타일
+// 기본 장식 설정 — 범용 (테마 미지정 시)
 const DEFAULT_DECORATIONS: DecorationConfig = {
-  dividerIcon: "antler",
-  dividerColor: "#9a8060",
-  headerIcon: "antler",
+  dividerIcon: "dot",
+  dividerColor: "#888888",
+  headerIcon: "dot",
   headerSubtitle: "",
   cardAccentPosition: "left",
   footerText: "",

@@ -24,9 +24,9 @@ export function UniverseNav({ authorName = "Grimoire", workSlug, apiEpisodes }: 
   const pathname = usePathname()
   const router = useRouter()
 
-  // URL에서 작가 slug 추출: /deerdevil/... → "deerdevil"
+  // URL에서 작가 slug 추출
   const segments = pathname.split("/").filter(Boolean)
-  const authorSlug = segments[0] ?? "deerdevil"
+  const authorSlug = segments[0] ?? ""
   const base = `/${authorSlug}`
 
   const isLanding = pathname === base

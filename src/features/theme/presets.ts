@@ -2,7 +2,7 @@
 export interface ThemeDecorations {
   dividerIcon: "antler" | "flower" | "star" | "geometric" | "brush" | "leaf" | "camellia" | "umbrella" | "waterwheel" | "dot" | "line" | "none"
   dividerColor: string
-  headerIcon: "antler" | "quill" | "book" | "none"
+  headerIcon: "antler" | "quill" | "book" | "dot" | "none"
   headerSubtitle: string    // 예: "Short Fiction Anthology"
   cardAccentPosition: "left" | "top" | "none"
   footerText: string        // 예: "Inspired by the sensibility of A24"
@@ -169,6 +169,8 @@ export const authorThemeMap: Record<string, string> = {
 }
 
 export function getThemeForAuthor(authorSlug: string): AuthorTheme {
-  const presetName = authorThemeMap[authorSlug] ?? "midnight"
-  return themePresets[presetName] ?? themePresets.midnight
+  const presetName = authorThemeMap[authorSlug]
+  if (presetName && themePresets[presetName]) return themePresets[presetName]
+  // 테마 미지정 작가 → cream (밝은 기본 테마)
+  return themePresets.cream
 }

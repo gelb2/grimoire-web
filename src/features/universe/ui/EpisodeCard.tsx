@@ -14,7 +14,7 @@ export function EpisodeCard({ content, workSlug }: { content: ContentMeta; workS
   const cardRef = useRef<HTMLDivElement>(null)
   const ctx = useCardTransition()
   const pathname = usePathname()
-  const authorSlug = pathname.split("/").filter(Boolean)[0] ?? "deerdevil"
+  const authorSlug = pathname.split("/").filter(Boolean)[0] ?? ""
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()

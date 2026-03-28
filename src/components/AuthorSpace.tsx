@@ -2,7 +2,7 @@
 
 // AuthorSpace — 모든 작가의 통합 공간 컴포넌트
 // theme.layout에 따라 다른 UI를 렌더링한다:
-// - "universe": DeerDevil 스타일 (UniverseNav는 layout에서 렌더링 + UniverseLanding)
+// - "universe": 시리즈 소설 스타일 (UniverseNav는 layout에서 렌더링 + UniverseLanding)
 // - "grid": 기본 작품 카드 그리드
 
 import { useState, useEffect, useCallback } from 'react'
@@ -138,7 +138,7 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
     return <ErrorPopup message="작가를 찾을 수 없습니다. 서버에 연결할 수 없거나 존재하지 않는 작가입니다." />
   }
 
-  // layout: "universe" — DeerDevil 스타일 렌더링
+  // layout: "universe" — 시리즈 소설 스타일 렌더링
   if (theme.layout === "universe") {
     // 작품이 1개이면 그 작품의 에피소드를 UniverseLanding에 전달
     const firstWork = (author.works ?? [])[0]

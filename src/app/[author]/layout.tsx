@@ -161,7 +161,7 @@ export default async function AuthorLayout({ params, children }: Props) {
       <AuthProvider>
         <ThemeProvider theme={theme}>
           <CardTransitionProvider>
-            {/* universe 레이아웃: UniverseNav를 모든 하위 페이지에 표시 (원본 DeerDevil 동작) */}
+            {/* universe 레이아웃: UniverseNav를 모든 하위 페이지에 표시 */}
             {isUniverse && (
               <UniverseNav
                 authorName={authorInfo.name}

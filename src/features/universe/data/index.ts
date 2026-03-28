@@ -18,9 +18,13 @@ export type BlockType =
   | "divider"
   | "refrain"
   | "italic"
+  | "bold"
   | "epilogue"
   | "review"
   | "reviews-wrap"
+  | "heading-1"
+  | "heading-2"
+  | "separator"
 
 export interface Block {
   type: BlockType

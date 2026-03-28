@@ -112,6 +112,23 @@ function SingleBlock({ block }: { block: Block }) {
     case "divider":
       return <Divider />
 
+    case "heading-2":
+      return (
+        <h2 className="text-lg font-medium text-u-text-muted italic mb-u-block mt-u-section">
+          {block.title}
+        </h2>
+      )
+
+    case "separator":
+      return <hr className="border-t border-u-border my-u-section" />
+
+    case "bold":
+      return (
+        <p className="mb-u-paragraph font-semibold text-u-text-bright">
+          {block.text}
+        </p>
+      )
+
     case "epilogue":
       return (
         <SectionLabel className="text-u-label text-u-text-dim mb-u-block mt-u-section">에필로그</SectionLabel>
@@ -119,6 +136,10 @@ function SingleBlock({ block }: { block: Block }) {
 
     case "reviews-wrap":
       return <ReviewsWrap children={block.children} />
+
+    case "heading-1":
+      // EpisodeViewer 헤더에서 제목을 이미 표시하므로 본문에서는 생략
+      return null
 
     default:
       return null
