@@ -25,7 +25,7 @@ ProjectGrimoire의 프론트엔드. DeerDevil(사슴악마 단편소설 웹 뷰�
 ```
 src/
 ├── app/           # Next.js App Router — 라우팅 + 레이아웃
-├── features/      # 도메인 로직 (auth, theme, universe)
+├── features/      # 도메인 로직 (auth, theme, reader)
 ├── lib/           # 유틸리티 (api.ts, utils.ts)
 ├── components/    # 공용 UI 컴포넌트
 ├── stores/        # Zustand 스토어
