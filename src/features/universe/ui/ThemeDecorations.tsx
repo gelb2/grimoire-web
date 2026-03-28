@@ -16,7 +16,7 @@ function QuillIcon({ size = 20, className }: { size?: number; className?: string
       height={size}
       viewBox="0 0 24 24"
       fill="none"
-      className={cn("text-u-accent", className)}
+      className={cn("text-g-accent", className)}
       aria-hidden="true"
     >
       <path
@@ -43,7 +43,7 @@ function BookIcon({ size = 20, className }: { size?: number; className?: string 
       height={size}
       viewBox="0 0 24 24"
       fill="none"
-      className={cn("text-u-accent", className)}
+      className={cn("text-g-accent", className)}
       aria-hidden="true"
     >
       <path
@@ -107,7 +107,7 @@ export function ThemeDivider({ decorations, size = 20, className }: DividerProps
     return (
       <div className={cn("flex items-center justify-center gap-4 opacity-30", className)}>
         {[0, 1, 2].map((i) => (
-          <span key={i} className="block size-1 rounded-full bg-u-accent" />
+          <span key={i} className="block size-1 rounded-full bg-g-accent" />
         ))}
       </div>
     )
@@ -117,7 +117,7 @@ export function ThemeDivider({ decorations, size = 20, className }: DividerProps
   if (iconName === "line") {
     return (
       <div className={cn("opacity-30", className)}>
-        <div className="h-px bg-u-accent" />
+        <div className="h-px bg-g-accent" />
       </div>
     )
   }
@@ -128,9 +128,9 @@ export function ThemeDivider({ decorations, size = 20, className }: DividerProps
 
   return (
     <div className={cn("flex items-center gap-4 opacity-30", className)}>
-      <div className="flex-1 h-px bg-u-accent" />
+      <div className="flex-1 h-px bg-g-accent" />
       {icon}
-      <div className="flex-1 h-px bg-u-accent" />
+      <div className="flex-1 h-px bg-g-accent" />
     </div>
   )
 }

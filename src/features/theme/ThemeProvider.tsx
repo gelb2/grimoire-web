@@ -30,21 +30,21 @@ export function ThemeProvider({ theme, children }: ThemeProviderProps) {
   return (
     <ThemeContext.Provider value={theme}>
       <div
-        className="min-h-screen font-u-serif text-base md:text-[19px] leading-[1.75] md:leading-[1.85]"
+        className="min-h-screen font-g-serif text-base md:text-[19px] leading-[1.75] md:leading-[1.85]"
         style={
           {
-            "--u-bg": theme.bgPrimary,
-            "--u-bg2": theme.bgSecondary,
-            "--u-text": theme.textPrimary,
-            "--u-text-muted": theme.textMuted,
-            "--u-text-dim": theme.textDim,
-            "--u-text-bright": theme.textBright,
-            "--u-text-warm": theme.accent2,
-            "--u-accent": theme.accent,
-            "--u-accent2": theme.accent2,
-            "--u-border": theme.border,
-            "--u-serif": serifFont,
-            "--u-sans": sansFont,
+            "--g-bg": theme.bgPrimary,
+            "--g-bg2": theme.bgSecondary,
+            "--g-text": theme.textPrimary,
+            "--g-text-muted": theme.textMuted,
+            "--g-text-dim": theme.textDim,
+            "--g-text-bright": theme.textBright,
+            "--g-text-warm": theme.accent2,
+            "--g-accent": theme.accent,
+            "--g-accent2": theme.accent2,
+            "--g-border": theme.border,
+            "--g-serif": serifFont,
+            "--g-sans": sansFont,
             backgroundColor: theme.bgPrimary,
             color: theme.textPrimary,
           } as React.CSSProperties

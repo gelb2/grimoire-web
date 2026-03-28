@@ -2,52 +2,52 @@
 @import "tw-animate-css";
 
 /*
- * 사슴악마 디자인 토큰
- * Universe 스코프의 --u-* CSS 변수를 Tailwind 토큰으로 매핑
- * 컴포넌트에서는 bg-u-bg, text-u-accent 등으로 사용
+ * Grimoire 디자인 토큰
+ * --g-* CSS 변수를 Tailwind 토큰으로 매핑
+ * 컴포넌트에서는 bg-g-bg, text-g-accent 등으로 사용
  */
 
 @theme inline {
   /* ── 색상 토큰 ── */
-  --color-u-bg: var(--u-bg);
-  --color-u-bg2: var(--u-bg2);
-  --color-u-text: var(--u-text);
-  --color-u-text-muted: var(--u-text-muted);
-  --color-u-text-dim: var(--u-text-dim);
-  --color-u-text-bright: var(--u-text-bright);
-  --color-u-text-warm: var(--u-text-warm, var(--u-text-muted));
-  --color-u-text-soft: var(--u-text-muted);
-  --color-u-accent: var(--u-accent);
-  --color-u-accent2: var(--u-accent2);
-  --color-u-border: var(--u-border);
+  --color-g-bg: var(--g-bg);
+  --color-g-bg2: var(--g-bg2);
+  --color-g-text: var(--g-text);
+  --color-g-text-muted: var(--g-text-muted);
+  --color-g-text-dim: var(--g-text-dim);
+  --color-g-text-bright: var(--g-text-bright);
+  --color-g-text-warm: var(--g-text-warm, var(--g-text-muted));
+  --color-g-text-soft: var(--g-text-muted);
+  --color-g-accent: var(--g-accent);
+  --color-g-accent2: var(--g-accent2);
+  --color-g-border: var(--g-border);
 
   /* ── 폰트 토큰 ── */
-  --font-u-serif: var(--u-serif);
-  --font-u-sans: var(--u-sans);
+  --font-g-serif: var(--g-serif);
+  --font-g-sans: var(--g-sans);
 
   /* ── 간격 토큰 (방어책: 컴포넌트 간 통일된 스케일) ── */
-  --spacing-u-section: 3.5rem;
-  --spacing-u-block: 1.8rem;
-  --spacing-u-paragraph: 1.3rem;
+  --spacing-g-section: 3.5rem;
+  --spacing-g-block: 1.8rem;
+  --spacing-g-paragraph: 1.3rem;
 
   /* ── 읽기 폭 토큰 ── */
-  --max-w-u-landing: 900px;
-  --max-w-u-reader: 700px;
-  --max-w-u-reader-narrow: 640px;
+  --max-w-g-landing: 900px;
+  --max-w-g-reader: 700px;
+  --max-w-g-reader-narrow: 640px;
 
   /* ── 타이포 크기 토큰 ── */
-  --font-size-u-label: 10px;
-  --font-size-u-caption: 11px;
-  --font-size-u-body-sm: 14px;
+  --font-size-g-label: 10px;
+  --font-size-g-caption: 11px;
+  --font-size-g-body-sm: 14px;
 
   /* ── 자간 토큰 (흔들리던 값 통일) ── */
-  --tracking-u-wide: 0.25em;
-  --tracking-u-normal: 0.1em;
-  --tracking-u-tight: 0.05em;
+  --tracking-g-wide: 0.25em;
+  --tracking-g-normal: 0.1em;
+  --tracking-g-tight: 0.05em;
 
   /* ── 둥글기 토큰 ── */
-  --radius-u-card: 8px;
-  --radius-u-pill: 20px;
+  --radius-g-card: 8px;
+  --radius-g-pill: 20px;
 }
 
 :root {

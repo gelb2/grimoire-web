@@ -110,7 +110,7 @@ export function CardTransitionProvider({ children }: { children: ReactNode }) {
           <>
             {/* 배경 */}
             <motion.div
-              className="fixed inset-0 z-[998] bg-u-bg"
+              className="fixed inset-0 z-[998] bg-g-bg"
               initial={{ opacity: 0 }}
               animate={{ opacity: phase === "shrink" ? 0 : 0.7 }}
               exit={{ opacity: 0 }}
@@ -119,7 +119,7 @@ export function CardTransitionProvider({ children }: { children: ReactNode }) {
 
             {/* 카드 확대/축소 + 사슴뿔 */}
             <motion.div
-              className="fixed z-[999] bg-u-bg overflow-hidden flex items-center justify-center"
+              className="fixed z-[999] bg-g-bg overflow-hidden flex items-center justify-center"
               initial={{
                 top: transition.rect.top,
                 left: transition.rect.left,

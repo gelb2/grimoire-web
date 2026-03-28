@@ -14,12 +14,12 @@ interface EpisodeNavProps {
 
 export function EpisodeNav({ authorSlug, workSlug, authorName, workTitle }: EpisodeNavProps) {
   return (
-    <nav className="sticky top-0 z-50 border-b border-u-border bg-u-bg/95 backdrop-blur-sm">
-      <div className="max-w-u-reader mx-auto px-4 md:px-8 flex items-center justify-between h-12">
+    <nav className="sticky top-0 z-50 border-b border-g-border bg-g-bg/95 backdrop-blur-sm">
+      <div className="max-w-g-reader mx-auto px-4 md:px-8 flex items-center justify-between h-12">
         {/* 왼쪽: 뒤로가기 */}
         <Link
           href={`/${authorSlug}/${workSlug}`}
-          className="flex items-center gap-1 text-u-text-muted text-sm hover:text-u-accent transition shrink-0"
+          className="flex items-center gap-1 text-g-text-muted text-sm hover:text-g-accent transition shrink-0"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -29,9 +29,9 @@ export function EpisodeNav({ authorSlug, workSlug, authorName, workTitle }: Epis
 
         {/* 중앙: 작가 이름 + 작품 제목 */}
         <div className="flex-1 text-center min-w-0 px-4">
-          <p className="text-sm text-u-text-muted truncate">
-            <span className="text-u-text-dim">{authorName}</span>
-            <span className="text-u-text-dim mx-1.5">·</span>
+          <p className="text-sm text-g-text-muted truncate">
+            <span className="text-g-text-dim">{authorName}</span>
+            <span className="text-g-text-dim mx-1.5">·</span>
             <span>{workTitle}</span>
           </p>
         </div>
@@ -39,7 +39,7 @@ export function EpisodeNav({ authorSlug, workSlug, authorName, workTitle }: Epis
         {/* 오른쪽: 목록 버튼 */}
         <Link
           href={`/${authorSlug}/${workSlug}`}
-          className="text-u-text-muted text-sm hover:text-u-accent transition shrink-0"
+          className="text-g-text-muted text-sm hover:text-g-accent transition shrink-0"
         >
           목록
         </Link>

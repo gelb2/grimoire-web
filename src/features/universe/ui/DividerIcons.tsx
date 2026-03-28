@@ -21,7 +21,7 @@ export function AntlerDividerIcon({ size = 24, className }: DividerIconProps) {
       height={size}
       viewBox="0 0 24 24"
       fill="none"
-      className={cn("text-u-accent", className)}
+      className={cn("text-g-accent", className)}
       aria-hidden="true"
     >
       <path
@@ -44,7 +44,7 @@ export function FlowerDividerIcon({ size = 24, className }: DividerIconProps) {
       height={size}
       viewBox="0 0 24 24"
       fill="none"
-      className={cn("text-u-accent", className)}
+      className={cn("text-g-accent", className)}
       aria-hidden="true"
     >
       {/* 꽃잎 3장 — 진달래풍 타원형 */}
@@ -76,7 +76,7 @@ export function StarDividerIcon({ size = 24, className }: DividerIconProps) {
       height={size}
       viewBox="0 0 24 24"
       fill="none"
-      className={cn("text-u-accent", className)}
+      className={cn("text-g-accent", className)}
       aria-hidden="true"
     >
       <path
@@ -99,7 +99,7 @@ export function GeometryDividerIcon({ size = 24, className }: DividerIconProps) 
       height={size}
       viewBox="0 0 24 24"
       fill="none"
-      className={cn("text-u-accent", className)}
+      className={cn("text-g-accent", className)}
       aria-hidden="true"
     >
       <path
@@ -127,7 +127,7 @@ export function BrushDividerIcon({ size = 24, className }: DividerIconProps) {
       height={size}
       viewBox="0 0 24 24"
       fill="none"
-      className={cn("text-u-accent", className)}
+      className={cn("text-g-accent", className)}
       aria-hidden="true"
     >
       <path
@@ -155,7 +155,7 @@ export function LeafDividerIcon({ size = 24, className }: DividerIconProps) {
       height={size}
       viewBox="0 0 24 24"
       fill="none"
-      className={cn("text-u-accent", className)}
+      className={cn("text-g-accent", className)}
       aria-hidden="true"
     >
       <path
@@ -179,7 +179,7 @@ export function CamelliaDividerIcon({ size = 24, className }: DividerIconProps) 
       height={size}
       viewBox="0 0 24 24"
       fill="none"
-      className={cn("text-u-accent", className)}
+      className={cn("text-g-accent", className)}
       aria-hidden="true"
     >
       <ellipse cx="12" cy="7" rx="3" ry="4" stroke="currentColor" strokeWidth="1" />
@@ -201,7 +201,7 @@ export function UmbrellaDividerIcon({ size = 24, className }: DividerIconProps) 
       height={size}
       viewBox="0 0 24 24"
       fill="none"
-      className={cn("text-u-accent", className)}
+      className={cn("text-g-accent", className)}
       aria-hidden="true"
     >
       <path
@@ -225,7 +225,7 @@ export function WaveDividerIcon({ size = 24, className }: DividerIconProps) {
       height={size}
       viewBox="0 0 24 24"
       fill="none"
-      className={cn("text-u-accent", className)}
+      className={cn("text-g-accent", className)}
       aria-hidden="true"
     >
       {/* 물결 3줄 */}

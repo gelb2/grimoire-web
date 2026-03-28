@@ -27,13 +27,13 @@ export function SpecialCard({ content, workSlug }: { content: ContentMeta; workS
     <div
       ref={cardRef}
       onClick={handleClick}
-      className="group relative overflow-hidden rounded-u-card border border-u-border/60 bg-u-bg2/60 px-5 py-5 md:px-8 md:py-7 cursor-pointer transition-all duration-300 hover:border-u-accent/40 hover:bg-u-bg2/80"
+      className="group relative overflow-hidden rounded-g-card border border-g-border/60 bg-g-bg2/60 px-5 py-5 md:px-8 md:py-7 cursor-pointer transition-all duration-300 hover:border-g-accent/40 hover:bg-g-bg2/80"
     >
       {/* 후기 카드 배경 깨진 문자 */}
       {isAfterword && (
         <div
           aria-hidden="true"
-          className="absolute inset-0 font-mono text-[9px] leading-[1.4] text-u-text-dim opacity-25 overflow-hidden p-4 break-all pointer-events-none select-none"
+          className="absolute inset-0 font-mono text-[9px] leading-[1.4] text-g-text-dim opacity-25 overflow-hidden p-4 break-all pointer-events-none select-none"
         >
           ヲ가나다ラ∂ΩΦ바사アイウ∑∆라마바∇ψχξ가나다라マミムメモ
           ∂ΩΦ바사아자∑∆Λ라마바사아자차카타파하가나∇ψχξ다라마바사
@@ -42,17 +42,17 @@ export function SpecialCard({ content, workSlug }: { content: ContentMeta; workS
 
       <div className="relative z-10">
         {/* 레이블 */}
-        <SectionLabel className="text-u-label text-u-text-dim mb-3">
+        <SectionLabel className="text-g-label text-g-text-dim mb-3">
           {isAfterword ? "Afterword" : "Preface"}
         </SectionLabel>
 
         {/* 제목 — 최대 2줄 */}
-        <div className="text-[1.2rem] italic text-u-text-soft mb-2.5 truncate">
+        <div className="text-[1.2rem] italic text-g-text-soft mb-2.5 truncate">
           {content.title}
         </div>
 
         {/* 부제 */}
-        <div className="font-u-sans text-u-caption text-u-text-dim tracking-u-tight">
+        <div className="font-g-sans text-g-caption text-g-text-dim tracking-g-tight">
           {isAfterword
             ? "국립민속박물관 관리번호 2019-UNK-047"
             : "편집자 서문 · 박물관 필사본"}

@@ -81,17 +81,17 @@ export default function AuthorProfilePage() {
   // 로딩 스켈레톤
   if (loading) {
     return (
-      <div className="min-h-screen bg-u-bg">
+      <div className="min-h-screen bg-g-bg">
         <PlatformNav />
         <main className="max-w-4xl mx-auto px-6 py-16">
           <div className="text-center mb-12">
-            <div className="h-10 w-48 bg-u-bg2 rounded mx-auto mb-4 animate-pulse" />
-            <div className="h-4 w-32 bg-u-bg2 rounded mx-auto mb-6 animate-pulse" />
-            <div className="h-20 w-96 max-w-full bg-u-bg2 rounded mx-auto animate-pulse" />
+            <div className="h-10 w-48 bg-g-bg2 rounded mx-auto mb-4 animate-pulse" />
+            <div className="h-4 w-32 bg-g-bg2 rounded mx-auto mb-6 animate-pulse" />
+            <div className="h-20 w-96 max-w-full bg-g-bg2 rounded mx-auto animate-pulse" />
           </div>
           <div className="flex justify-center gap-8 mb-12">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-16 w-24 bg-u-bg2 rounded animate-pulse" />
+              <div key={i} className="h-16 w-24 bg-g-bg2 rounded animate-pulse" />
             ))}
           </div>
         </main>
@@ -102,11 +102,11 @@ export default function AuthorProfilePage() {
   // 에러
   if (error || !profile) {
     return (
-      <div className="min-h-screen bg-u-bg">
+      <div className="min-h-screen bg-g-bg">
         <PlatformNav />
         <main className="max-w-4xl mx-auto px-6 py-16 text-center">
-          <p className="text-u-text-muted">작가를 찾을 수 없습니다.</p>
-          <Link href="/explore" className="text-u-accent mt-4 inline-block">
+          <p className="text-g-text-muted">작가를 찾을 수 없습니다.</p>
+          <Link href="/explore" className="text-g-accent mt-4 inline-block">
             탐색으로 돌아가기
           </Link>
         </main>
@@ -122,27 +122,27 @@ export default function AuthorProfilePage() {
   })
 
   return (
-    <div className="min-h-screen bg-u-bg">
+    <div className="min-h-screen bg-g-bg">
       <PlatformNav />
 
       <main className="max-w-4xl mx-auto px-6 py-12">
         {/* 작가 헤더 */}
         <section className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-u-text-bright mb-2">
+          <h1 className="text-4xl font-bold text-g-text-bright mb-2">
             {author.name}
           </h1>
-          <p className="text-sm text-u-text-dim mb-6">
+          <p className="text-sm text-g-text-dim mb-6">
             @{author.slug} &middot; {joinDate} 가입
           </p>
 
           {/* bio */}
           <div className="max-w-xl mx-auto mb-8">
             {author.bio ? (
-              <p className="text-u-text leading-relaxed whitespace-pre-wrap">
+              <p className="text-g-text leading-relaxed whitespace-pre-wrap">
                 {author.bio}
               </p>
             ) : (
-              <p className="text-u-text-muted italic">
+              <p className="text-g-text-muted italic">
                 아직 소개를 작성하지 않았습니다
               </p>
             )}
@@ -151,16 +151,16 @@ export default function AuthorProfilePage() {
           {/* 통계 + 구독 */}
           <div className="flex items-center justify-center gap-8 mb-8">
             <div className="text-center">
-              <p className="text-2xl font-bold text-u-text-bright">{works.length}</p>
-              <p className="text-xs text-u-text-muted">작품</p>
+              <p className="text-2xl font-bold text-g-text-bright">{works.length}</p>
+              <p className="text-xs text-g-text-muted">작품</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-u-text-bright">{subscriberCount}</p>
-              <p className="text-xs text-u-text-muted">구독자</p>
+              <p className="text-2xl font-bold text-g-text-bright">{subscriberCount}</p>
+              <p className="text-xs text-g-text-muted">구독자</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-u-text-bright">{totalLikes}</p>
-              <p className="text-xs text-u-text-muted">좋아요</p>
+              <p className="text-2xl font-bold text-g-text-bright">{totalLikes}</p>
+              <p className="text-xs text-g-text-muted">좋아요</p>
             </div>
           </div>
 
@@ -169,8 +169,8 @@ export default function AuthorProfilePage() {
             disabled={subscribeThrottle.pending}
             className={`px-8 py-2.5 rounded-full text-sm font-medium transition disabled:opacity-50 ${
               subscribed
-                ? 'border border-u-accent text-u-accent bg-transparent'
-                : 'bg-u-accent text-u-bg'
+                ? 'border border-g-accent text-g-accent bg-transparent'
+                : 'bg-g-accent text-g-bg'
             }`}
           >
             {subscribed ? '구독 중' : '구독하기'}
@@ -180,13 +180,13 @@ export default function AuthorProfilePage() {
         {/* 작품 목록 */}
         <section>
           <div className="flex items-center gap-3 mb-6">
-            <h2 className="text-xl font-bold text-u-text-bright">작품 목록</h2>
-            <div className="flex-1 h-px bg-u-border" />
-            <span className="text-sm text-u-text-dim">{works.length}개</span>
+            <h2 className="text-xl font-bold text-g-text-bright">작품 목록</h2>
+            <div className="flex-1 h-px bg-g-border" />
+            <span className="text-sm text-g-text-dim">{works.length}개</span>
           </div>
 
           {works.length === 0 ? (
-            <p className="text-u-text-muted text-center py-12">
+            <p className="text-g-text-muted text-center py-12">
               아직 작품이 없습니다.
             </p>
           ) : (

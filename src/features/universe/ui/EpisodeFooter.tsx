@@ -123,36 +123,36 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
   return (
     <div className="max-w-2xl mx-auto mt-16 mb-8">
       {/* 이전화/좋아요/다음화 */}
-      <div className="flex items-center justify-center gap-4 py-6 border-t border-b border-u-border">
+      <div className="flex items-center justify-center gap-4 py-6 border-t border-b border-g-border">
         {prevEpisodeSlug ? (
-          <Link href={`/${authorSlug}/${workSlug}/${prevEpisodeSlug}`} className="px-4 py-2 rounded-lg text-sm text-u-text-muted transition hover:opacity-80">
+          <Link href={`/${authorSlug}/${workSlug}/${prevEpisodeSlug}`} className="px-4 py-2 rounded-lg text-sm text-g-text-muted transition hover:opacity-80">
             &larr; 이전화
           </Link>
         ) : (
-          <span className="px-4 py-2 text-sm text-u-text-muted opacity-30">이전화</span>
+          <span className="px-4 py-2 text-sm text-g-text-muted opacity-30">이전화</span>
         )}
 
-        <button onClick={handleLike} disabled={likeThrottle.pending} className={`px-6 py-2 rounded-full border text-sm transition hover:opacity-80 disabled:opacity-50 ${liked ? 'border-u-accent text-u-accent' : 'border-u-border text-u-text-muted'}`}>
+        <button onClick={handleLike} disabled={likeThrottle.pending} className={`px-6 py-2 rounded-full border text-sm transition hover:opacity-80 disabled:opacity-50 ${liked ? 'border-g-accent text-g-accent' : 'border-g-border text-g-text-muted'}`}>
           {liked ? '\u2665' : '\u2661'} {likeCount} 좋아요
         </button>
 
         <div className="relative">
           <button
             onClick={() => setShowGiftPopup(!showGiftPopup)}
-            className="px-4 py-2 rounded-full border border-u-border text-sm text-u-text-muted transition hover:border-u-accent hover:text-u-accent"
+            className="px-4 py-2 rounded-full border border-g-border text-sm text-g-text-muted transition hover:border-g-accent hover:text-g-accent"
           >
             응원 보내기
           </button>
           {showGiftPopup && (
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-3 rounded-xl border border-u-border bg-u-bg2 shadow-lg z-10">
-              <p className="text-xs text-u-text-muted mb-2 text-center whitespace-nowrap">크레딧 선물</p>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-3 rounded-xl border border-g-border bg-g-bg2 shadow-lg z-10">
+              <p className="text-xs text-g-text-muted mb-2 text-center whitespace-nowrap">크레딧 선물</p>
               <div className="flex gap-2">
                 {[1, 3, 5].map(amount => (
                   <button
                     key={amount}
                     onClick={() => handleGift(amount)}
                     disabled={giftSending}
-                    className="px-3 py-1.5 rounded-lg text-sm border border-u-border text-u-text hover:bg-u-accent hover:text-u-bg transition disabled:opacity-30"
+                    className="px-3 py-1.5 rounded-lg text-sm border border-g-border text-g-text hover:bg-g-accent hover:text-g-bg transition disabled:opacity-30"
                   >
                     {amount}
                   </button>
@@ -163,23 +163,23 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
         </div>
 
         {giftMessage && (
-          <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs text-u-accent whitespace-nowrap">
+          <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs text-g-accent whitespace-nowrap">
             {giftMessage}
           </span>
         )}
 
         {nextEpisodeSlug ? (
-          <Link href={`/${authorSlug}/${workSlug}/${nextEpisodeSlug}`} className="px-4 py-2 rounded-lg text-sm text-u-text-muted transition hover:opacity-80">
+          <Link href={`/${authorSlug}/${workSlug}/${nextEpisodeSlug}`} className="px-4 py-2 rounded-lg text-sm text-g-text-muted transition hover:opacity-80">
             다음화 &rarr;
           </Link>
         ) : (
-          <span className="px-4 py-2 text-sm text-u-text-muted opacity-30">다음화</span>
+          <span className="px-4 py-2 text-sm text-g-text-muted opacity-30">다음화</span>
         )}
       </div>
 
       {/* 댓글 */}
       <div className="mt-8">
-        <h3 className="text-sm font-medium mb-4 text-u-text-muted">
+        <h3 className="text-sm font-medium mb-4 text-g-text-muted">
           댓글 {comments.length}
         </h3>
 
@@ -192,19 +192,19 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
             onKeyDown={e => e.key === 'Enter' && handleComment()}
             placeholder="작품에 대한 감상을 남겨주세요..."
             maxLength={500}
-            className="flex-1 px-4 py-2 rounded-lg text-sm border border-u-border bg-u-bg text-u-text focus:outline-none transition"
+            className="flex-1 px-4 py-2 rounded-lg text-sm border border-g-border bg-g-bg text-g-text focus:outline-none transition"
           />
           <button
             onClick={handleComment}
             disabled={submitting || !newComment.trim()}
-            className="px-4 py-2 rounded-lg text-sm font-medium bg-u-accent text-u-bg transition disabled:opacity-30"
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-g-accent text-g-bg transition disabled:opacity-30"
           >
             등록
           </button>
         </div>
 
         {comments.length === 0 ? (
-          <p className="text-center py-8 text-sm text-u-text-muted">
+          <p className="text-center py-8 text-sm text-g-text-muted">
             아직 댓글이 없습니다. 첫 감상을 남겨보세요.
           </p>
         ) : (
@@ -243,18 +243,18 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
                         placeholder="답글을 입력하세요..."
                         maxLength={500}
                         autoFocus
-                        className="flex-1 px-3 py-1.5 rounded-lg text-sm border border-u-border bg-u-bg text-u-text focus:outline-none transition"
+                        className="flex-1 px-3 py-1.5 rounded-lg text-sm border border-g-border bg-g-bg text-g-text focus:outline-none transition"
                       />
                       <button
                         onClick={() => handleReply(comment.id)}
                         disabled={submitting || !replyContent.trim()}
-                        className="px-3 py-1.5 rounded-lg text-xs font-medium bg-u-accent text-u-bg transition disabled:opacity-30"
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium bg-g-accent text-g-bg transition disabled:opacity-30"
                       >
                         답글
                       </button>
                       <button
                         onClick={() => { setReplyingTo(null); setReplyContent('') }}
-                        className="px-3 py-1.5 rounded-lg text-xs text-u-text-muted border border-u-border transition hover:opacity-80"
+                        className="px-3 py-1.5 rounded-lg text-xs text-g-text-muted border border-g-border transition hover:opacity-80"
                       >
                         취소
                       </button>
@@ -285,16 +285,16 @@ function CommentItem({
   isReply?: boolean
 }) {
   return (
-    <div className="py-3 border-b border-u-border">
+    <div className="py-3 border-b border-g-border">
       <div className="flex items-center justify-between mb-1">
-        <span className="text-xs text-u-text-muted">
+        <span className="text-xs text-g-text-muted">
           {comment.authorName || '독자'}
         </span>
-        <span className="text-xs text-u-text-dim">
+        <span className="text-xs text-g-text-dim">
           {new Date(comment.createdAt).toLocaleDateString('ko-KR')}
         </span>
       </div>
-      <p className="text-sm leading-relaxed text-u-text">
+      <p className="text-sm leading-relaxed text-g-text">
         {comment.content}
       </p>
       <div className="flex items-center gap-3 mt-1.5">
@@ -302,7 +302,7 @@ function CommentItem({
         {!isReply && onReply && (
           <button
             onClick={onReply}
-            className="text-xs text-u-text-dim hover:text-u-text-muted transition"
+            className="text-xs text-g-text-dim hover:text-g-text-muted transition"
           >
             답글
           </button>
@@ -310,7 +310,7 @@ function CommentItem({
         <button
           onClick={() => onDelete(comment.id)}
           disabled={deleting}
-          className="text-xs text-u-text-dim hover:text-red-400 transition disabled:opacity-30"
+          className="text-xs text-g-text-dim hover:text-red-400 transition disabled:opacity-30"
         >
           삭제
         </button>

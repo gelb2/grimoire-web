@@ -31,39 +31,39 @@ export function EpisodeCard({ content, workSlug }: { content: ContentMeta; workS
     <div
       ref={cardRef}
       onClick={handleClick}
-      className="group relative h-full overflow-hidden rounded-u-card border border-u-border bg-u-bg2 p-5 md:p-8 cursor-pointer transition-all duration-300 hover:border-u-accent hover:-translate-y-0.5"
+      className="group relative h-full overflow-hidden rounded-g-card border border-g-border bg-g-bg2 p-5 md:p-8 cursor-pointer transition-all duration-300 hover:border-g-accent hover:-translate-y-0.5"
     >
       {/* 좌측 accent 라인 */}
-      <div className="absolute top-0 left-0 w-[3px] h-full bg-u-border transition-colors duration-300 group-hover:bg-u-accent" />
+      <div className="absolute top-0 left-0 w-[3px] h-full bg-g-border transition-colors duration-300 group-hover:bg-g-accent" />
 
       {/* 번호 레이블 — num/orderNum 모두 없으면 제목만 표시 */}
       {displayNum && (
-        <SectionLabel className="text-u-label text-u-text-dim mb-3">
+        <SectionLabel className="text-g-label text-g-text-dim mb-3">
           {isBonus ? displayNum : `Episode ${displayNum}`}
         </SectionLabel>
       )}
 
       {/* 제목 — 최대 2줄 */}
-      <div className="text-lg md:text-xl italic text-u-text-bright mb-2 leading-[1.3] truncate">
+      <div className="text-lg md:text-xl italic text-g-text-bright mb-2 leading-[1.3] truncate">
         {content.title}
       </div>
 
       {/* 영문 부제 */}
       {content.subtitle && (
-        <div className="font-u-sans text-u-caption text-u-text-muted mb-4 md:mb-6">
+        <div className="font-g-sans text-g-caption text-g-text-muted mb-4 md:mb-6">
           {content.subtitle}
         </div>
       )}
 
       {/* 설명 */}
       {content.description && (
-        <div className="text-sm md:text-[0.9rem] text-u-text-muted leading-relaxed mb-4 md:mb-6">
+        <div className="text-sm md:text-[0.9rem] text-g-text-muted leading-relaxed mb-4 md:mb-6">
           {content.description}
         </div>
       )}
 
       {/* CTA */}
-      <div className="font-u-sans text-u-caption tracking-u-normal text-u-accent2 uppercase">
+      <div className="font-g-sans text-g-caption tracking-g-normal text-g-accent2 uppercase">
         읽기 →
       </div>
 

@@ -8,7 +8,7 @@ function parseInlineText(text: string): ReactNode {
   if (parts.length === 1) return text
   return parts.map((part, i) => {
     if (part.startsWith("**") && part.endsWith("**")) {
-      return <strong key={i} className="font-semibold text-u-text-bright">{part.slice(2, -2)}</strong>
+      return <strong key={i} className="font-semibold text-g-text-bright">{part.slice(2, -2)}</strong>
     }
     return part
   })
@@ -17,11 +17,11 @@ function parseInlineText(text: string): ReactNode {
 // 구분선 (점 세 개)
 function Divider() {
   return (
-    <div className="flex items-center justify-center gap-4 my-u-section opacity-30">
+    <div className="flex items-center justify-center gap-4 my-g-section opacity-30">
       {[0, 1, 2].map((i) => (
         <span
           key={i}
-          className="block size-1 rounded-full bg-u-accent"
+          className="block size-1 rounded-full bg-g-accent"
         />
       ))}
     </div>
@@ -31,7 +31,7 @@ function Divider() {
 // 후렴구 (레프레인)
 function Refrain({ text }: { text: string }) {
   return (
-    <div className="italic text-u-accent2 border-l-2 border-u-accent pl-6 my-u-block text-[1.05rem]">
+    <div className="italic text-g-accent2 border-l-2 border-g-accent pl-6 my-g-block text-[1.05rem]">
       {parseInlineText(text)}
     </div>
   )
@@ -41,7 +41,7 @@ function Refrain({ text }: { text: string }) {
 function ReviewsWrap({ children }: { children?: Block[] }) {
   if (!children?.length) return null
   return (
-    <div className="bg-u-bg2 border border-u-border rounded-u-card p-5 md:p-8 my-8">
+    <div className="bg-g-bg2 border border-g-border rounded-g-card p-5 md:p-8 my-8">
       {children.map((review, idx) => (
         <ReviewItem key={idx} block={review} isLast={idx === children.length - 1} />
       ))}
@@ -59,18 +59,18 @@ function ReviewItem({
   const isProfessor = block.variant === "professor"
   return (
     <div
-      className={`pt-5 ${isLast ? "pb-0" : "pb-5 border-b border-u-border"}`}
+      className={`pt-5 ${isLast ? "pb-0" : "pb-5 border-b border-g-border"}`}
     >
       <div
-        className={`text-[12px] tracking-u-normal mb-2 font-u-sans ${
-          isProfessor ? "text-u-text-dim" : "text-u-accent2"
+        className={`text-[12px] tracking-g-normal mb-2 font-g-sans ${
+          isProfessor ? "text-g-text-dim" : "text-g-accent2"
         }`}
       >
         {block.stars}
       </div>
       <div
-        className={`text-sm leading-[1.7] font-u-sans ${
-          isProfessor ? "text-u-text" : "text-u-text-muted"
+        className={`text-sm leading-[1.7] font-g-sans ${
+          isProfessor ? "text-g-text" : "text-g-text-muted"
         }`}
       >
         {block.reviewText}
@@ -84,9 +84,9 @@ function SingleBlock({ block }: { block: Block }) {
   switch (block.type) {
     case "chapter":
       return (
-        <section className="mt-u-section">
-          <SectionLabel className="text-u-label text-u-text-dim mb-1">{block.num}</SectionLabel>
-          <div className="text-[1.1rem] font-medium text-u-accent2 mb-u-block italic">
+        <section className="mt-g-section">
+          <SectionLabel className="text-g-label text-g-text-dim mb-1">{block.num}</SectionLabel>
+          <div className="text-[1.1rem] font-medium text-g-accent2 mb-g-block italic">
             {block.title}
           </div>
         </section>
@@ -94,14 +94,14 @@ function SingleBlock({ block }: { block: Block }) {
 
     case "paragraph":
       return (
-        <p className="mb-u-paragraph text-u-text">
+        <p className="mb-g-paragraph text-g-text">
           {parseInlineText(block.text ?? "")}
         </p>
       )
 
     case "italic":
       return (
-        <p className="mb-u-paragraph italic text-u-text-warm">
+        <p className="mb-g-paragraph italic text-g-text-warm">
           {parseInlineText(block.text ?? "")}
         </p>
       )
@@ -114,24 +114,24 @@ function SingleBlock({ block }: { block: Block }) {
 
     case "heading-2":
       return (
-        <h2 className="text-lg font-medium text-u-text-muted italic mb-u-block mt-u-section">
+        <h2 className="text-lg font-medium text-g-text-muted italic mb-g-block mt-g-section">
           {block.title}
         </h2>
       )
 
     case "separator":
-      return <hr className="border-t border-u-border my-u-section" />
+      return <hr className="border-t border-g-border my-g-section" />
 
     case "bold":
       return (
-        <p className="mb-u-paragraph font-semibold text-u-text-bright">
+        <p className="mb-g-paragraph font-semibold text-g-text-bright">
           {block.text}
         </p>
       )
 
     case "epilogue":
       return (
-        <SectionLabel className="text-u-label text-u-text-dim mb-u-block mt-u-section">에필로그</SectionLabel>
+        <SectionLabel className="text-g-label text-g-text-dim mb-g-block mt-g-section">에필로그</SectionLabel>
       )
 
     case "reviews-wrap":

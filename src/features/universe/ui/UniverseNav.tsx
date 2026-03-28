@@ -66,21 +66,21 @@ export function UniverseNav({ authorName = "Grimoire", workSlug, apiEpisodes }: 
   }
 
   return (
-    <nav className="sticky top-0 z-50 bg-u-bg/95 backdrop-blur-sm border-b border-u-border px-4 md:px-8 py-2.5 md:py-3 flex items-center gap-4">
+    <nav className="sticky top-0 z-50 bg-g-bg/95 backdrop-blur-sm border-b border-g-border px-4 md:px-8 py-2.5 md:py-3 flex items-center gap-4">
       {/* 플랫폼 복귀 링크 */}
       <Link
         href="/explore"
-        className="font-u-sans text-[11px] text-u-text-muted hover:text-u-accent2 transition-colors duration-200 shrink-0"
+        className="font-g-sans text-[11px] text-g-text-muted hover:text-g-accent2 transition-colors duration-200 shrink-0"
       >
         &larr; 탐색으로
       </Link>
-      <span className="text-u-border">|</span>
+      <span className="text-g-border">|</span>
       {/* 브랜드 — 클릭 시 프로필 페이지 이동 */}
       <Link
         href={`${base}/profile`}
         className={cn(
-          "font-u-sans text-[13px] font-medium tracking-u-tight transition-colors duration-200 hover:text-u-accent2 shrink-0",
-          isLanding ? "text-u-accent2" : "text-u-text"
+          "font-g-sans text-[13px] font-medium tracking-g-tight transition-colors duration-200 hover:text-g-accent2 shrink-0",
+          isLanding ? "text-g-accent2" : "text-g-text"
         )}
       >
         {authorName}
@@ -119,10 +119,10 @@ function NavTab({
     <button
       onClick={onClick}
       className={cn(
-        "font-u-sans text-u-caption tracking-u-normal px-3 py-1 md:px-3.5 md:py-1.5 rounded-u-pill cursor-pointer transition-all duration-200 whitespace-nowrap border shrink-0",
+        "font-g-sans text-g-caption tracking-g-normal px-3 py-1 md:px-3.5 md:py-1.5 rounded-g-pill cursor-pointer transition-all duration-200 whitespace-nowrap border shrink-0",
         active
-          ? "text-u-accent2 border-u-accent bg-u-accent/10"
-          : "text-u-text-muted border-u-border bg-transparent hover:text-u-accent2 hover:border-u-accent"
+          ? "text-g-accent2 border-g-accent bg-g-accent/10"
+          : "text-g-text-muted border-g-border bg-transparent hover:text-g-accent2 hover:border-g-accent"
       )}
     >
       {label}

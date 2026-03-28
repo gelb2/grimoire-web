@@ -16,7 +16,7 @@ export function AntlerSVG({
       viewBox="0 0 40 40"
       fill="none"
       style={{ opacity }}
-      className={cn("text-u-accent", className)}
+      className={cn("text-g-accent", className)}
       aria-hidden="true"
     >
       <path

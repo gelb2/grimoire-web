@@ -10,7 +10,7 @@ export function SectionLabel({ children, className }: SectionLabelProps) {
   return (
     <div
       className={cn(
-        "font-u-sans tracking-u-wide uppercase",
+        "font-g-sans tracking-g-wide uppercase",
         className
       )}
     >

@@ -177,10 +177,10 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
   }, [data.blocks.length, data.slug, lastTypingIdx, safeInterval, safeTimeout])
 
   return (
-    <div className="max-w-u-reader mx-auto px-4 md:px-8 pb-16 md:pb-32">
+    <div className="max-w-g-reader mx-auto px-4 md:px-8 pb-16 md:pb-32">
       {/* 히어로 */}
-      <header className="pt-12 md:pt-20 pb-8 md:pb-14 border-b border-u-border">
-        <div className="font-u-sans text-u-caption tracking-u-wide text-u-text-muted uppercase mb-3 md:mb-5 min-h-[1em]">
+      <header className="pt-12 md:pt-20 pb-8 md:pb-14 border-b border-g-border">
+        <div className="font-g-sans text-g-caption tracking-g-wide text-g-text-muted uppercase mb-3 md:mb-5 min-h-[1em]">
           {isRevisit ? labelText : stage >= 1 && (
             <TypeWriter
               text={labelText}
@@ -190,7 +190,7 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
           )}
         </div>
 
-        <h1 className="text-2xl md:text-4xl font-normal leading-[1.3] text-u-text-bright mb-2.5 italic min-h-[1.3em]">
+        <h1 className="text-2xl md:text-4xl font-normal leading-[1.3] text-g-text-bright mb-2.5 italic min-h-[1.3em]">
           {isRevisit ? meta.title : stage >= 2 && (
             <TypeWriter
               text={meta.title}
@@ -202,7 +202,7 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
 
         {meta.subtitle && (
           <motion.div
-            className="font-u-sans text-u-caption text-u-text-muted tracking-u-normal"
+            className="font-g-sans text-g-caption text-g-text-muted tracking-g-normal"
             initial={isRevisit ? false : { opacity: 0 }}
             animate={{ opacity: stage >= 3 ? 1 : 0 }}
             transition={{ duration: 0.5 }}
@@ -244,7 +244,7 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
 
               // 현재 타이핑 중인 블록
               return (
-                <div key={idx} className="mb-u-paragraph text-u-text">
+                <div key={idx} className="mb-g-paragraph text-g-text">
                   <TypeWriter
                     text={block.text ?? ""}
                     speed={15}
@@ -285,17 +285,17 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
 
       {/* 클로즈 라인 */}
       <motion.footer
-        className="text-center mt-12 md:mt-16 pt-8 md:pt-12 border-t border-u-border"
+        className="text-center mt-12 md:mt-16 pt-8 md:pt-12 border-t border-g-border"
         initial={{ opacity: 0 }}
         animate={{ opacity: stage >= 5 ? 1 : 0 }}
         transition={{ duration: 0.4 }}
       >
         {tagline && (
-          <p className="italic text-[0.95rem] text-u-text-muted leading-loose">
+          <p className="italic text-[0.95rem] text-g-text-muted leading-loose">
             {tagline}
           </p>
         )}
-        <p className="text-[0.8rem] text-u-text-dim mt-4 not-italic font-u-sans tracking-u-normal">
+        <p className="text-[0.8rem] text-g-text-dim mt-4 not-italic font-g-sans tracking-g-normal">
           {authorName}
         </p>
       </motion.footer>

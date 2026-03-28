@@ -22,10 +22,10 @@ export function BackLink({
     <Link
       href={`/${authorSlug}`}
       className={cn(
-        "inline-flex items-center gap-2 font-u-sans text-u-caption tracking-u-normal border border-u-border px-4 py-1.5 rounded-u-pill transition-all duration-200 hover:border-u-accent hover:text-u-accent2",
+        "inline-flex items-center gap-2 font-g-sans text-g-caption tracking-g-normal border border-g-border px-4 py-1.5 rounded-g-pill transition-all duration-200 hover:border-g-accent hover:text-g-accent2",
         variant === "dim"
-          ? "text-u-text-dim opacity-60 hover:opacity-100"
-          : "text-u-text-muted",
+          ? "text-g-text-dim opacity-60 hover:opacity-100"
+          : "text-g-text-muted",
         "mt-12 md:mt-16",
         className
       )}
