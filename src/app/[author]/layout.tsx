@@ -154,15 +154,15 @@ export default async function AuthorLayout({ params, children }: Props) {
     loadAuthorInfo(author),
   ])
 
-  const isUniverse = theme.layout === 'universe'
+  const isSeriesLayout = theme.layout === 'series'
 
   return (
     <div className={`${garamond.variable} ${notoSerifKR.variable}`}>
       <AuthProvider>
         <ThemeProvider theme={theme}>
           <CardTransitionProvider>
-            {/* universe 레이아웃: UniverseNav를 모든 하위 페이지에 표시 */}
-            {isUniverse && (
+            {/* series 레이아웃: 탭 네비게이션을 모든 하위 페이지에 표시 */}
+            {isSeriesLayout && (
               <UniverseNav
                 authorName={authorInfo.name}
                 workSlug={authorInfo.workSlug}

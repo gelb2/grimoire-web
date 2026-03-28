@@ -90,7 +90,7 @@ export default async function EpisodePage({ params }: Props) {
     // 작품 제목: 에피소드 응답에 포함된 workTitle 또는 slug 폴백
     const workTitle = episodeData.workTitle || slug
 
-    const isUniverse = themeLayout === 'universe'
+    const isSeriesLayout = themeLayout === 'series'
 
     // 작품의 에피소드 목록 추출 (WorkNav pill 표시용)
     const workEpisodes: { slug: string; orderNum: number; title: string; type?: string }[] =
@@ -105,9 +105,9 @@ export default async function EpisodePage({ params }: Props) {
 
     return (
       <>
-        {/* universe 레이아웃: UniverseNav는 AuthorSpace 레이아웃에서 이미 렌더링됨 */}
+        {/* series 레이아웃: 탭 네비게이션은 AuthorSpace 레이아웃에서 이미 렌더링됨 */}
         {/* grid 레이아웃: WorkNav (pill 스타일 에피소드 네비게이션) 표시 */}
-        {!isUniverse && workEpisodes.length > 0 && (
+        {!isSeriesLayout && workEpisodes.length > 0 && (
           <WorkNav
             authorSlug={author}
             authorName={authorName}
