@@ -38,20 +38,27 @@ const TYPING_BLOCKS = 3
 const VIEWPORT_BLOCKS = 10
 
 export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations: decorationsProp, tagline: taglineProp }: EpisodeViewerProps) {
-  // 테마 컨텍스트에서 장식/태그라인 가져오기 (props 우선, props 있으면 context 무시)
+  // 테마 컨텍스트에서 장식/태그라인/애니메이션 가져오기 (props 우선)
   const themeCtx = useTheme()
   const decorations = decorationsProp ?? themeCtx.decorations ?? DEFAULT_DECORATIONS
   const tagline = taglineProp ?? themeCtx.tagline
+  const animationType = themeCtx.animation ?? "none"
 
-  // 세션 내 방문 여부 확인 — 재방문 시 타이핑 스킵 (작가명 포함으로 slug 충돌 방지)
+  // 애니메이션 없음(none) → 모든 콘텐츠 즉시 표시
+  const skipAnimation = animationType === "none"
+
+  // 세션 내 방문 여부 확인 — 재방문 시 애니메이션 스킵 (작가명 포함으로 slug 충돌 방지)
   const visitedKey = `visited:${authorName}:${data.slug}`
   const isRevisit = typeof window !== "undefined"
     && sessionStorage.getItem(visitedKey) === "true"
 
+  // 즉시 표시 여부: 재방문 또는 animation: "none"
+  const showImmediately = isRevisit || skipAnimation
+
   // 0: 대기, 1: 라벨 타이핑, 2: 제목 타이핑, 3: 본문 타이핑, 4: 본문 페이드인, 5: 완료
-  const [stage, setStage] = useState(isRevisit ? 5 : 0)
-  const [typingBlockIdx, setTypingBlockIdx] = useState(isRevisit ? TYPING_BLOCKS : -1)
-  const [revealedCount, setRevealedCount] = useState(isRevisit ? data.blocks.length : 0)
+  const [stage, setStage] = useState(showImmediately ? 5 : 0)
+  const [typingBlockIdx, setTypingBlockIdx] = useState(showImmediately ? TYPING_BLOCKS : -1)
+  const [revealedCount, setRevealedCount] = useState(showImmediately ? data.blocks.length : 0)
 
   // 언마운트 감지 — 모든 비동기 콜백에서 체크
   const cancelledRef = useRef(false)
@@ -105,8 +112,17 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
   useEffect(() => {
     cancelledRef.current = false
 
-    if (!isRevisit) {
-      safeTimeout(() => setStage(1), 200)
+    if (!showImmediately) {
+      if (animationType === "typing") {
+        // typing: 라벨 → 제목 → 본문 순차 타이핑
+        safeTimeout(() => setStage(1), 200)
+      } else {
+        // fade/slide: 타이핑 없이 헤더 즉시 표시 → 본문 페이드인
+        safeTimeout(() => {
+          setStage(3)
+          startFadeIn()
+        }, 300)
+      }
     }
 
     return () => {
@@ -182,7 +198,7 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
       {/* 히어로 */}
       <header className="pt-12 md:pt-20 pb-8 md:pb-14 border-b border-g-border">
         <div className="font-g-sans text-g-caption tracking-g-wide text-g-text-muted uppercase mb-3 md:mb-5 min-h-[1em]">
-          {isRevisit ? labelText : stage >= 1 && (
+          {showImmediately || animationType !== "typing" ? labelText : stage >= 1 && (
             <TypeWriter
               text={labelText}
               speed={25}
@@ -192,7 +208,7 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
         </div>
 
         <h1 className="text-2xl md:text-4xl font-normal leading-[1.3] text-g-text-bright mb-2.5 italic min-h-[1.3em]">
-          {isRevisit ? meta.title : stage >= 2 && (
+          {showImmediately || animationType !== "typing" ? meta.title : stage >= 2 && (
             <TypeWriter
               text={meta.title}
               speed={35}
@@ -204,7 +220,7 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
         {meta.subtitle && (
           <motion.div
             className="font-g-sans text-g-caption text-g-text-muted tracking-g-normal"
-            initial={isRevisit ? false : { opacity: 0 }}
+            initial={showImmediately ? false : { opacity: 0 }}
             animate={{ opacity: stage >= 3 ? 1 : 0 }}
             transition={{ duration: 0.5 }}
           >
@@ -213,7 +229,7 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
         )}
 
         <motion.div
-          initial={isRevisit ? false : { opacity: 0 }}
+          initial={showImmediately ? false : { opacity: 0 }}
           animate={{ opacity: stage >= 3 ? 1 : 0 }}
           transition={{ duration: 0.6 }}
         >
@@ -225,9 +241,9 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
       {stage >= 3 && (
         <main className="pt-8 md:pt-14">
           {data.blocks.map((block: Block, idx: number) => {
-            // 이 블록이 타이핑 대상인지
+            // 이 블록이 타이핑 대상인지 (typing 모드에서만)
             const typingOrder = typingTargets.indexOf(idx)
-            const isTypingBlock = typingOrder !== -1
+            const isTypingBlock = animationType === "typing" && typingOrder !== -1
 
             if (isTypingBlock) {
               const isActiveTyping = typingOrder === typingBlockIdx
@@ -255,10 +271,10 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
               )
             }
 
-            // 비타이핑 블록 — 페이드인 (완료 후 정적 렌더)
+            // 비타이핑 블록 — 애니메이션 타입별 렌더
             const isRevealed = idx < revealedCount
 
-            // 이미 완료된 블록은 motion 없이 정적 렌더 — 스크롤 시 깜박임/흔들림 방지
+            // 완료된 블록은 정적 렌더 — 스크롤 시 깜박임/흔들림 방지
             if (isRevealed && stage >= 5) {
               return (
                 <div key={idx}>
@@ -267,13 +283,15 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
               )
             }
 
+            // 애니메이션 타입별 initial → animate 값
+            const slideOffset = animationType === "slide" ? 20 : 8
             return (
               <motion.div
                 key={idx}
                 initial={false}
                 animate={{
                   opacity: isRevealed ? 1 : 0,
-                  y: isRevealed ? 0 : 8,
+                  y: isRevealed ? 0 : slideOffset,
                 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
               >

@@ -37,6 +37,7 @@ vi.mock("@/features/theme", () => ({
       footerText: "",
     },
     tagline: "테스트 태그라인",
+    animation: "typing",
   }),
 }))
 
