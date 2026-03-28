@@ -46,10 +46,26 @@ export default function ThemeEditorPage() {
   const [saving, setSaving] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [message, setMessage] = useState('')
+  const [currentThemeId, setCurrentThemeId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!loading && !user) router.push('/login')
   }, [user, loading, router])
+
+  // 서버에 저장된 내 테마 로드
+  useEffect(() => {
+    if (!user) return
+    api.getMyThemes().then(themes => {
+      if (themes.length > 0) {
+        const myTheme = themes[0]
+        setCurrentThemeId(myTheme.id)
+        if (myTheme.overrides) {
+          setTheme(prev => ({ ...prev, ...myTheme.overrides }))
+          setSelectedPreset('custom')
+        }
+      }
+    }).catch(() => {})
+  }, [user])
 
   const updateTheme = (key: string, value: string) => {
     setTheme(prev => ({ ...prev, [key]: value }))
@@ -84,11 +100,17 @@ export default function ThemeEditorPage() {
   }
 
   const handlePublish = async () => {
+    if (!user) return
     setSaving(true)
     setMessage('')
     try {
-      // TODO: POST /api/themes/publish/:authorSlug -- 서버 연동 후 활성화
-      setMessage('테마가 저장되었습니다 (서버 연동 후 퍼블리시 가능)')
+      // 1. 테마 overrides 저장
+      if (currentThemeId) {
+        await api.updateTheme(currentThemeId, theme as unknown as Record<string, unknown>)
+      }
+      // 2. CSS 베이킹 + 퍼블리시
+      await api.publishTheme(user.slug)
+      setMessage('테마가 퍼블리시되었습니다!')
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : '저장에 실패했습니다'
       setMessage(errorMessage)

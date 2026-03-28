@@ -83,6 +83,23 @@ class ApiClient {
     })
   }
 
+  async updateTheme(themeId: string, overrides: Record<string, unknown>) {
+    return this.fetch<any>(`/themes/${themeId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ overrides }),
+    })
+  }
+
+  async publishTheme(authorSlug: string) {
+    return this.fetch<any>(`/themes/publish/${authorSlug}`, {
+      method: 'POST',
+    })
+  }
+
+  async getMyThemes() {
+    return this.fetch<any[]>('/themes/mine')
+  }
+
   // 작가 공간
   async getAuthorSpace(slug: string) {
     return this.fetch<any>(`/authors/${slug}`)
