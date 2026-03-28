@@ -91,12 +91,12 @@ test.describe("페이지 간 네비게이션", () => {
   })
 
   test("preface route redirects to author space", async ({ page }) => {
-    await page.goto("/deerdevil/preface")
+    await page.goto("/deerdevil/deerdevil/preface")
     await expect(page).toHaveURL(/\/deerdevil$/)
   })
 
   test("afterword route redirects to author space", async ({ page }) => {
-    await page.goto("/deerdevil/afterword")
+    await page.goto("/deerdevil/deerdevil/afterword")
     await expect(page).toHaveURL(/\/deerdevil$/)
   })
 })
