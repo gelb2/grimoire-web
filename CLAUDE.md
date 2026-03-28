@@ -21,6 +21,13 @@ ProjectGrimoire의 프론트엔드. DeerDevil(사슴악마 단편소설 웹 뷰�
 - **주석/커밋/문서**: 한국어
 - **소설 콘텐츠**: 한국어 원문 유지, 절대 수정 금지
 
+### 문서 동기화 체크리스트 (커밋 전 확인)
+
+- 테마 파라미터 변경 → `docs/theme-spec.md` 업데이트
+- 디자인 토큰 변경 → `docs/design-tokens.md` 업데이트
+- 컴포넌트/폴더 리네이밍 → `SCREENS.md`, `DESIGN.md` 업데이트
+- 페이지 추가/삭제 → `SCREENS.md` 업데이트
+
 ### 아키텍처 — FSD (Feature-Sliced Design)
 ```
 src/
