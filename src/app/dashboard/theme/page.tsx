@@ -12,8 +12,11 @@ const colorFields = [
   { key: 'bgPrimary', label: '배경색', cssVar: '--g-bg' },
   { key: 'bgSecondary', label: '카드 배경', cssVar: '--g-bg2' },
   { key: 'textPrimary', label: '본문 텍스트', cssVar: '--g-text' },
+  { key: 'textBright', label: '강조 텍스트', cssVar: '--g-text-bright' },
   { key: 'textMuted', label: '보조 텍스트', cssVar: '--g-text-muted' },
+  { key: 'textDim', label: '흐린 텍스트', cssVar: '--g-text-dim' },
   { key: 'accent', label: '강조색', cssVar: '--g-accent' },
+  { key: 'accent2', label: '보조 강조색', cssVar: '--g-accent2' },
   { key: 'border', label: '경계선', cssVar: '--g-border' },
 ]
 
@@ -121,13 +124,16 @@ export default function ThemeEditorPage() {
 
   if (loading || !user) return null
 
-  // 미리보기용 인라인 스타일
+  // 미리보기용 인라인 스타일 — ThemeProvider와 동일한 변수 전부 설정
   const previewStyle: Record<string, string> = {
     '--g-bg': theme.bgPrimary,
     '--g-bg2': theme.bgSecondary,
     '--g-text': theme.textPrimary,
     '--g-text-muted': theme.textMuted,
+    '--g-text-dim': theme.textDim ?? theme.textMuted,
+    '--g-text-bright': theme.textBright ?? theme.textPrimary,
     '--g-accent': theme.accent,
+    '--g-accent2': theme.accent2 ?? theme.accent,
     '--g-border': theme.border,
   } as Record<string, string>
 
@@ -303,33 +309,40 @@ export default function ThemeEditorPage() {
           style={previewStyle}
         >
           <div className="h-full p-8" style={{ backgroundColor: 'var(--g-bg)', color: 'var(--g-text)' }}>
-            {/* 미리보기 헤더 */}
+            {/* 미리보기 헤더 — 작가 공간 스타일 */}
             <div className="text-center mb-12">
-              <p className="text-xs tracking-widest mb-4" style={{ color: 'var(--g-text-muted)' }}>PREVIEW</p>
-              <h1 className="text-3xl font-bold mb-2">{user.name}의 공간</h1>
-              <p className="text-sm" style={{ color: 'var(--g-text-muted)' }}>grimoire.app/{user.slug}</p>
+              <p className="text-xs tracking-widest mb-4" style={{ color: 'var(--g-text-dim)' }}>SHORT FICTION ANTHOLOGY</p>
+              <h1 className="text-3xl italic mb-2" style={{ color: 'var(--g-text-bright)' }}>{user.name}</h1>
+              <p className="text-sm" style={{ color: 'var(--g-text-dim)' }}>grimoire.app/{user.slug}</p>
             </div>
 
-            {/* 미리보기 본문 */}
-            <div className="max-w-lg mx-auto space-y-6">
+            <hr style={{ borderColor: 'var(--g-border)' }} />
+
+            {/* 미리보기 에피소드 카드 */}
+            <div className="max-w-lg mx-auto space-y-6 mt-8">
+              <p className="text-xs tracking-widest uppercase" style={{ color: 'var(--g-text-dim)' }}>에피소드</p>
               <div className="p-6 rounded-lg" style={{ backgroundColor: 'var(--g-bg2)', borderColor: 'var(--g-border)', borderWidth: '1px', borderStyle: 'solid' }}>
-                <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--g-accent)' }}>제 1화. 시작</h3>
-                <p className="leading-relaxed">
+                <p className="text-xs tracking-widest mb-2" style={{ color: 'var(--g-text-dim)' }}>EPISODE 01</p>
+                <h3 className="text-lg italic mb-2" style={{ color: 'var(--g-text-bright)' }}>제 1화. 시작</h3>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--g-text-muted)' }}>
                   어둠 속에서 한 줄기 빛이 스며들었다.
                   그것은 오래전 잊혀진 이야기의 첫 페이지였다.
-                  누군가의 손끝에서 시작된 글자들이 하나둘 모여 세계를 이루었다.
                 </p>
+                <p className="text-xs mt-3" style={{ color: 'var(--g-accent2)' }}>읽기 &rarr;</p>
               </div>
 
               <hr style={{ borderColor: 'var(--g-border)' }} />
 
+              {/* 미리보기 에피소드 뷰어 스타일 */}
+              <p className="text-xs tracking-widest uppercase" style={{ color: 'var(--g-text-muted)' }}>{user.name} · EPISODE 01</p>
+              <h2 className="text-2xl italic" style={{ color: 'var(--g-text-bright)' }}>제목이 여기에 표시됩니다</h2>
+
               <p className="leading-relaxed">
                 바람이 불어왔다. 차갑지도, 따뜻하지도 않은 바람.
                 그저 존재를 확인시켜 주는 바람이었다.
-                그녀는 책장을 넘기며 중얼거렸다.
               </p>
 
-              <p className="italic" style={{ color: 'var(--g-text-muted)' }}>
+              <p className="italic" style={{ color: 'var(--g-accent2)' }}>
                 &ldquo;모든 이야기에는 시작이 있고, 모든 시작에는 용기가 필요하다.&rdquo;
               </p>
 

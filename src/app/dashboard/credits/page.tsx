@@ -11,7 +11,7 @@ import { PlatformNav } from '@/components/PlatformNav'
 interface Product {
   id: string
   credits: number
-  priceKrw: number
+  price: number
   pricePerCredit: number
 }
 
@@ -30,9 +30,9 @@ export default function CreditsPage() {
     api.getProducts().then(setProducts).catch(() => {
       // 서버 미연결 시 기본값
       setProducts([
-        { id: 'credit_5', credits: 5, priceKrw: 1000, pricePerCredit: 200 },
-        { id: 'credit_20', credits: 20, priceKrw: 3000, pricePerCredit: 150 },
-        { id: 'credit_50', credits: 50, priceKrw: 5000, pricePerCredit: 100 },
+        { id: 'credit-10', credits: 10, price: 1000, pricePerCredit: 100 },
+        { id: 'credit-30', credits: 30, price: 2500, pricePerCredit: 83 },
+        { id: 'credit-100', credits: 100, price: 7000, pricePerCredit: 70 },
       ])
     })
   }, [])
@@ -63,9 +63,9 @@ export default function CreditsPage() {
               }`}
             >
               <p className="text-2xl font-bold text-white">{product.credits} 크레딧</p>
-              <p className="text-amber-500 text-lg mt-1">₩{product.priceKrw.toLocaleString()}</p>
+              <p className="text-amber-500 text-lg mt-1">₩{product.price.toLocaleString()}</p>
               <p className="text-neutral-500 text-sm mt-2">개당 ₩{product.pricePerCredit}</p>
-              {product.id === 'credit_50' && (
+              {product.id === 'credit-100' && (
                 <span className="inline-block mt-2 px-2 py-0.5 bg-amber-600 text-white text-xs rounded">베스트</span>
               )}
             </button>
