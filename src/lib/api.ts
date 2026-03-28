@@ -234,10 +234,10 @@ class ApiClient {
   }
 
   // 크레딧 선물
-  async giftCredits(authorSlug: string, amount: number) {
-    return this.fetch<{ senderCredits: number; receiverCredits: number }>(`/social/gift/${authorSlug}`, {
+  async giftCredits(receiverId: string, amount: number) {
+    return this.fetch<{ senderCredits: number; receiverCredits: number }>('/credits/gift', {
       method: 'POST',
-      body: JSON.stringify({ amount }),
+      body: JSON.stringify({ receiverId, amount }),
     })
   }
 
