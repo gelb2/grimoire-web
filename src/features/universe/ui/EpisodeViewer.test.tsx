@@ -6,7 +6,7 @@ import type { ContentMeta, EpisodeData } from "@/features/universe/data"
 
 // next/navigation mock
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/deerdevil/ep-test",
+  usePathname: () => "/test-author/ep-test",
 }))
 
 // framer-motion mock

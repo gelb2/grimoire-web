@@ -120,4 +120,32 @@ describe("ChapterBlock", () => {
     expect(screen.getByText("두번째").tagName).toBe("STRONG")
     expect(screen.getByText("중간")).toBeInTheDocument()
   })
+
+  it("heading-1 블록은 렌더링하지 않는다 (헤더 중복 방지)", () => {
+    const blocks: Block[] = [{ type: "heading-1", title: "메인 제목" }]
+    const { container } = render(<ChapterBlock blocks={blocks} />)
+    expect(container.innerHTML).toBe("")
+  })
+
+  it("heading-2 블록을 h2로 렌더링한다", () => {
+    const blocks: Block[] = [{ type: "heading-2", title: "부제목 텍스트" }]
+    const { container } = render(<ChapterBlock blocks={blocks} />)
+    const h2 = container.querySelector("h2")
+    expect(h2).toBeInTheDocument()
+    expect(h2?.textContent).toBe("부제목 텍스트")
+  })
+
+  it("separator 블록을 hr로 렌더링한다", () => {
+    const blocks: Block[] = [{ type: "separator" }]
+    const { container } = render(<ChapterBlock blocks={blocks} />)
+    expect(container.querySelector("hr")).toBeInTheDocument()
+  })
+
+  it("bold 블록을 굵은 텍스트로 렌더링한다", () => {
+    const blocks: Block[] = [{ type: "bold", text: "강조 문단" }]
+    render(<ChapterBlock blocks={blocks} />)
+    const el = screen.getByText("강조 문단")
+    expect(el).toBeInTheDocument()
+    expect(el.classList.contains("font-semibold")).toBe(true)
+  })
 })
