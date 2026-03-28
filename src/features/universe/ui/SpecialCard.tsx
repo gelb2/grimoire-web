@@ -47,7 +47,7 @@ export function SpecialCard({ content, workSlug }: { content: ContentMeta; workS
         </SectionLabel>
 
         {/* 제목 — 최대 2줄 */}
-        <div className="text-[1.2rem] italic text-u-text-soft mb-2.5 line-clamp-2">
+        <div className="text-[1.2rem] italic text-u-text-soft mb-2.5 truncate">
           {content.title}
         </div>
 
