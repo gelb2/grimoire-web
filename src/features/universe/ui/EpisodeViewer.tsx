@@ -150,11 +150,22 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
     const startFrom = lastTypingIdx + 1
     let i = 0
     const vpCount = Math.min(VIEWPORT_BLOCKS, data.blocks.length - startFrom)
-    safeInterval(() => {
+
+    if (vpCount <= 0) {
+      // 페이드인할 블록이 없으면 즉시 완료
+      setRevealedCount(data.blocks.length)
+      setStage(5)
+      sessionStorage.setItem(`visited:${data.slug}`, "true")
+      return
+    }
+
+    const intervalId = safeInterval(() => {
       i++
       setRevealedCount(startFrom + i)
       if (i >= vpCount) {
-        // interval은 safeInterval 내부에서 cancelled 체크로 자동 정리됨
+        // interval 즉시 정리 — 불필요한 추가 실행 방지
+        clearInterval(intervalId)
+        timersRef.current.delete(intervalId)
         // 남은 블록 한꺼번에 표시 + 완료 처리
         safeTimeout(() => {
           setRevealedCount(data.blocks.length)
@@ -243,14 +254,25 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
               )
             }
 
-            // 비타이핑 블록 — 페이드인
+            // 비타이핑 블록 — 페이드인 (완료 후 정적 렌더)
+            const isRevealed = idx < revealedCount
+
+            // 이미 완료된 블록은 motion 없이 정적 렌더 — 스크롤 시 깜박임/흔들림 방지
+            if (isRevealed && stage >= 5) {
+              return (
+                <div key={idx}>
+                  <ChapterBlock blocks={[block]} />
+                </div>
+              )
+            }
+
             return (
               <motion.div
                 key={idx}
-                initial={{ opacity: 0, y: 8 }}
+                initial={false}
                 animate={{
-                  opacity: idx < revealedCount ? 1 : 0,
-                  y: idx < revealedCount ? 0 : 8,
+                  opacity: isRevealed ? 1 : 0,
+                  y: isRevealed ? 0 : 8,
                 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
               >
