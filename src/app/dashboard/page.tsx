@@ -108,7 +108,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
+      <div className="min-h-screen bg-platform-bg flex items-center justify-center">
         <p className="text-neutral-400">로딩 중...</p>
       </div>
     )
@@ -117,7 +117,7 @@ export default function DashboardPage() {
   if (!user) return null
 
   return (
-    <div className="min-h-screen bg-neutral-950">
+    <div className="min-h-screen bg-platform-bg">
       {/* 헤더 */}
       <PlatformNav />
 

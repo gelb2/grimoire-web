@@ -28,7 +28,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-950 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-platform-bg px-4">
       <div className="w-full max-w-md">
         <h1 className="text-3xl font-bold text-white text-center mb-2">
           <Link href="/" className="hover:text-amber-500 transition">Grimoire</Link>
@@ -78,7 +78,7 @@ export default function LoginPage() {
         <div className="mt-6">
           <div className="relative">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-neutral-800"></div></div>
-            <div className="relative flex justify-center text-sm"><span className="px-2 bg-neutral-950 text-neutral-600">또는</span></div>
+            <div className="relative flex justify-center text-sm"><span className="px-2 bg-platform-bg text-neutral-600">또는</span></div>
           </div>
           <button
             type="button"

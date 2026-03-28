@@ -82,7 +82,7 @@ export default function UploadPage() {
   if (loading || !user) return null
 
   return (
-    <div className="min-h-screen bg-neutral-950">
+    <div className="min-h-screen bg-platform-bg">
       <PlatformNav />
 
       <main className="max-w-4xl mx-auto px-6 py-8">

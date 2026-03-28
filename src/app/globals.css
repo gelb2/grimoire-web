@@ -48,11 +48,15 @@
   /* ── 둥글기 토큰 ── */
   --radius-g-card: 8px;
   --radius-g-pill: 20px;
+
+  /* ── 플랫폼 색상 (작가 테마와 구분) ── */
+  --color-platform-bg: #0d0f1a;
+  --color-platform-bg2: #151722;
 }
 
 :root {
-  --background: #07070a;
-  --foreground: #cdc8bc;
+  --background: #0d0f1a;
+  --foreground: #e0e0e0;
 }
 
 body {
@@ -69,7 +73,7 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #07070a;
+  background: #0d0f1a;
 }
 
 ::-webkit-scrollbar-thumb {

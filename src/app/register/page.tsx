@@ -42,7 +42,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-950 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-platform-bg px-4">
       <div className="w-full max-w-md">
         <h1 className="text-3xl font-bold text-white text-center mb-2">
           <Link href="/" className="hover:text-amber-500 transition">Grimoire</Link>

@@ -132,7 +132,7 @@ export default function ThemeEditorPage() {
   } as Record<string, string>
 
   return (
-    <div className="min-h-screen bg-neutral-950">
+    <div className="min-h-screen bg-platform-bg">
       <PlatformNav />
 
       {/* 테마 에디터 액션 바 */}

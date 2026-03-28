@@ -203,7 +203,7 @@ export default function AuthorProfilePage() {
                   workSlug={work.slug}
                   episodeCount={work.episodeCount}
                   viewCount={work.viewCount}
-                  context="author-space"
+                  context="explore"
                 />
               ))}
             </div>
