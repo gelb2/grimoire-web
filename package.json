@@ -16,6 +16,7 @@
     "test:all": "vitest run && playwright test"
   },
   "dependencies": {
+    "@react-oauth/google": "^0.13.4",
     "clsx": "^2.1.1",
     "framer-motion": "^12.38.0",
     "next": "16.1.6",
