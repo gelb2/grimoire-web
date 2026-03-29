@@ -4,14 +4,9 @@
 
 ---
 
-## 단기 (Phase 1 마무리)
-
-### 디자인 방향 확정 (선행)
-- [ ] 레디맥 리서치 → `DESIGN_REFERENCE_READYMAG.md` 작성
-- [ ] 디지털 쇼룸 테마 시스템 고도화 방향 확정 (레디맥 리서치 기반)
+## 단기 (다음 우선순위)
 
 ### 외부 연동
-- [ ] Google OAuth 로그인 버튼 UI 추가 (Client ID 발급 완료)
 - [ ] 커버이미지 프론트 업로드 UI (서버 100%, Azure Blob 환경변수 필요)
 - [ ] 크레딧 충전 UI (PAYAPP 실제 연동, API 키 필요)
 - [ ] 테마 Baking 후 CDN CSS 로드
@@ -21,9 +16,13 @@
 - [ ] SeriesNav 유닛테스트 (라우팅, 활성 탭)
 - [ ] SeriesLanding 유닛테스트 (콘텐츠 필터링/정렬)
 
+### 디자인 개선 (deferred)
+- [ ] 플랫폼 페이지 레디맥 디자인 적용 (login, explore, dashboard, library)
+- [ ] 테마 에디터 미리보기 — 레이아웃 변경 실시간 반영
+
 ## 중기 (Phase 2)
 
-- [ ] 테마 시스템 고도화 구현 (레디맥 리서치 + 디지털 쇼룸 제안 기반)
+- [ ] AuthorSpace 레이아웃 컴포넌트 리팩토링 (gallery/magazine/minimal 분리)
 - [ ] A24식 Artifacts 데이터 모델 + UI
 - [ ] 시멘틱 캐싱 프론트 연동
 
