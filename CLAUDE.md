@@ -21,11 +21,18 @@ ProjectGrimoire의 프론트엔드. DeerDevil(사슴악마 단편소설 웹 뷰�
 - **주석/커밋/문서**: 한국어
 - **소설 콘텐츠**: 한국어 원문 유지, 절대 수정 금지
 
+### 문서 동기화 체크리스트 (커밋 전 확인)
+
+- 테마 파라미터 변경 → `docs/theme-spec.md` 업데이트
+- 디자인 토큰 변경 → `docs/design-tokens.md` 업데이트
+- 컴포넌트/폴더 리네이밍 → `SCREENS.md`, `DESIGN.md` 업데이트
+- 페이지 추가/삭제 → `SCREENS.md` 업데이트
+
 ### 아키텍처 — FSD (Feature-Sliced Design)
 ```
 src/
 ├── app/           # Next.js App Router — 라우팅 + 레이아웃
-├── features/      # 도메인 로직 (auth, theme, universe)
+├── features/      # 도메인 로직 (auth, theme, reader)
 ├── lib/           # 유틸리티 (api.ts, utils.ts)
 ├── components/    # 공용 UI 컴포넌트
 ├── stores/        # Zustand 스토어
@@ -132,8 +139,8 @@ API_URL=http://localhost:3000/api
 | 환경 | API URL | 배포 |
 |------|---------|------|
 | development | localhost:3000 | localhost:3001 |
-| inhouse | inhouse-api.grimoire.app | Azure Container Apps |
-| production | api.grimoire.app | Azure Container Apps |
+| inhouse | inhouse-api.grimoire-book.com | Azure Container Apps |
+| production | api.grimoire-book.com | Azure Container Apps |
 
 상세: `docs/environments.md` 참조.
 

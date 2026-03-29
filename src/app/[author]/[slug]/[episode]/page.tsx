@@ -1,9 +1,9 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { api } from "@/lib/api"
-import { EpisodeViewer } from "@/features/universe/ui/EpisodeViewer"
-import { EpisodeFooter } from "@/features/universe/ui/EpisodeFooter"
-import { WorkNav } from "@/features/universe/ui/WorkNav"
+import { EpisodeViewer } from "@/features/reader/ui/EpisodeViewer"
+import { EpisodeFooter } from "@/features/reader/ui/EpisodeFooter"
+import { WorkNav } from "@/features/reader/ui/WorkNav"
 
 // 완전 동적 — SSR on every request
 export const dynamic = "force-dynamic"
@@ -12,7 +12,7 @@ interface Props {
   params: Promise<{ author: string; slug: string; episode: string }>
 }
 
-// 테마 레이아웃만 빠르게 확인 — universe 여부 판별용
+// 테마 레이아웃만 빠르게 확인 — series 여부 판별용
 async function getThemeLayout(authorSlug: string): Promise<string> {
   try {
     // 서버 컴포넌트: 백엔드 직접 호출 (BFF 프록시 루프백 방지)
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { author, slug, episode } = await params
 
   try {
-    const episodeData = await api.getEpisode(author, slug, episode)
+    const episodeData = await api.getEpisode<{ title: string; description?: string }>(author, slug, episode)
     const title = episodeData.title || episode
     const description = episodeData.description ?? `${author} — ${title}`
 
@@ -65,11 +65,12 @@ export default async function EpisodePage({ params }: Props) {
 
   try {
     // 에피소드 + 작가 정보 + 테마 레이아웃 + 작품(에피소드 목록) 동시 로드
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [episodeData, authorRes, themeLayout, workData] = await Promise.all([
-      api.getEpisode(author, slug, episode),
-      api.getAuthorSpace(author).catch(() => null),
+      api.getEpisode<any>(author, slug, episode),
+      api.getAuthorSpace<any>(author).catch(() => null),
       getThemeLayout(author),
-      api.getWork(author, slug).catch(() => null),
+      api.getWork<any>(author, slug).catch(() => null),
     ])
 
     // API 응답에서 num 파싱: orderNum → 2자리 zero-padded 문자열
@@ -78,19 +79,19 @@ export default async function EpisodePage({ params }: Props) {
 
     const meta = {
       slug: episodeData.slug || episode,
-      type: episodeData.type || "episode" as const,
+      type: (episodeData.type || "episode") as "episode" | "bonus" | "preface" | "afterword",
       num: episodeNum,
       title: episodeData.title,
-      subtitle: episodeData.subtitle,
+      subtitle: episodeData.subtitle ?? undefined,
       description: episodeData.description,
     }
 
     // 작가 이름: API 응답 > 작가 공간(중첩 구조) > slug 폴백
-    const authorName = episodeData.authorName || authorRes?.author?.name || authorRes?.name || author
+    const authorName = episodeData.authorName || authorRes?.author?.name || (authorRes as Record<string, unknown>)?.name as string || author
     // 작품 제목: 에피소드 응답에 포함된 workTitle 또는 slug 폴백
-    const workTitle = episodeData.workTitle || slug
+    const workTitle = episodeData.workTitle ?? slug
 
-    const isUniverse = themeLayout === 'universe'
+    const isSeriesLayout = themeLayout === 'series'
 
     // 작품의 에피소드 목록 추출 (WorkNav pill 표시용)
     const workEpisodes: { slug: string; orderNum: number; title: string; type?: string }[] =
@@ -105,9 +106,9 @@ export default async function EpisodePage({ params }: Props) {
 
     return (
       <>
-        {/* universe 레이아웃: UniverseNav는 AuthorSpace 레이아웃에서 이미 렌더링됨 */}
+        {/* series 레이아웃: 탭 네비게이션은 AuthorSpace 레이아웃에서 이미 렌더링됨 */}
         {/* grid 레이아웃: WorkNav (pill 스타일 에피소드 네비게이션) 표시 */}
-        {!isUniverse && workEpisodes.length > 0 && (
+        {!isSeriesLayout && workEpisodes.length > 0 && (
           <WorkNav
             authorSlug={author}
             authorName={authorName}
@@ -117,7 +118,7 @@ export default async function EpisodePage({ params }: Props) {
             currentEpisodeSlug={episode}
           />
         )}
-        <EpisodeViewer meta={meta} data={episodeData} authorName={authorName} />
+        <EpisodeViewer key={`${author}-${slug}-${episode}`} meta={meta} data={{ slug: episodeData.slug, title: episodeData.title, subtitle: episodeData.subtitle ?? undefined, blocks: episodeData.blocks as never[] }} authorName={authorName} />
         <EpisodeFooter
           episodeId={episodeData.id || episode}
           authorSlug={author}

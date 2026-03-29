@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { api } from "@/lib/api"
-import { AuthorSpace } from "@/components/AuthorSpace"
+import { AuthorSpace } from "@/features/reader/ui/AuthorSpace"
 
 // 완전 동적 — SSR on every request
 export const dynamic = "force-dynamic"
@@ -14,13 +14,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   try {
     // 서버 API에서 작가 정보 로드
-    const authorData = await api.getAuthorSpace(author)
+    const authorData = await api.getAuthorSpace<any>(author)
+    const authorName = authorData.author?.name ?? author
+    const authorDesc = authorData.author?.bio ?? `${author}의 작가 공간`
     return {
-      title: authorData.name || author,
-      description: authorData.description || `${author}의 작가 공간`,
+      title: authorName,
+      description: authorDesc,
       openGraph: {
-        title: `${authorData.name || author} | Grimoire`,
-        description: authorData.description || `${author}의 작가 공간`,
+        title: `${authorName} | Grimoire`,
+        description: authorDesc,
       },
     }
   } catch {

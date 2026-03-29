@@ -68,13 +68,14 @@
 | WorkPage | 작품 페이지 |
 | PlatformNav | 플랫폼 네비게이션 |
 | ErrorPopup | 에러 팝업 |
+| HorizontalScroll | 가로 스크롤 컨테이너 (2행 그리드 + 인디케이터) |
 
-### 작가 공간 뷰어 (`src/features/universe/ui/`)
+### 작가 공간 뷰어 (`src/features/reader/ui/`)
 
 | 컴포넌트 | 설명 |
 |---------|------|
-| UniverseLanding | 에피소드 카드 그리드 + 번외/특수 페이지 섹션 |
-| UniverseNav | Sticky 상단 네비게이션 (브랜드 + 탭) |
+| SeriesLanding | 에피소드 카드 그리드 + 번외/특수 페이지 섹션 |
+| SeriesNav | Sticky 상단 네비게이션 (브랜드 + 탭) |
 | EpisodeViewer | 에피소드 본문 읽기 뷰어 (히어로 + 블록 + 타이핑 이펙트) |
 | ChapterBlock | 블록 배열 렌더러 (paragraph, chapter, divider, refrain, italic 등) |
 | EpisodeCard | 에피소드 목록 카드 |
@@ -101,3 +102,4 @@
 | 스토어 | 설명 |
 |--------|------|
 | useExploreStore | 탐색 페이지 상태 (Zustand) |
+| useNavigationStore | 뒤로가기 정책 + 네비게이션 상태 (Zustand) |

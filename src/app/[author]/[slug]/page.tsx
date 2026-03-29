@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { api } from "@/lib/api"
-import { WorkPage } from "@/components/WorkPage"
+import { WorkPage } from "@/features/reader/ui/WorkPage"
 
 // 완전 동적 — SSR on every request
 export const dynamic = "force-dynamic"
@@ -15,9 +15,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   try {
     // 모든 작가 — API에서 작품 메타데이터 시도
-    const workData = await api.getWork(author, slug)
-    const title = workData.title
-    const description = workData.description ?? `${author} — ${title}`
+    const workData = await api.getWork<any>(author, slug)
+    const title = workData.work?.title ?? slug
+    const description = workData.work?.description ?? `${author} — ${title}`
 
     return {
       title,

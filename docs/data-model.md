@@ -5,7 +5,7 @@
 
 ---
 
-## 테이블 (13개)
+## 테이블 (14개)
 
 ### authors
 
@@ -16,17 +16,21 @@
 | name | text | - | 작가명 |
 | email | text | unique | 이메일 |
 | password_hash | text (nullable) | - | 비밀번호 해시 (bcryptjs) |
+| bio | text (nullable) | - | 작가 소개 (최대 500자) |
+| role | text | default("user") | 역할 (user/admin) |
 | credits | integer | default(3) | 크레딧 잔액 |
+| default_theme_id | uuid (nullable) | - | 기본 테마 ID |
 | created_at | timestamptz | default(now()) | 가입일 |
 
-관계: Theme (1:1), Work (1:N), SocialAccount (1:N)
+관계: Theme (1:N), Work (1:N), SocialAccount (1:N)
 
 ### themes
 
 | 컬럼 | 타입 | 제약 | 설명 |
 |------|------|------|------|
 | id | uuid | PK | 테마 식별자 |
-| author_id | uuid | unique, FK→authors | 작가 (1:1) |
+| author_id | uuid | FK→authors | 작가 (1:N) |
+| name | text | default("기본 테마") | 테마 이름 |
 | preset | text | default("midnight") | 프리셋명 |
 | overrides | jsonb (nullable) | - | AuthorTheme 커스텀 값 |
 | raw_description | text (nullable) | - | 작가 원본 구술 텍스트 |
@@ -43,10 +47,13 @@
 | title | text | - | 작품 제목 |
 | subtitle | text (nullable) | - | 부제 |
 | description | text (nullable) | - | 설명 |
+| genre | text (nullable) | - | 장르 |
+| cover_image | text (nullable) | - | 커버 이미지 URL |
+| theme_id | uuid (nullable) | FK→themes | 작품별 테마 |
 | view_count | integer | default(0) | 조회수 |
 | created_at | timestamptz | default(now()) | 생성일 |
 
-관계: Episode (1:N)
+관계: Episode (1:N), Theme (N:1)
 
 ### episodes
 
@@ -138,6 +145,7 @@
 | author_id | text | - | 작성자 ID |
 | episode_id | text | - | 에피소드 ID |
 | content | text | - | 댓글 내용 (1~500자) |
+| parent_id | uuid (nullable) | FK→comments | 부모 댓글 (대댓글용) |
 | created_at | timestamptz | default(now()) | 작성일 |
 
 ### payments
@@ -156,19 +164,32 @@
 
 ---
 
+### daily_views
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 식별자 |
+| work_id | uuid | unique(work_id, date), FK→works | 작품 |
+| date | timestamptz | unique(work_id, date) | 날짜 (UTC 자정) |
+| count | integer | default(0) | 일별 조회수 |
+
+---
+
 ## 관계 다이어그램
 
 ```
-Author ──1:1── Theme
+Author ──1:N── Theme
 Author ──1:N── Work ──1:N── Episode
+Work ──N:1── Theme (작품별 테마)
+Work ──1:N── DailyView (일별 조회 통계)
 Author ──1:N── SocialAccount
 Author ──1:N── CreditLog (비정규화)
+Comment ──1:N── Comment (대댓글, self-join)
 SignupHistory (독립 — 재가입 방지)
 Bookmark (독자 행위 기록)
 ReadingProgress (독자 행위 기록)
 Like (독자 행위 기록)
 Subscription (구독 관계)
-Comment (소셜 기록)
 Payment (결제 기록)
 ```
 

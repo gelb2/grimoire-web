@@ -54,8 +54,8 @@ export function WorkCard({
         </span>
       )}
 
-      {/* 작품 제목 */}
-      <h3 className="text-lg font-semibold text-white leading-snug mb-1.5 group-hover:text-amber-50 transition-colors">
+      {/* 작품 제목 — 최대 2줄, 넘치면 말줄임 */}
+      <h3 className="text-lg font-semibold text-white leading-snug mb-1.5 group-hover:text-amber-50 transition-colors truncate">
         {title}
       </h3>
 

@@ -17,6 +17,7 @@ export default function ExplorePage() {
   const [query, setQuery] = useState('')
   const [authors, setAuthors] = useState<AuthorResult[]>([])
   const [searching, setSearching] = useState(false)
+  const [giftedAuthors, setGiftedAuthors] = useState<{ id: string; slug: string; name: string; bio: string | null; totalGifted: number }[]>([])
   const debounce = useDebounce(300)  // 검색 디바운스 300ms
 
   // Zustand 스토어 — 뒤로가기 시 데이터/스크롤 복원
@@ -35,10 +36,12 @@ export default function ExplorePage() {
   // 초기 데이터 로드
   const fetchInitialData = useCallback(async () => {
     try {
-      const [popularRes, recentRes] = await Promise.all([
+      const [popularRes, recentRes, giftedRes] = await Promise.all([
         api.getPopularWorksPaginated(1, PAGE_SIZE),
         api.getRecentWorksPaginated(1, PAGE_SIZE),
+        api.getMostGiftedAuthors(8).catch(() => []),
       ])
+      setGiftedAuthors(giftedRes)
 
       setPopularWorks(popularRes.works)
       setPopularHasMore(popularRes.hasMore)
@@ -125,7 +128,7 @@ export default function ExplorePage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950">
+    <div className="min-h-screen bg-platform-bg">
       <PlatformNav />
 
       <main className="max-w-6xl mx-auto px-6 py-8">
@@ -242,6 +245,38 @@ export default function ExplorePage() {
             </HorizontalScroll>
           )}
         </section>
+
+        {/* 응원받는 작가 */}
+        {giftedAuthors.length > 0 && (
+          <section className="mb-12">
+            <div className="flex items-center gap-3 mb-6">
+              <h2 className="text-xl font-bold text-white">응원받는 작가</h2>
+              <div className="flex-1 h-px bg-neutral-800" />
+            </div>
+            <div
+              className="grid gap-4"
+              style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}
+            >
+              {giftedAuthors.map(author => (
+                <a
+                  key={author.id}
+                  href={`/${author.slug}`}
+                  className="group rounded-xl border border-neutral-800 bg-neutral-900 p-5 transition hover:border-amber-800/50"
+                >
+                  <h3 className="font-bold text-neutral-100 group-hover:text-amber-400 transition">
+                    {author.name}
+                  </h3>
+                  {author.bio && (
+                    <p className="text-xs text-neutral-500 mt-1 line-clamp-2">{author.bio}</p>
+                  )}
+                  <p className="text-xs text-amber-500 mt-2">
+                    {author.totalGifted} 크레딧 응원
+                  </p>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
       </main>
     </div>
   )

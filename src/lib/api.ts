@@ -1,3 +1,4 @@
+import type { AuthResponse, AuthUser, Theme, GiftedAuthor, WorkStats, Product } from "@/types/api"
 /** 페이지네이션 작품 응답 타입 */
 export interface PaginatedWorksResponse {
   works: Array<{
@@ -50,21 +51,21 @@ class ApiClient {
 
   // 인증
   async register(data: { email: string; password: string; name: string; slug: string }) {
-    return this.fetch<{ user: any }>('/auth/register', {
+    return this.fetch<AuthResponse>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
     })
   }
 
   async login(data: { email: string; password: string }) {
-    return this.fetch<{ user: any }>('/auth/login', {
+    return this.fetch<AuthResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(data),
     })
   }
 
   async getProfile() {
-    return this.fetch<any>('/auth/profile')
+    return this.fetch<AuthUser>('/auth/profile')
   }
 
   async logout() {
@@ -73,34 +74,64 @@ class ApiClient {
 
   // 테마
   async getTheme(authorSlug: string) {
-    return this.fetch<any>(`/themes/${authorSlug}`)
+    return this.fetch<Theme>(`/themes/${authorSlug}`)
   }
 
   async generateTheme(description: string) {
-    return this.fetch<any>('/themes/generate', {
+    return this.fetch<{ themeId: string; preview: Record<string, unknown> }>('/themes/generate', {
       method: 'POST',
       body: JSON.stringify({ description }),
     })
   }
 
-  // 작가 공간
-  async getAuthorSpace(slug: string) {
-    return this.fetch<any>(`/authors/${slug}`)
+  async updateTheme(themeId: string, overrides: Record<string, unknown>) {
+    return this.fetch<{ themeId: string; overrides: Record<string, unknown> }>(`/themes/${themeId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ overrides }),
+    })
   }
 
-  // 작품
-  async getWork(authorSlug: string, workSlug: string) {
-    return this.fetch<any>(`/works/${authorSlug}/${workSlug}`)
+  async publishTheme(authorSlug: string) {
+    return this.fetch<{ cssUrl: string }>(`/themes/publish/${authorSlug}`, {
+      method: 'POST',
+    })
   }
 
-  // 에피소드
-  async getEpisode(authorSlug: string, workSlug: string, episodeSlug: string) {
-    return this.fetch<any>(`/episodes/${authorSlug}/${workSlug}/${episodeSlug}`)
+  async getMyThemes() {
+    return this.fetch<Theme[]>('/themes/mine')
+  }
+
+  // 작가 공간 — 호출처에서 타입 지정 가능
+  async getAuthorSpace<T = Record<string, unknown>>(slug: string) {
+    return this.fetch<T>(`/authors/${slug}`)
+  }
+
+  // 작가 공개 프로필 — 호출처에서 타입 지정 가능
+  async getAuthorProfile<T = Record<string, unknown>>(slug: string) {
+    return this.fetch<T>(`/authors/${slug}/profile`)
+  }
+
+  // 작가 bio 업데이트
+  async updateBio(slug: string, bio: string) {
+    return this.fetch<{ bio: string }>(`/authors/${slug}/profile`, {
+      method: 'PATCH',
+      body: JSON.stringify({ bio }),
+    })
+  }
+
+  // 작품 — 호출처에서 타입 지정 가능
+  async getWork<T = Record<string, unknown>>(authorSlug: string, workSlug: string) {
+    return this.fetch<T>(`/works/${authorSlug}/${workSlug}`)
+  }
+
+  // 에피소드 — 호출처에서 타입 지정 가능
+  async getEpisode<T = Record<string, unknown>>(authorSlug: string, workSlug: string, episodeSlug: string) {
+    return this.fetch<T>(`/episodes/${authorSlug}/${workSlug}/${episodeSlug}`)
   }
 
   // Google 로그인
   async googleLogin(googleToken: string) {
-    return this.fetch<{ user: any }>('/auth/google', {
+    return this.fetch<AuthResponse>('/auth/google', {
       method: 'POST',
       body: JSON.stringify({ token: googleToken }),
     })
@@ -108,7 +139,7 @@ class ApiClient {
 
   // 결제/크레딧
   async getProducts() {
-    return this.fetch<any[]>('/payments/products')
+    return this.fetch<Product[]>('/payments/products')
   }
 
   async getCredits() {
@@ -139,7 +170,7 @@ class ApiClient {
 
   // 원고 파싱
   async parseManuscript(rawText: string) {
-    return this.fetch<any>('/manuscripts/parse', {
+    return this.fetch<{ frontmatter: Record<string, string>; blocks: Record<string, unknown>[] }>('/manuscripts/parse', {
       method: 'POST',
       body: JSON.stringify({ rawText }),
     })
@@ -147,7 +178,7 @@ class ApiClient {
 
   // 북마크
   async toggleBookmark(episodeId: string) {
-    return this.fetch<any>(`/reader/bookmarks/${episodeId}`, { method: 'POST' })
+    return this.fetch<{ bookmarked: boolean }>(`/reader/bookmarks/${episodeId}`, { method: 'POST' })
   }
   async getBookmarks() {
     return this.fetch<any[]>('/reader/bookmarks')
@@ -155,13 +186,13 @@ class ApiClient {
 
   // 읽은 위치
   async saveProgress(episodeId: string, blockIndex: number) {
-    return this.fetch<any>('/reader/progress', {
+    return this.fetch<{ episodeId: string; blockIndex: number }>('/reader/progress', {
       method: 'POST',
       body: JSON.stringify({ episodeId, blockIndex }),
     })
   }
   async getProgress(episodeId: string) {
-    return this.fetch<any>(`/reader/progress/${episodeId}`)
+    return this.fetch<{ episodeId: string; blockIndex: number }>(`/reader/progress/${episodeId}`)
   }
 
   // 탐색
@@ -181,6 +212,11 @@ class ApiClient {
   /** 최신 작품 페이지네이션 조회 */
   async getRecentWorksPaginated(page = 1, pageSize = 12) {
     return this.fetch<PaginatedWorksResponse>(`/discover/works/recent?page=${page}&pageSize=${pageSize}`)
+  }
+
+  /** 응원받는 작가 랭킹 */
+  async getMostGiftedAuthors(limit = 8) {
+    return this.fetch<{ id: string; slug: string; name: string; bio: string | null; totalGifted: number }[]>(`/discover/authors/most-gifted?limit=${limit}`)
   }
 
   // 좋아요
@@ -203,8 +239,10 @@ class ApiClient {
   }
 
   // 댓글
-  async createComment(episodeId: string, content: string) {
-    return this.fetch<any>(`/social/comments/${episodeId}`, { method: 'POST', body: JSON.stringify({ content }) })
+  async createComment(episodeId: string, content: string, parentId?: string) {
+    const body: { content: string; parentId?: string } = { content }
+    if (parentId) body.parentId = parentId
+    return this.fetch<any>(`/social/comments/${episodeId}`, { method: 'POST', body: JSON.stringify(body) })
   }
   async getComments(episodeId: string) {
     return this.fetch<any[]>(`/social/comments/${episodeId}`)
@@ -213,12 +251,42 @@ class ApiClient {
     return this.fetch<void>(`/social/comments/${commentId}`, { method: 'DELETE' })
   }
 
+  // 크레딧 선물
+  async giftCredits(receiverId: string, amount: number) {
+    return this.fetch<{ senderCredits: number; receiverCredits: number }>('/credits/gift', {
+      method: 'POST',
+      body: JSON.stringify({ receiverId, amount }),
+    })
+  }
+
+  // 서재
+  async getLibrary() {
+    return this.fetch<{
+      bookmarked: Array<{
+        workId: string; workTitle: string; workSlug: string
+        authorName: string; authorSlug: string; episodeCount: number
+        readEpisodeCount: number; lastReadEpisodeTitle: string | null
+        lastReadEpisodeSlug: string | null; subscribed: boolean
+      }>
+      subscribed: Array<{
+        workId: string; workTitle: string; workSlug: string
+        authorName: string; authorSlug: string; episodeCount: number
+        latestEpisodeTitle: string | null; createdAt: string
+      }>
+    }>('/reader/library')
+  }
+
+  // 조회수 통계
+  async getWorkStats(workId: string) {
+    return this.fetch<{ dates: string[]; counts: number[]; totalViews: number }>(`/works/${workId}/stats`)
+  }
+
   // 관리자
   async getAdminStats() {
-    return this.fetch<any>('/admin/stats')
+    return this.fetch<{ totalAuthors: number; totalWorks: number; totalEpisodes: number; totalCreditsConsumed: number }>('/admin/stats')
   }
   async adminGrantCredits(authorId: string, amount: number, reason: string) {
-    return this.fetch<any>('/admin/credits', {
+    return this.fetch<{ credits: number }>('/admin/credits', {
       method: 'POST',
       body: JSON.stringify({ authorId, amount, reason }),
     })

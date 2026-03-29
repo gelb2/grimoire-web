@@ -2,7 +2,7 @@
  * MD → TS 자동 파서
  *
  * DeerDevil_MDfiles/*.md 파일을 읽어서
- * src/features/universe/data/generated/ 에 TS 파일로 출력
+ * src/features/reader/data/generated/ 에 TS 파일로 출력
  *
  * 실행: npx tsx scripts/parse-md.ts
  */
@@ -35,7 +35,7 @@ export interface Block {
 
 const ROOT = resolve(__dirname, "..")
 const MD_DIR = join(ROOT, "DeerDevil_MDfiles")
-const OUT_DIR = join(ROOT, "src/features/universe/data/contentDataSource")
+const OUT_DIR = join(ROOT, "src/features/reader/data/contentDataSource")
 
 // ── Frontmatter 파싱 ──
 
@@ -312,7 +312,7 @@ function generateEpisodeTS(slug: string, title: string, subtitle: string | undef
   const blocksStr = blocks.map((b) => blockToString(b)).join(",\n")
   const subtitleLine = subtitle ? `\n  subtitle: \`${escapeForTemplate(subtitle)}\`,` : ""
 
-  return `import type { EpisodeData } from "@/features/universe/data"
+  return `import type { EpisodeData } from "@/features/reader/data"
 
 const ${slug}: EpisodeData = {
   slug: "${slug}",
@@ -360,7 +360,7 @@ function generateContentsTS(
     return `  { ${parts.join(", ")} }`
   })
 
-  return `import type { ContentMeta } from "@/features/universe/data"
+  return `import type { ContentMeta } from "@/features/reader/data"
 
 export const generatedContents: ContentMeta[] = [
 ${entries.join(",\n")},

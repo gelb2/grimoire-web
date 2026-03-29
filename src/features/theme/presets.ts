@@ -2,7 +2,7 @@
 export interface ThemeDecorations {
   dividerIcon: "antler" | "flower" | "star" | "geometric" | "brush" | "leaf" | "camellia" | "umbrella" | "waterwheel" | "dot" | "line" | "none"
   dividerColor: string
-  headerIcon: "antler" | "quill" | "book" | "none"
+  headerIcon: "antler" | "quill" | "book" | "dot" | "none"
   headerSubtitle: string    // 예: "Short Fiction Anthology"
   cardAccentPosition: "left" | "top" | "none"
   footerText: string        // 예: "Inspired by the sensibility of A24"
@@ -28,8 +28,8 @@ export interface AuthorTheme {
   animation: "typing" | "fade" | "slide" | "none"
   tone: "dark" | "light" | "sepia"
 
-  // 레이아웃 — "universe" = DeerDevil 스타일, "grid" = 일반 그리드
-  layout: "universe" | "grid" | "classic"
+  // 레이아웃 — "series" = 시리즈 소설 (탭 네비게이션), "grid" = 일반 그리드
+  layout: "series" | "grid" | "classic"
 
   // 장식 요소
   decorations: ThemeDecorations
@@ -68,7 +68,7 @@ const midnight: AuthorTheme = {
   fontHeading: "serif",
   animation: "typing",
   tone: "dark",
-  layout: "universe",
+  layout: "series",
   decorations: {
     dividerIcon: "antler",
     dividerColor: "#9a8060",
@@ -163,12 +163,5 @@ export const themePresets: Record<string, AuthorTheme> = {
   cream,
 }
 
-// 작가 slug → 테마 매핑 (Phase 0에서는 하드코딩, Phase 1에서 DB로 이관)
-export const authorThemeMap: Record<string, string> = {
-  deerdevil: "midnight",
-}
-
-export function getThemeForAuthor(authorSlug: string): AuthorTheme {
-  const presetName = authorThemeMap[authorSlug] ?? "midnight"
-  return themePresets[presetName] ?? themePresets.midnight
-}
+// 테마는 서버 API에서 로드 (layout.tsx → loadTheme)
+// 로컬 프리셋은 테마 에디터의 시작점으로만 사용

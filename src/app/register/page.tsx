@@ -42,7 +42,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-950 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-platform-bg px-4">
       <div className="w-full max-w-md">
         <h1 className="text-3xl font-bold text-white text-center mb-2">
           <Link href="/" className="hover:text-amber-500 transition">Grimoire</Link>
@@ -109,7 +109,7 @@ export default function RegisterPage() {
           <div>
             <label className="block text-sm text-neutral-300 mb-1">슬러그 (URL 경로)</label>
             <div className="flex items-center">
-              <span className="text-neutral-500 text-sm mr-2">grimoire.app/</span>
+              <span className="text-neutral-500 text-sm mr-2">grimoire-book.com/</span>
               <input
                 type="text"
                 value={form.slug}

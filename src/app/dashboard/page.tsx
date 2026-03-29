@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { api } from '@/lib/api'
 import { PlatformNav } from '@/components/PlatformNav'
+import { ViewChart } from '@/components/ViewChart'
 
 interface Work {
   id: string
@@ -15,6 +16,12 @@ interface Work {
   description: string | null
   episodeCount: number
   viewCount?: number
+}
+
+interface WorkStatsData {
+  dates: string[]
+  counts: number[]
+  totalViews: number
 }
 
 export default function DashboardPage() {
@@ -27,6 +34,9 @@ export default function DashboardPage() {
   const [creating, setCreating] = useState(false)
   const [deletingWorks, setDeletingWorks] = useState<Set<string>>(new Set())
   const [error, setError] = useState('')
+  const [selectedWorkId, setSelectedWorkId] = useState<string>('')
+  const [statsData, setStatsData] = useState<WorkStatsData | null>(null)
+  const [statsLoading, setStatsLoading] = useState(false)
 
   useEffect(() => {
     if (!loading && !user) router.push('/login')
@@ -35,19 +45,39 @@ export default function DashboardPage() {
   // 작품 목록 로드
   useEffect(() => {
     if (user) {
-      api.getAuthorSpace(user.slug)
+      api.getAuthorSpace<any>(user.slug)
         .then(data => setWorks(data.works || []))
         .catch(() => setWorks([]))
         .finally(() => setWorksLoading(false))
     }
   }, [user])
 
+  // 통계 데이터 로드
+  useEffect(() => {
+    if (!selectedWorkId) {
+      setStatsData(null)
+      return
+    }
+    setStatsLoading(true)
+    api.getWorkStats(selectedWorkId)
+      .then(setStatsData)
+      .catch(() => setStatsData(null))
+      .finally(() => setStatsLoading(false))
+  }, [selectedWorkId])
+
+  // 작품 목록 로드 후 첫 번째 작품 자동 선택
+  useEffect(() => {
+    if (works.length > 0 && !selectedWorkId) {
+      setSelectedWorkId(works[0].id)
+    }
+  }, [works, selectedWorkId])
+
   const handleCreateWork = async () => {
     if (!newWork.title.trim() || !newWork.slug.trim()) return
     setCreating(true)
     setError('')
     try {
-      const work = await api.createWork(newWork)
+      const work = await api.createWork(newWork) as any
       setWorks(prev => [...prev, { ...work, episodeCount: 0 }])
       setShowNewWork(false)
       setNewWork({ title: '', slug: '', description: '' })
@@ -78,7 +108,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
+      <div className="min-h-screen bg-platform-bg flex items-center justify-center">
         <p className="text-neutral-400">로딩 중...</p>
       </div>
     )
@@ -87,7 +117,7 @@ export default function DashboardPage() {
   if (!user) return null
 
   return (
-    <div className="min-h-screen bg-neutral-950">
+    <div className="min-h-screen bg-platform-bg">
       {/* 헤더 */}
       <PlatformNav />
 
@@ -96,7 +126,7 @@ export default function DashboardPage() {
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 mb-8">
           <h1 className="text-2xl font-bold text-white mb-2">환영합니다, {user.name}님!</h1>
           <p className="text-neutral-400">
-            내 공간: <Link href={`/${user.slug}`} className="text-amber-500 hover:text-amber-400" target="_blank">grimoire.app/{user.slug}</Link>
+            내 공간: <Link href={`/${user.slug}`} className="text-amber-500 hover:text-amber-400" target="_blank">grimoire-book.com/{user.slug}</Link>
           </p>
         </div>
 
@@ -192,6 +222,36 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
+
+        {/* 조회수 통계 */}
+        {works.length > 0 && (
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 mt-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-white">조회수 통계</h2>
+              <select
+                value={selectedWorkId}
+                onChange={(e) => setSelectedWorkId(e.target.value)}
+                className="bg-neutral-800 border border-neutral-700 text-neutral-300 text-sm rounded-lg px-3 py-1.5"
+              >
+                {works.map(w => (
+                  <option key={w.id} value={w.id}>{w.title}</option>
+                ))}
+              </select>
+            </div>
+
+            {statsLoading ? (
+              <p className="text-neutral-500 text-center py-8 text-sm">통계 로딩 중...</p>
+            ) : statsData ? (
+              <ViewChart
+                dates={statsData.dates}
+                counts={statsData.counts}
+                totalViews={statsData.totalViews}
+              />
+            ) : (
+              <p className="text-neutral-500 text-center py-8 text-sm">통계 데이터를 불러올 수 없습니다</p>
+            )}
+          </div>
+        )}
 
         {/* 크레딧 현황 */}
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 mt-4">
