@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { api } from "@/lib/api"
-import { AuthorSpace } from "@/components/AuthorSpace"
+import { AuthorSpace } from "@/features/reader/ui/AuthorSpace"
 
 // 완전 동적 — SSR on every request
 export const dynamic = "force-dynamic"

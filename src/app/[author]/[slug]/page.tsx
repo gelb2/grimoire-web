@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { api } from "@/lib/api"
-import { WorkPage } from "@/components/WorkPage"
+import { WorkPage } from "@/features/reader/ui/WorkPage"
 
 // 완전 동적 — SSR on every request
 export const dynamic = "force-dynamic"
