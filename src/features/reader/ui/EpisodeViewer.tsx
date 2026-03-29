@@ -194,7 +194,7 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
   }, [data.blocks.length, data.slug, lastTypingIdx, safeInterval, safeTimeout])
 
   return (
-    <div className="max-w-g-reader mx-auto px-4 md:px-8 pb-16 md:pb-32">
+    <div className="max-w-g-reader mx-auto px-4 md:px-8 pb-16 md:pb-32" style={{ lineHeight: 'var(--g-line-height, 1.9)' }}>
       {/* 히어로 */}
       <header className="pt-12 md:pt-20 pb-8 md:pb-14 border-b border-g-border">
         <div className="font-g-sans text-g-caption tracking-g-wide text-g-text-muted uppercase mb-3 md:mb-5 min-h-[1em]">
@@ -207,7 +207,7 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
           )}
         </div>
 
-        <h1 className="text-2xl md:text-4xl font-normal leading-[1.3] text-g-text-bright mb-2.5 italic min-h-[1.3em]">
+        <h1 className="text-2xl md:text-4xl font-normal leading-[1.3] text-g-text-bright mb-2.5 italic min-h-[1.3em]" style={{ fontWeight: 'var(--g-title-weight, 400)', letterSpacing: 'var(--g-letter-spacing, 0)' }}>
           {showImmediately || animationType !== "typing" ? meta.title : stage >= 2 && (
             <TypeWriter
               text={meta.title}
