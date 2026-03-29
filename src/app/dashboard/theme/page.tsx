@@ -313,7 +313,7 @@ export default function ThemeEditorPage() {
             <div className="text-center mb-12">
               <p className="text-xs tracking-widest mb-4" style={{ color: 'var(--g-text-dim)' }}>SHORT FICTION ANTHOLOGY</p>
               <h1 className="text-3xl italic mb-2" style={{ color: 'var(--g-text-bright)' }}>{user.name}</h1>
-              <p className="text-sm" style={{ color: 'var(--g-text-dim)' }}>grimoire.app/{user.slug}</p>
+              <p className="text-sm" style={{ color: 'var(--g-text-dim)' }}>grimoire-book.com/{user.slug}</p>
             </div>
 
             <hr style={{ borderColor: 'var(--g-border)' }} />

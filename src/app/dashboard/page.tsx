@@ -126,7 +126,7 @@ export default function DashboardPage() {
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 mb-8">
           <h1 className="text-2xl font-bold text-white mb-2">환영합니다, {user.name}님!</h1>
           <p className="text-neutral-400">
-            내 공간: <Link href={`/${user.slug}`} className="text-amber-500 hover:text-amber-400" target="_blank">grimoire.app/{user.slug}</Link>
+            내 공간: <Link href={`/${user.slug}`} className="text-amber-500 hover:text-amber-400" target="_blank">grimoire-book.com/{user.slug}</Link>
           </p>
         </div>
 

@@ -15,8 +15,8 @@
 | 환경 | Web | API |
 |------|-----|-----|
 | development | localhost:3001 | localhost:3000 |
-| inhouse | inhouse.grimoire.app | inhouse-api.grimoire.app |
-| production | grimoire.app | api.grimoire.app |
+| inhouse | inhouse.grimoire-book.com | inhouse-api.grimoire-book.com |
+| production | grimoire-book.com | api.grimoire-book.com |
 
 ## Azure 리소스
 
@@ -38,7 +38,7 @@ NODE_ENV=development|inhouse|production
 PORT=3000
 DATABASE_URL=postgresql://...
 JWT_SECRET=...
-CORS_ORIGIN=http://localhost:3001|https://inhouse.grimoire.app|https://grimoire.app
+CORS_ORIGIN=http://localhost:3001|https://inhouse.grimoire-book.com|https://grimoire-book.com
 
 # 선택 (없으면 해당 기능 비활성화)
 ANTHROPIC_API_KEY=sk-ant-...
@@ -55,5 +55,5 @@ PAYAPP_SECRET=...
 NEXT_PUBLIC_APP_ENV=development|inhouse|production
 
 # 런타임 (BFF 프록시 — 서버 사이드에서 백엔드 직접 호출용)
-API_URL=http://localhost:3000/api|https://inhouse-api.grimoire.app/api|https://api.grimoire.app/api
+API_URL=http://localhost:3000/api|https://inhouse-api.grimoire-book.com/api|https://api.grimoire-book.com/api
 ```

@@ -109,7 +109,7 @@ export default function RegisterPage() {
           <div>
             <label className="block text-sm text-neutral-300 mb-1">슬러그 (URL 경로)</label>
             <div className="flex items-center">
-              <span className="text-neutral-500 text-sm mr-2">grimoire.app/</span>
+              <span className="text-neutral-500 text-sm mr-2">grimoire-book.com/</span>
               <input
                 type="text"
                 value={form.slug}

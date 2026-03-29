@@ -54,7 +54,7 @@ export default function ProfilePage() {
           <div>
             <label className="block text-sm text-neutral-300 mb-1">슬러그 (URL)</label>
             <div className="flex items-center">
-              <span className="text-neutral-500 text-sm mr-2">grimoire.app/</span>
+              <span className="text-neutral-500 text-sm mr-2">grimoire-book.com/</span>
               <input type="text" value={user.slug} disabled className="flex-1 px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-500 cursor-not-allowed" />
             </div>
             <p className="text-neutral-600 text-xs mt-1">슬러그 변경은 추후 지원 예정</p>
