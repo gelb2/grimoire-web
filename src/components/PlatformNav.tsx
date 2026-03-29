@@ -17,7 +17,7 @@ interface PlatformNavProps {
 const styles = {
   platform: {
     header: 'border-b border-neutral-200 px-6 py-4 bg-white',
-    logo: 'text-2xl font-black text-black hover:text-platform-accent transition',
+    logo: 'text-2xl font-bold text-black hover:text-platform-accent transition font-[var(--font-logo)] tracking-wide',
     divider: 'text-neutral-300',
     link: (active: boolean) => active
       ? 'text-xs uppercase tracking-widest text-black border-b-2 border-platform-accent pb-0.5'
@@ -35,7 +35,7 @@ const styles = {
   },
   'author-space': {
     header: 'border-b border-neutral-800 px-6 py-4',
-    logo: 'text-xl font-bold text-white hover:text-amber-500 transition',
+    logo: 'text-xl font-bold text-white hover:text-amber-500 transition font-[var(--font-logo)] tracking-wide',
     divider: 'text-neutral-600',
     link: (active: boolean) => active
       ? 'text-sm text-amber-500 transition'

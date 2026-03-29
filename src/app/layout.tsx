@@ -1,7 +1,16 @@
 import type { Metadata, Viewport } from "next"
 import type { ReactNode } from "react"
+import { Josefin_Sans } from "next/font/google"
 import { Toaster } from "sonner"
 import "./globals.css"
+
+// CI 로고 폰트 — 바우하우스 기하학 (Josefin Sans)
+const josefin = Josefin_Sans({
+  subsets: ["latin"],
+  weight: ["700"],
+  variable: "--font-logo",
+  display: "swap",
+})
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -43,7 +52,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ko">
-      <body>
+      <body className={josefin.variable}>
         {children}
         <Toaster theme="dark" position="bottom-center" richColors />
       </body>
