@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import { PlatformNav } from '@/components/PlatformNav'
+import { ThemePreview } from '@/components/ThemePreview'
 import { themePresets, AuthorTheme } from '@/features/theme'
 
 const colorFields = [
@@ -187,6 +188,8 @@ export default function ThemeEditorPage() {
   const titleSizeMap: Record<string, string> = { sm: '2rem', md: '3rem', lg: '4rem', xl: '6rem' }
   const titleWeightMap: Record<string, string> = { light: '300', normal: '400', bold: '700', black: '900' }
   const letterSpacingMap: Record<string, string> = { tight: '-0.02em', normal: '0', wide: '0.1em' }
+  const lineHeightMap: Record<string, string> = { compact: '1.5', normal: '1.7', relaxed: '1.9' }
+  const contentWidthMap: Record<string, string> = { narrow: '600px', normal: '700px', wide: '860px' }
 
   const previewStyle: Record<string, string> = {
     '--g-bg': theme.bgPrimary,
@@ -201,6 +204,8 @@ export default function ThemeEditorPage() {
     '--g-title-size': titleSizeMap[theme.titleSize ?? 'lg'],
     '--g-title-weight': titleWeightMap[theme.titleWeight ?? 'bold'],
     '--g-letter-spacing': letterSpacingMap[theme.letterSpacing ?? 'normal'],
+    '--g-line-height': lineHeightMap[theme.bodyLineHeight ?? 'relaxed'],
+    '--g-content-width': contentWidthMap[theme.contentWidth ?? 'normal'],
   } as Record<string, string>
 
   return (
@@ -439,57 +444,12 @@ export default function ThemeEditorPage() {
           </div>
         </div>
 
-        {/* 오른쪽: 실시간 미리보기 */}
-        <div
-          className="rounded-xl border border-neutral-800 overflow-hidden min-h-[600px]"
-          style={previewStyle}
-        >
-          <div className="h-full p-8" style={{ backgroundColor: 'var(--g-bg)', color: 'var(--g-text)' }}>
-            {/* 미리보기 헤더 — 작가 공간 스타일 (Phase 1 타이포 반영) */}
-            <div className="text-center mb-12">
-              <p className="text-xs mb-4" style={{ color: 'var(--g-text-dim)', letterSpacing: 'var(--g-letter-spacing, 0.25em)' }}>SHORT FICTION ANTHOLOGY</p>
-              <h1 className="italic mb-2" style={{ color: 'var(--g-text-bright)', fontSize: 'var(--g-title-size, 3rem)', fontWeight: 'var(--g-title-weight, 700)', letterSpacing: 'var(--g-letter-spacing, 0)' }}>{user.name}</h1>
-              <p className="text-sm" style={{ color: 'var(--g-text-dim)' }}>grimoire-book.com/{user.slug}</p>
-            </div>
-
-            <hr style={{ borderColor: 'var(--g-border)' }} />
-
-            {/* 미리보기 에피소드 카드 */}
-            <div className="max-w-lg mx-auto space-y-6 mt-8">
-              <p className="text-xs tracking-widest uppercase" style={{ color: 'var(--g-text-dim)' }}>에피소드</p>
-              <div className="p-6 rounded-lg" style={{ backgroundColor: 'var(--g-bg2)', borderColor: 'var(--g-border)', borderWidth: '1px', borderStyle: 'solid' }}>
-                <p className="text-xs tracking-widest mb-2" style={{ color: 'var(--g-text-dim)' }}>EPISODE 01</p>
-                <h3 className="text-lg italic mb-2" style={{ color: 'var(--g-text-bright)' }}>제 1화. 시작</h3>
-                <p className="text-sm leading-relaxed" style={{ color: 'var(--g-text-muted)' }}>
-                  어둠 속에서 한 줄기 빛이 스며들었다.
-                  그것은 오래전 잊혀진 이야기의 첫 페이지였다.
-                </p>
-                <p className="text-xs mt-3" style={{ color: 'var(--g-accent2)' }}>읽기 &rarr;</p>
-              </div>
-
-              <hr style={{ borderColor: 'var(--g-border)' }} />
-
-              {/* 미리보기 에피소드 뷰어 스타일 */}
-              <p className="text-xs tracking-widest uppercase" style={{ color: 'var(--g-text-muted)' }}>{user.name} · EPISODE 01</p>
-              <h2 className="text-2xl italic" style={{ color: 'var(--g-text-bright)' }}>제목이 여기에 표시됩니다</h2>
-
-              <p className="leading-relaxed">
-                바람이 불어왔다. 차갑지도, 따뜻하지도 않은 바람.
-                그저 존재를 확인시켜 주는 바람이었다.
-              </p>
-
-              <p className="italic" style={{ color: 'var(--g-accent2)' }}>
-                &ldquo;모든 이야기에는 시작이 있고, 모든 시작에는 용기가 필요하다.&rdquo;
-              </p>
-
-              <div className="text-center mt-8">
-                <span className="inline-block px-6 py-2 rounded-lg text-sm" style={{ backgroundColor: 'var(--g-accent)', color: 'var(--g-bg)' }}>
-                  다음 화 읽기
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* 오른쪽: 실시간 미리보기 — 레이아웃/히어로/타이포 실시간 반영 */}
+        <ThemePreview
+          theme={theme}
+          authorName={user.name}
+          previewStyle={previewStyle}
+        />
       </main>
     </div>
   )
