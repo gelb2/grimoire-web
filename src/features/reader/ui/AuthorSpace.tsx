@@ -101,7 +101,7 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
   if (loading) {
     return (
       <div className="min-h-screen bg-g-bg">
-        <PlatformNav />
+        <PlatformNav variant="author-space" />
         <main className="max-w-6xl mx-auto px-6 py-16">
           {/* 작가 헤더 스켈레톤 */}
           <div className="mb-12 text-center">
@@ -354,7 +354,7 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
 
   return (
     <div className="min-h-screen bg-g-bg">
-      <PlatformNav />
+      <PlatformNav variant="author-space" />
 
       <main className="max-w-6xl mx-auto px-6 py-8">
         {/* 작가 헤더 — 이름 클릭 시 프로필 페이지 이동 */}
@@ -398,6 +398,7 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
                   viewCount={work.viewCount}
                   context="author-space"
                   firstEpisodeSlug={work.episodes?.[0]?.slug}
+                  variant="author-space"
                 />
               ))}
             </div>
