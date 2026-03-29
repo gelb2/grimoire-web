@@ -32,18 +32,26 @@
 
   /* ── 읽기 폭 토큰 ── */
   --max-w-g-landing: 900px;
-  --max-w-g-reader: 700px;
+  --max-w-g-reader: var(--g-content-width, 700px);
   --max-w-g-reader-narrow: 640px;
 
   /* ── 타이포 크기 토큰 ── */
   --font-size-g-label: 10px;
   --font-size-g-caption: 11px;
   --font-size-g-body-sm: 14px;
+  --font-size-g-title: var(--g-title-size, 4rem);
 
   /* ── 자간 토큰 (흔들리던 값 통일) ── */
   --tracking-g-wide: 0.25em;
   --tracking-g-normal: 0.1em;
   --tracking-g-tight: 0.05em;
+  --tracking-g-title: var(--g-letter-spacing, 0);
+
+  /* ── 제목 두께 토큰 ── */
+  --font-weight-g-title: var(--g-title-weight, 700);
+
+  /* ── 행간 토큰 ── */
+  --leading-g-body: var(--g-line-height, 1.9);
 
   /* ── 둥글기 토큰 ── */
   --radius-g-card: 8px;
