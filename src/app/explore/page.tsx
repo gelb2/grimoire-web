@@ -162,9 +162,9 @@ export default function ExplorePage() {
           )}
         </div>
 
-        {/* 인기 작품 — 넘버링 리스트 */}
+        {/* 인기 작품 — 매거진 비대칭 그리드 */}
         <section className="mb-16">
-          <div className="flex items-baseline gap-4 mb-2">
+          <div className="flex items-baseline gap-4 mb-6">
             <h2 className="text-3xl font-black text-black">인기 작품</h2>
             <div className="flex-1 h-px bg-black" />
           </div>
@@ -180,26 +180,12 @@ export default function ExplorePage() {
             </div>
           ) : (
             <>
-              <div>
-                {popularWorks.map((work, i) => (
-                  <WorkCard
-                    key={work.id}
-                    title={work.title}
-                    authorName={work.authorName ?? ''}
-                    authorSlug={work.authorSlug ?? ''}
-                    workSlug={work.slug}
-                    genre={work.genre}
-                    episodeCount={work.episodeCount ?? 0}
-                    viewCount={work.viewCount}
-                    index={i}
-                  />
-                ))}
-              </div>
+              <MagazineGrid works={popularWorks} />
               {popularHasMore && (
                 <button
                   onClick={loadMorePopular}
                   disabled={popularLoading}
-                  className="mt-4 text-sm underline text-neutral-500 hover:text-black transition disabled:opacity-50"
+                  className="mt-6 text-sm underline text-neutral-500 hover:text-black transition disabled:opacity-50"
                 >
                   {popularLoading ? '불러오는 중...' : '더 보기'}
                 </button>
@@ -208,9 +194,9 @@ export default function ExplorePage() {
           )}
         </section>
 
-        {/* 최신 작품 — 넘버링 리스트 */}
+        {/* 최신 작품 — 매거진 비대칭 그리드 */}
         <section className="mb-16">
-          <div className="flex items-baseline gap-4 mb-2">
+          <div className="flex items-baseline gap-4 mb-6">
             <h2 className="text-3xl font-black text-black">최신 작품</h2>
             <div className="flex-1 h-px bg-black" />
           </div>
@@ -226,26 +212,12 @@ export default function ExplorePage() {
             </div>
           ) : (
             <>
-              <div>
-                {recentWorks.map((work, i) => (
-                  <WorkCard
-                    key={work.id}
-                    title={work.title}
-                    authorName={work.authorName ?? ''}
-                    authorSlug={work.authorSlug ?? ''}
-                    workSlug={work.slug}
-                    genre={work.genre}
-                    episodeCount={work.episodeCount ?? 0}
-                    viewCount={work.viewCount}
-                    index={i}
-                  />
-                ))}
-              </div>
+              <MagazineGrid works={recentWorks} />
               {recentHasMore && (
                 <button
                   onClick={loadMoreRecent}
                   disabled={recentLoading}
-                  className="mt-4 text-sm underline text-neutral-500 hover:text-black transition disabled:opacity-50"
+                  className="mt-6 text-sm underline text-neutral-500 hover:text-black transition disabled:opacity-50"
                 >
                   {recentLoading ? '불러오는 중...' : '더 보기'}
                 </button>
@@ -288,6 +260,107 @@ export default function ExplorePage() {
           </section>
         )}
       </main>
+    </div>
+  )
+}
+
+// ── 매거진 비대칭 그리드 ──
+// 3개씩 묶어서: 큰 카드 1 + 작은 카드 2 (좌우 번갈아)
+
+interface MagazineWork {
+  id: string
+  title: string
+  authorName?: string
+  authorSlug?: string
+  slug: string
+  genre?: string
+  episodeCount?: number
+  viewCount?: number
+}
+
+function MagazineGrid({ works }: { works: MagazineWork[] }) {
+  // 3개씩 그룹으로 나누기
+  const groups: MagazineWork[][] = []
+  for (let i = 0; i < works.length; i += 3) {
+    groups.push(works.slice(i, i + 3))
+  }
+
+  return (
+    <div className="space-y-4">
+      {groups.map((group, gi) => {
+        const isReversed = gi % 2 === 1
+        const big = group[0]
+        const smalls = group.slice(1)
+
+        // 3개 미만인 마지막 그룹 — 균등 그리드
+        if (group.length < 3) {
+          return (
+            <div key={gi} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {group.map(work => (
+                <WorkCard
+                  key={work.id}
+                  title={work.title}
+                  authorName={work.authorName ?? ''}
+                  authorSlug={work.authorSlug ?? ''}
+                  workSlug={work.slug}
+                  genre={work.genre}
+                  episodeCount={work.episodeCount ?? 0}
+                  viewCount={work.viewCount}
+                  variant="magazine"
+                />
+              ))}
+            </div>
+          )
+        }
+
+        const bigCard = (
+          <WorkCard
+            key={big.id}
+            title={big.title}
+            authorName={big.authorName ?? ''}
+            authorSlug={big.authorSlug ?? ''}
+            workSlug={big.slug}
+            genre={big.genre}
+            episodeCount={big.episodeCount ?? 0}
+            viewCount={big.viewCount}
+            variant="magazine"
+          />
+        )
+
+        const smallCards = (
+          <div className="flex flex-col gap-4">
+            {smalls.map(work => (
+              <WorkCard
+                key={work.id}
+                title={work.title}
+                authorName={work.authorName ?? ''}
+                authorSlug={work.authorSlug ?? ''}
+                workSlug={work.slug}
+                genre={work.genre}
+                episodeCount={work.episodeCount ?? 0}
+                viewCount={work.viewCount}
+                variant="magazine"
+              />
+            ))}
+          </div>
+        )
+
+        return (
+          <div key={gi} className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-4">
+            {isReversed ? (
+              <>
+                <div className="md:order-2">{bigCard}</div>
+                <div className="md:order-1">{smallCards}</div>
+              </>
+            ) : (
+              <>
+                {bigCard}
+                {smallCards}
+              </>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }
