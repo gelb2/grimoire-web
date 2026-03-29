@@ -36,7 +36,7 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-platform-bg px-4">
       <div className="w-full max-w-md">
         <p className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 text-center mb-4">CREATE YOUR SPACE</p>
-        <h1 className="text-5xl font-bold text-black text-center mb-10 font-[var(--font-logo)] tracking-wide">
+        <h1 className="text-5xl font-light uppercase text-black text-center mb-10 font-[var(--font-logo)] tracking-[0.2em]">
           <Link href="/" className="hover:text-platform-accent transition">Grimoire</Link>
         </h1>
 

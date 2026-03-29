@@ -177,7 +177,7 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
         {showWorkCount != null && (
           <span className="text-xs text-g-text-dim">{showWorkCount} WORKS</span>
         )}
-        <Link href="/" className="text-xs text-g-text-dim hover:text-g-accent transition opacity-60 hover:opacity-100 font-[var(--font-logo)] tracking-wide">
+        <Link href="/" className="text-xs text-g-text-dim hover:text-g-accent transition opacity-60 hover:opacity-100 font-[var(--font-logo)] tracking-[0.2em] uppercase">
           Grimoire
         </Link>
       </div>

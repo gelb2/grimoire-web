@@ -7,7 +7,7 @@ import "./globals.css"
 // CI 로고 폰트 — 바우하우스 기하학 (Josefin Sans)
 const josefin = Josefin_Sans({
   subsets: ["latin"],
-  weight: ["700"],
+  weight: ["300", "700"],
   variable: "--font-logo",
   display: "swap",
 })
