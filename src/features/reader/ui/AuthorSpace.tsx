@@ -157,12 +157,199 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
           workSlug={firstWork?.slug}
           contents={episodeContents}
           decorations={theme.decorations}
+          heroStyle={theme.heroStyle}
         />
       </div>
     )
   }
 
-  // layout: "grid" (기본) — 일반 작품 카드 그리드
+  // ── 미니멀 네비 — gallery/magazine/minimal 공통 ──
+  // navStyle이 "hidden"이어도 최소 탐색 링크는 반드시 제공 (고아 페이지 방지)
+  const MinimalNav = ({ showWorkCount }: { showWorkCount?: number }) => (
+    <nav className="absolute top-0 left-0 right-0 flex justify-between items-center px-8 py-6 z-20">
+      <Link href="/explore" className="text-xs text-g-text-dim hover:text-g-accent transition opacity-60 hover:opacity-100">
+        &larr; 탐색
+      </Link>
+      {theme.navStyle !== "hidden" && (
+        <Link href={`/${authorSlug}/profile`} className="text-sm font-medium text-g-text-bright tracking-widest uppercase hover:text-g-accent transition">{author.name}</Link>
+      )}
+      <div className="flex items-center gap-4">
+        {showWorkCount != null && (
+          <span className="text-xs text-g-text-dim">{showWorkCount} WORKS</span>
+        )}
+        <Link href="/" className="text-xs text-g-text-dim hover:text-g-accent transition opacity-60 hover:opacity-100">
+          Grimoire
+        </Link>
+      </div>
+    </nav>
+  )
+
+  // ── gallery 레이아웃 — AHYEON RYU 참고 ──
+  // 풀스크린 작가명 + 미니멀 작품 목록
+  if (theme.layout === "gallery") {
+    const works = author.works ?? []
+    return (
+      <div className="min-h-screen bg-g-bg text-g-text">
+        {/* 풀스크린 히어로 — 작가명이 화면을 압도 */}
+        <div className="min-h-screen flex flex-col justify-end px-8 pb-16 relative">
+          <MinimalNav showWorkCount={works.length} />
+
+          {/* 작가명 — 화면 하단 풀폭 */}
+          <h1
+            className="text-g-text-bright leading-none"
+            style={{
+              fontSize: 'clamp(3rem, 12vw, var(--g-title-size, 6rem))',
+              fontWeight: 'var(--g-title-weight, 900)',
+              letterSpacing: 'var(--g-letter-spacing, 0.1em)',
+            }}
+          >
+            {author.name}
+          </h1>
+
+          {author.description && (
+            <p className="text-g-text-muted text-sm mt-4 max-w-md">{author.description}</p>
+          )}
+        </div>
+
+        {/* 작품 목록 — 미니멀 리스트 */}
+        <div className="px-8 pb-24">
+          <div className="border-t border-g-border pt-12">
+            {works.map((work, i) => (
+              <Link
+                key={work.id}
+                href={`/${authorSlug}/${work.slug}`}
+                className="group flex items-baseline gap-6 py-6 border-b border-g-border hover:border-g-accent transition-colors"
+              >
+                <span className="text-sm text-g-text-dim font-mono">{String(i + 1).padStart(2, '0')}</span>
+                <h2
+                  className="text-g-text-bright group-hover:text-g-accent transition-colors"
+                  style={{
+                    fontSize: 'clamp(1.5rem, 4vw, 3rem)',
+                    fontWeight: 'var(--g-title-weight, 700)',
+                    letterSpacing: 'var(--g-letter-spacing, 0)',
+                  }}
+                >
+                  {work.title}
+                </h2>
+                <span className="ml-auto text-xs text-g-text-dim">{work.episodeCount ?? work.episodes?.length ?? 0}화</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── magazine 레이아웃 — UNLEARNED 참고 ──
+  if (theme.layout === "magazine") {
+    const works = author.works ?? []
+    return (
+      <div className="min-h-screen bg-g-bg text-g-text">
+        {/* 풀스크린 히어로 */}
+        <div className="min-h-[70vh] flex items-center justify-center px-8 border-b border-g-border relative">
+          <MinimalNav />
+          <div className="text-center">
+            {theme.decorations?.headerSubtitle && (
+              <p className="text-xs tracking-widest text-g-text-dim mb-8 uppercase">{theme.decorations.headerSubtitle}</p>
+            )}
+            <h1
+              className="text-g-text-bright leading-none"
+              style={{
+                fontSize: 'clamp(3rem, 10vw, var(--g-title-size, 6rem))',
+                fontWeight: 'var(--g-title-weight, 900)',
+                letterSpacing: 'var(--g-letter-spacing, -0.02em)',
+              }}
+            >
+              {author.name}
+            </h1>
+            {author.description && (
+              <p className="text-g-text-muted mt-6 max-w-lg mx-auto leading-relaxed">{author.description}</p>
+            )}
+          </div>
+        </div>
+
+        {/* 작품 목록 — 넘버링 + 대형 제목 */}
+        <div className="max-w-5xl mx-auto px-8 py-16">
+          {works.map((work, i) => (
+            <Link
+              key={work.id}
+              href={`/${authorSlug}/${work.slug}`}
+              className="group grid grid-cols-[60px_1fr_auto] items-baseline gap-4 py-8 border-b border-g-border hover:border-g-accent transition-colors"
+            >
+              <span className="text-g-accent font-mono text-sm">{String(i + 1).padStart(2, '0')}</span>
+              <div>
+                <h2
+                  className="text-g-text-bright group-hover:text-g-accent transition-colors"
+                  style={{
+                    fontSize: 'clamp(1.2rem, 3vw, 2.5rem)',
+                    fontWeight: 'var(--g-title-weight, 700)',
+                  }}
+                >
+                  {work.title}
+                </h2>
+                {work.description && (
+                  <p className="text-g-text-muted text-sm mt-2 line-clamp-2">{work.description}</p>
+                )}
+              </div>
+              <span className="text-xs text-g-text-dim">{work.episodeCount ?? work.episodes?.length ?? 0}화</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // ── minimal 레이아웃 — Frame 템플릿 참고 ──
+  if (theme.layout === "minimal") {
+    const works = author.works ?? []
+    return (
+      <div className="min-h-screen bg-g-bg text-g-text flex flex-col">
+        {/* 히어로 — 중앙 작가명 */}
+        <div className="flex-1 flex items-center justify-center px-8 min-h-[60vh] relative">
+          <MinimalNav />
+          <div className="text-center">
+            <h1
+              className="text-g-text-bright italic"
+              style={{
+                fontSize: 'clamp(2rem, 8vw, var(--g-title-size, 4rem))',
+                fontWeight: 'var(--g-title-weight, 300)',
+                letterSpacing: 'var(--g-letter-spacing, 0.1em)',
+              }}
+            >
+              {author.name}
+            </h1>
+          </div>
+        </div>
+
+        {/* 작품 목록 — 산발적 타이포 (Frame 스타일) */}
+        <div className="px-8 pb-24">
+          <div className="max-w-4xl mx-auto text-center">
+            {works.map((work, i) => (
+              <Link
+                key={work.id}
+                href={`/${authorSlug}/${work.slug}`}
+                className="inline-block mx-4 my-3 group"
+              >
+                <span
+                  className="text-g-text-bright group-hover:text-g-accent transition-colors italic"
+                  style={{
+                    fontSize: 'clamp(1rem, 3vw, 2rem)',
+                    fontWeight: 'var(--g-title-weight, 300)',
+                    letterSpacing: 'var(--g-letter-spacing, 0.1em)',
+                  }}
+                >
+                  {work.title}
+                </span>
+                <sup className="text-xs text-g-accent ml-1">[{i + 1}]</sup>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // layout: "grid" / "classic" (기본) — 일반 작품 카드 그리드
   const works = author.works ?? []
 
   return (

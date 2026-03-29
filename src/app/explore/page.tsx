@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import { useDebounce } from '@/hooks/useThrottle'
 import { PlatformNav } from '@/components/PlatformNav'
@@ -56,7 +57,7 @@ export default function ExplorePage() {
         setLoaded(true)
       }
     } catch {
-      // API 실패 시 loaded 설정 안 함 — 다음 방문에서 재시도
+      toast.error('작품 데이터를 불러올 수 없습니다')
     }
   }, [setPopularWorks, setRecentWorks, setLoaded,
       setPopularHasMore, setRecentHasMore, setPopularPage, setRecentPage])
@@ -87,7 +88,9 @@ export default function ExplorePage() {
       appendPopularWorks(res.works)
       setPopularPage(nextPage)
       setPopularHasMore(res.hasMore)
-    } catch { /* 에러 무시 */ }
+    } catch {
+      toast.error('작품을 더 불러올 수 없습니다')
+    }
     finally { setPopularLoading(false) }
   }, [popularLoading, popularHasMore, popularPage,
       appendPopularWorks, setPopularPage, setPopularHasMore, setPopularLoading])
@@ -102,7 +105,9 @@ export default function ExplorePage() {
       appendRecentWorks(res.works)
       setRecentPage(nextPage)
       setRecentHasMore(res.hasMore)
-    } catch { /* 에러 무시 */ }
+    } catch {
+      toast.error('작품을 더 불러올 수 없습니다')
+    }
     finally { setRecentLoading(false) }
   }, [recentLoading, recentHasMore, recentPage,
       appendRecentWorks, setRecentPage, setRecentHasMore, setRecentLoading])
@@ -123,7 +128,10 @@ export default function ExplorePage() {
     try {
       const results = await api.searchAuthors(query)
       setAuthors(results)
-    } catch { setAuthors([]) }
+    } catch {
+      setAuthors([])
+      toast.error('검색에 실패했습니다')
+    }
     finally { setSearching(false) }
   }
 

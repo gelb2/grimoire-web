@@ -33,6 +33,7 @@ export default function ProfilePage() {
       <PlatformNav />
 
       <main className="max-w-2xl mx-auto px-6 py-8">
+        <Link href="/dashboard" className="text-sm text-neutral-500 hover:text-amber-500 transition mb-6 inline-block">&larr; 대시보드</Link>
         <h1 className="text-2xl font-bold text-white mb-6">프로필 설정</h1>
 
         {message && (
