@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/features/auth'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import { PlatformNav } from '@/components/PlatformNav'
 import { themePresets, AuthorTheme } from '@/features/theme'
@@ -39,6 +40,62 @@ const toneOptions = [
   { value: 'sepia', label: '세피아' },
 ]
 
+// Phase 1: 타이포그래피 확장
+const titleSizeOptions = [
+  { value: 'sm', label: '작게' },
+  { value: 'md', label: '보통' },
+  { value: 'lg', label: '크게' },
+  { value: 'xl', label: '매우 크게' },
+]
+
+const titleWeightOptions = [
+  { value: 'light', label: '가늘게' },
+  { value: 'normal', label: '보통' },
+  { value: 'bold', label: '굵게' },
+  { value: 'black', label: '매우 굵게' },
+]
+
+const letterSpacingOptions = [
+  { value: 'tight', label: '좁게' },
+  { value: 'normal', label: '보통' },
+  { value: 'wide', label: '넓게' },
+]
+
+const lineHeightOptions = [
+  { value: 'compact', label: '빽빽하게' },
+  { value: 'normal', label: '보통' },
+  { value: 'relaxed', label: '넉넉하게' },
+]
+
+const contentWidthOptions = [
+  { value: 'narrow', label: '좁게 (600px)' },
+  { value: 'normal', label: '보통 (700px)' },
+  { value: 'wide', label: '넓게 (860px)' },
+]
+
+// Phase 2: 레이아웃 프리셋
+const layoutOptions = [
+  { value: 'series', label: '시리즈 (탭)' },
+  { value: 'grid', label: '그리드' },
+  { value: 'classic', label: '클래식' },
+  { value: 'magazine', label: '매거진' },
+  { value: 'gallery', label: '갤러리' },
+  { value: 'minimal', label: '미니멀' },
+]
+
+const heroStyleOptions = [
+  { value: 'fullname', label: '풀스크린 이름' },
+  { value: 'cover', label: '커버 이미지' },
+  { value: 'minimal', label: '미니멀' },
+  { value: 'none', label: '없음' },
+]
+
+const navStyleOptions = [
+  { value: 'top', label: '상단 바' },
+  { value: 'sidebar', label: '사이드바' },
+  { value: 'hidden', label: '숨김' },
+]
+
 export default function ThemeEditorPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
@@ -67,7 +124,9 @@ export default function ThemeEditorPage() {
           setSelectedPreset('custom')
         }
       }
-    }).catch(() => {})
+    }).catch(() => {
+      toast.error('저장된 테마를 불러올 수 없습니다. 기본 테마로 시작합니다.')
+    })
   }, [user])
 
   const updateTheme = (key: string, value: string) => {
@@ -125,6 +184,10 @@ export default function ThemeEditorPage() {
   if (loading || !user) return null
 
   // 미리보기용 인라인 스타일 — ThemeProvider와 동일한 변수 전부 설정
+  const titleSizeMap: Record<string, string> = { sm: '2rem', md: '3rem', lg: '4rem', xl: '6rem' }
+  const titleWeightMap: Record<string, string> = { light: '300', normal: '400', bold: '700', black: '900' }
+  const letterSpacingMap: Record<string, string> = { tight: '-0.02em', normal: '0', wide: '0.1em' }
+
   const previewStyle: Record<string, string> = {
     '--g-bg': theme.bgPrimary,
     '--g-bg2': theme.bgSecondary,
@@ -135,6 +198,9 @@ export default function ThemeEditorPage() {
     '--g-accent': theme.accent,
     '--g-accent2': theme.accent2 ?? theme.accent,
     '--g-border': theme.border,
+    '--g-title-size': titleSizeMap[theme.titleSize ?? 'lg'],
+    '--g-title-weight': titleWeightMap[theme.titleWeight ?? 'bold'],
+    '--g-letter-spacing': letterSpacingMap[theme.letterSpacing ?? 'normal'],
   } as Record<string, string>
 
   return (
@@ -254,6 +320,76 @@ export default function ThemeEditorPage() {
             </div>
           </div>
 
+          {/* ── 타이포그래피 (Phase 1) ── */}
+          <div className="border-t border-neutral-800 pt-4">
+            <h3 className="text-sm font-medium text-neutral-300 mb-3">타이포그래피</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-neutral-400 mb-1">제목 크기</label>
+                <select value={theme.titleSize ?? 'lg'} onChange={e => updateTheme('titleSize', e.target.value)}
+                  className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm">
+                  {titleSizeOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-neutral-400 mb-1">제목 두께</label>
+                <select value={theme.titleWeight ?? 'bold'} onChange={e => updateTheme('titleWeight', e.target.value)}
+                  className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm">
+                  {titleWeightOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-neutral-400 mb-1">자간</label>
+                <select value={theme.letterSpacing ?? 'normal'} onChange={e => updateTheme('letterSpacing', e.target.value)}
+                  className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm">
+                  {letterSpacingOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-neutral-400 mb-1">본문 행간</label>
+                <select value={theme.bodyLineHeight ?? 'relaxed'} onChange={e => updateTheme('bodyLineHeight', e.target.value)}
+                  className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm">
+                  {lineHeightOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-neutral-400 mb-1">읽기 영역 폭</label>
+                <select value={theme.contentWidth ?? 'normal'} onChange={e => updateTheme('contentWidth', e.target.value)}
+                  className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm">
+                  {contentWidthOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* ── 레이아웃 (Phase 2) ── */}
+          <div className="border-t border-neutral-800 pt-4">
+            <h3 className="text-sm font-medium text-neutral-300 mb-3">레이아웃</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-neutral-400 mb-1">레이아웃 스타일</label>
+                <select value={theme.layout ?? 'grid'} onChange={e => updateTheme('layout', e.target.value)}
+                  className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm">
+                  {layoutOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-neutral-400 mb-1">히어로 스타일</label>
+                <select value={theme.heroStyle ?? 'minimal'} onChange={e => updateTheme('heroStyle', e.target.value)}
+                  className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm">
+                  {heroStyleOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-neutral-400 mb-1">네비게이션</label>
+                <select value={theme.navStyle ?? 'top'} onChange={e => updateTheme('navStyle', e.target.value)}
+                  className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm">
+                  {navStyleOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                </select>
+              </div>
+            </div>
+          </div>
+
           {/* AI 재생성 */}
           <div className="border-t border-neutral-800 pt-4">
             {!showAiInput ? (
@@ -309,10 +445,10 @@ export default function ThemeEditorPage() {
           style={previewStyle}
         >
           <div className="h-full p-8" style={{ backgroundColor: 'var(--g-bg)', color: 'var(--g-text)' }}>
-            {/* 미리보기 헤더 — 작가 공간 스타일 */}
+            {/* 미리보기 헤더 — 작가 공간 스타일 (Phase 1 타이포 반영) */}
             <div className="text-center mb-12">
-              <p className="text-xs tracking-widest mb-4" style={{ color: 'var(--g-text-dim)' }}>SHORT FICTION ANTHOLOGY</p>
-              <h1 className="text-3xl italic mb-2" style={{ color: 'var(--g-text-bright)' }}>{user.name}</h1>
+              <p className="text-xs mb-4" style={{ color: 'var(--g-text-dim)', letterSpacing: 'var(--g-letter-spacing, 0.25em)' }}>SHORT FICTION ANTHOLOGY</p>
+              <h1 className="italic mb-2" style={{ color: 'var(--g-text-bright)', fontSize: 'var(--g-title-size, 3rem)', fontWeight: 'var(--g-title-weight, 700)', letterSpacing: 'var(--g-letter-spacing, 0)' }}>{user.name}</h1>
               <p className="text-sm" style={{ color: 'var(--g-text-dim)' }}>grimoire-book.com/{user.slug}</p>
             </div>
 

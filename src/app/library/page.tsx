@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/features/auth'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import { PlatformNav } from '@/components/PlatformNav'
 
@@ -38,6 +39,7 @@ export default function LibraryPage() {
   const [bookmarked, setBookmarked] = useState<LibraryItem[]>([])
   const [subscribed, setSubscribed] = useState<SubscribedWork[]>([])
   const [dataLoading, setDataLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
 
   useEffect(() => {
     if (!loading && !user) router.push('/login')
@@ -49,8 +51,12 @@ export default function LibraryPage() {
         .then(data => {
           setBookmarked(data.bookmarked || [])
           setSubscribed(data.subscribed || [])
+          setLoadError(false)
         })
-        .catch(() => {})
+        .catch(() => {
+          setLoadError(true)
+          toast.error('서재 데이터를 불러올 수 없습니다')
+        })
         .finally(() => setDataLoading(false))
     }
   }, [user])
@@ -86,6 +92,16 @@ export default function LibraryPage() {
 
         {dataLoading ? (
           <p className="text-neutral-500 text-center py-16">로딩 중...</p>
+        ) : loadError ? (
+          <div className="text-center py-16">
+            <p className="text-red-400 mb-4">서재 데이터를 불러오지 못했습니다</p>
+            <button
+              onClick={() => { setDataLoading(true); setLoadError(false); api.getLibrary().then(data => { setBookmarked(data.bookmarked || []); setSubscribed(data.subscribed || []) }).catch(() => setLoadError(true)).finally(() => setDataLoading(false)) }}
+              className="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-500 transition"
+            >
+              다시 시도
+            </button>
+          </div>
         ) : (
           <>
             {/* 내 서재 탭 */}
