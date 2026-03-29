@@ -157,6 +157,7 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
           workSlug={firstWork?.slug}
           contents={episodeContents}
           decorations={theme.decorations}
+          heroStyle={theme.heroStyle}
         />
       </div>
     )

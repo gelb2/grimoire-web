@@ -23,6 +23,13 @@ const fontFamilyMap = {
   monospace: "'JetBrains Mono', 'Fira Code', monospace",
 }
 
+// Phase 1 타이포그래피 매핑
+const titleSizeMap = { sm: "2rem", md: "3rem", lg: "4rem", xl: "6rem" }
+const titleWeightMap = { light: "300", normal: "400", bold: "700", black: "900" }
+const letterSpacingMap = { tight: "-0.02em", normal: "0", wide: "0.1em" }
+const lineHeightMap = { compact: "1.5", normal: "1.7", relaxed: "1.9" }
+const contentWidthMap = { narrow: "600px", normal: "700px", wide: "860px" }
+
 export function ThemeProvider({ theme, children }: ThemeProviderProps) {
   const serifFont = fontFamilyMap[theme.fontBody]
   const sansFont = fontFamilyMap["sans-serif"]
@@ -45,6 +52,12 @@ export function ThemeProvider({ theme, children }: ThemeProviderProps) {
             "--g-border": theme.border,
             "--g-serif": serifFont,
             "--g-sans": sansFont,
+            // Phase 1: 타이포그래피 확장
+            "--g-title-size": titleSizeMap[theme.titleSize ?? "lg"],
+            "--g-title-weight": titleWeightMap[theme.titleWeight ?? "bold"],
+            "--g-letter-spacing": letterSpacingMap[theme.letterSpacing ?? "normal"],
+            "--g-line-height": lineHeightMap[theme.bodyLineHeight ?? "relaxed"],
+            "--g-content-width": contentWidthMap[theme.contentWidth ?? "normal"],
             backgroundColor: theme.bgPrimary,
             color: theme.textPrimary,
           } as React.CSSProperties

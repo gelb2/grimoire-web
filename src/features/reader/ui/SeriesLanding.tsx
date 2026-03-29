@@ -23,6 +23,8 @@ interface SeriesLandingProps {
   workSlug?: string
   /** 장식 설정 — 테마에서 전달 */
   decorations?: DecorationConfig
+  /** 히어로 스타일 — Phase 2 (레디맥 리서치 기반) */
+  heroStyle?: "fullname" | "cover" | "minimal" | "none"
 }
 
 // contents를 props로 받으면 사용, 없으면 로컬 데이터 폴백
@@ -31,6 +33,7 @@ export function SeriesLanding({
   authorName = "Grimoire",
   workSlug,
   decorations = DEFAULT_DECORATIONS,
+  heroStyle = "minimal",
 }: SeriesLandingProps) {
   const preface = contents.find((c) => c.type === "preface")
   const episodes = contents.filter((c) => c.type === "episode")
@@ -39,28 +42,65 @@ export function SeriesLanding({
 
   return (
     <div className="max-w-g-landing mx-auto px-4 md:px-8 pt-12 md:pt-20 pb-16 md:pb-32">
-      {/* 헤더 */}
-      <header className="text-center mb-12 md:mb-20 pb-10 md:pb-16 border-b border-g-border">
-        {decorations.headerSubtitle && (
-          <SectionLabel className="text-g-caption text-g-text-muted mb-4 md:mb-6">
-            {decorations.headerSubtitle}
-          </SectionLabel>
-        )}
+      {/* 히어로 — heroStyle에 따라 분기 */}
+      {heroStyle === "fullname" && (
+        <header className="mb-12 md:mb-20 pb-10 md:pb-16 border-b border-g-border">
+          <h1
+            className="italic text-g-text-bright leading-none mb-4"
+            style={{ fontSize: 'var(--g-title-size, 4rem)', fontWeight: 'var(--g-title-weight, 700)', letterSpacing: 'var(--g-letter-spacing, 0)' }}
+          >
+            {authorName}
+          </h1>
+          {decorations.headerSubtitle && (
+            <p className="text-sm text-g-text-dim" style={{ letterSpacing: 'var(--g-letter-spacing, 0.1em)' }}>
+              {decorations.headerSubtitle}
+            </p>
+          )}
+        </header>
+      )}
 
-        <div className="flex justify-center mb-4">
-          <ThemeHeaderIcon decorations={decorations} size={48} opacity={0.6} />
-        </div>
-
-        <h1 className="text-3xl md:text-5xl font-normal italic text-g-text-bright leading-tight mb-4">
-          {authorName}
-        </h1>
-
-        {decorations.footerText && (
-          <div className="font-g-sans text-[12px] text-g-text-dim tracking-g-normal">
-            {decorations.footerText}
+      {heroStyle === "cover" && (
+        <header className="text-center mb-12 md:mb-20 pb-10 md:pb-16 border-b border-g-border relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-g-bg opacity-80" />
+          <div className="relative z-10">
+            {decorations.headerSubtitle && (
+              <p className="text-xs tracking-widest text-g-text-dim mb-6">{decorations.headerSubtitle}</p>
+            )}
+            <h1
+              className="italic text-g-text-bright leading-tight mb-4"
+              style={{ fontSize: 'var(--g-title-size, 4rem)', fontWeight: 'var(--g-title-weight, 700)', letterSpacing: 'var(--g-letter-spacing, 0)' }}
+            >
+              {authorName}
+            </h1>
           </div>
-        )}
-      </header>
+        </header>
+      )}
+
+      {heroStyle === "minimal" && (
+        <header className="text-center mb-12 md:mb-20 pb-10 md:pb-16 border-b border-g-border">
+          {decorations.headerSubtitle && (
+            <SectionLabel className="text-g-caption text-g-text-muted mb-4 md:mb-6">
+              {decorations.headerSubtitle}
+            </SectionLabel>
+          )}
+
+          <div className="flex justify-center mb-4">
+            <ThemeHeaderIcon decorations={decorations} size={48} opacity={0.6} />
+          </div>
+
+          <h1 className="text-3xl md:text-5xl font-normal italic text-g-text-bright leading-tight mb-4">
+            {authorName}
+          </h1>
+
+          {decorations.footerText && (
+            <div className="font-g-sans text-[12px] text-g-text-dim tracking-g-normal">
+              {decorations.footerText}
+            </div>
+          )}
+        </header>
+      )}
+
+      {/* heroStyle === "none" → 히어로 없음 */}
 
       {/* 일러두기 */}
       {preface && (

@@ -29,7 +29,7 @@ export interface AuthorTheme {
   tone: "dark" | "light" | "sepia"
 
   // 레이아웃 — "series" = 시리즈 소설 (탭 네비게이션), "grid" = 일반 그리드
-  layout: "series" | "grid" | "classic"
+  layout: "series" | "grid" | "classic" | "magazine" | "gallery" | "minimal"
 
   // 장식 요소
   decorations: ThemeDecorations
@@ -41,6 +41,17 @@ export interface AuthorTheme {
   typingSpeed?: number     // ms per character (default: 50)
   cardRadius?: string      // border radius (default: "12px")
   navOpacity?: number      // nav bar opacity 0-1 (default: 0.95)
+
+  // ── Phase 1: 타이포그래피 확장 (레디맥 리서치 기반) ──
+  titleSize?: "sm" | "md" | "lg" | "xl"          // 작가명/제목 크기 (default: "lg")
+  titleWeight?: "light" | "normal" | "bold" | "black"  // 제목 두께 (default: "bold")
+  letterSpacing?: "tight" | "normal" | "wide"     // 자간 (default: "normal")
+  bodyLineHeight?: "compact" | "normal" | "relaxed"  // 본문 행간 (default: "relaxed")
+  contentWidth?: "narrow" | "normal" | "wide"     // 읽기 영역 폭 (default: "normal")
+
+  // ── Phase 2: 레이아웃 프리셋 (레디맥 리서치 기반) ──
+  heroStyle?: "fullname" | "cover" | "minimal" | "none"  // 작가 랜딩 히어로 (default: "minimal")
+  navStyle?: "sidebar" | "top" | "hidden"         // 작가 공간 네비 (default: "top")
 }
 
 // 기본 장식 설정 — layout: "grid" 전용
@@ -51,6 +62,17 @@ const defaultDecorations: ThemeDecorations = {
   headerSubtitle: "",
   cardAccentPosition: "left",
   footerText: "",
+}
+
+// 타이포/레이아웃 기본값 — 기존 프리셋과 하위 호환
+const defaultTypography = {
+  titleSize: "lg" as const,
+  titleWeight: "bold" as const,
+  letterSpacing: "normal" as const,
+  bodyLineHeight: "relaxed" as const,
+  contentWidth: "normal" as const,
+  heroStyle: "minimal" as const,
+  navStyle: "top" as const,
 }
 
 // Midnight — 사슴악마 기본 테마 (DeerDevil 원본 값 그대로)
@@ -77,6 +99,7 @@ const midnight: AuthorTheme = {
     cardAccentPosition: "left",
     footerText: "Inspired by the sensibility of A24",
   },
+  ...defaultTypography,
 }
 
 // Parchment — 역사/고전 느낌
@@ -96,6 +119,7 @@ const parchment: AuthorTheme = {
   tone: "sepia",
   layout: "grid",
   decorations: defaultDecorations,
+  ...defaultTypography,
 }
 
 // Morning — 로맨스/일상 밝은 톤
@@ -115,6 +139,7 @@ const morning: AuthorTheme = {
   tone: "light",
   layout: "grid",
   decorations: defaultDecorations,
+  ...defaultTypography,
 }
 
 // Neon — SF/사이버펑크
@@ -134,6 +159,9 @@ const neon: AuthorTheme = {
   tone: "dark",
   layout: "grid",
   decorations: defaultDecorations,
+  ...defaultTypography,
+  titleWeight: "light",
+  letterSpacing: "wide",
 }
 
 // Cream — 에세이/시 따뜻한 톤
@@ -153,6 +181,101 @@ const cream: AuthorTheme = {
   tone: "light",
   layout: "grid",
   decorations: defaultDecorations,
+  ...defaultTypography,
+  bodyLineHeight: "relaxed",
+  contentWidth: "narrow",
+}
+
+// ── 레이아웃 특화 프리셋 (레디맥 리서치 기반) ──
+
+// Magazine — 에디토리얼/잡지 스타일 (UNLEARNED 참고)
+const magazine: AuthorTheme = {
+  bgPrimary: "#ffffff",
+  bgSecondary: "#f5f5f0",
+  textPrimary: "#1a1a1a",
+  textMuted: "#666666",
+  textDim: "#999999",
+  textBright: "#000000",
+  accent: "#ff3333",
+  accent2: "#cc0000",
+  border: "#e0e0e0",
+  fontBody: "serif",
+  fontHeading: "sans-serif",
+  animation: "fade",
+  tone: "light",
+  layout: "magazine",
+  decorations: {
+    ...defaultDecorations,
+    cardAccentPosition: "none",
+  },
+  titleSize: "xl",
+  titleWeight: "black",
+  letterSpacing: "tight",
+  bodyLineHeight: "relaxed",
+  contentWidth: "wide",
+  heroStyle: "fullname",
+  navStyle: "sidebar",
+}
+
+// Gallery — 갤러리/포트폴리오 스타일 (AHYEON RYU 참고)
+const gallery: AuthorTheme = {
+  bgPrimary: "#0a0a0a",
+  bgSecondary: "#141414",
+  textPrimary: "#e0e0e0",
+  textMuted: "#808080",
+  textDim: "#4a4a4a",
+  textBright: "#ffffff",
+  accent: "#ff4444",
+  accent2: "#ff6666",
+  border: "#2a2a2a",
+  fontBody: "sans-serif",
+  fontHeading: "sans-serif",
+  animation: "fade",
+  tone: "dark",
+  layout: "gallery",
+  decorations: {
+    ...defaultDecorations,
+    headerSubtitle: "",
+    cardAccentPosition: "none",
+  },
+  titleSize: "xl",
+  titleWeight: "black",
+  letterSpacing: "wide",
+  bodyLineHeight: "normal",
+  contentWidth: "wide",
+  heroStyle: "fullname",
+  navStyle: "hidden",
+}
+
+// Minimal — 극단적 미니멀 (Frame 템플릿 참고)
+const minimal: AuthorTheme = {
+  bgPrimary: "#111111",
+  bgSecondary: "#1a1a1a",
+  textPrimary: "#d4d0c8",
+  textMuted: "#8a8680",
+  textDim: "#5a5650",
+  textBright: "#f0ece4",
+  accent: "#d4a46a",
+  accent2: "#e4b47a",
+  border: "#2a2a2a",
+  fontBody: "serif",
+  fontHeading: "serif",
+  animation: "none",
+  tone: "dark",
+  layout: "minimal",
+  decorations: {
+    ...defaultDecorations,
+    dividerIcon: "none",
+    headerIcon: "none",
+    cardAccentPosition: "none",
+  },
+  titleSize: "lg",
+  titleWeight: "light",
+  letterSpacing: "wide",
+  bodyLineHeight: "relaxed",
+  contentWidth: "narrow",
+  heroStyle: "cover",
+  navStyle: "hidden",
 }
 
 export const themePresets: Record<string, AuthorTheme> = {
@@ -161,6 +284,9 @@ export const themePresets: Record<string, AuthorTheme> = {
   morning,
   neon,
   cream,
+  magazine,
+  gallery,
+  minimal,
 }
 
 // 테마는 서버 API에서 로드 (layout.tsx → loadTheme)
