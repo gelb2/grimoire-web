@@ -139,8 +139,8 @@ API_URL=http://localhost:3000/api
 | 환경 | API URL | 배포 |
 |------|---------|------|
 | development | localhost:3000 | localhost:3001 |
-| inhouse | inhouse-api.grimoire.app | Azure Container Apps |
-| production | api.grimoire.app | Azure Container Apps |
+| inhouse | inhouse-api.grimoire-book.com | Azure Container Apps |
+| production | api.grimoire-book.com | Azure Container Apps |
 
 상세: `docs/environments.md` 참조.
 
