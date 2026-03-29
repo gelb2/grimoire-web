@@ -78,7 +78,7 @@ export default async function EpisodePage({ params }: Props) {
 
     const meta = {
       slug: episodeData.slug || episode,
-      type: episodeData.type || "episode" as const,
+      type: (episodeData.type || "episode") as "episode" | "bonus" | "preface" | "afterword",
       num: episodeNum,
       title: episodeData.title,
       subtitle: episodeData.subtitle,

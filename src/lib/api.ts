@@ -1,3 +1,4 @@
+import type { AuthResponse, AuthUser, Theme, AuthorSpace, AuthorProfile, WorkDetail, GiftedAuthor, WorkStats, Product, WorkSummary } from "@/types/api"
 /** 페이지네이션 작품 응답 타입 */
 export interface PaginatedWorksResponse {
   works: Array<{
@@ -50,21 +51,21 @@ class ApiClient {
 
   // 인증
   async register(data: { email: string; password: string; name: string; slug: string }) {
-    return this.fetch<{ user: any }>('/auth/register', {
+    return this.fetch<AuthResponse>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
     })
   }
 
   async login(data: { email: string; password: string }) {
-    return this.fetch<{ user: any }>('/auth/login', {
+    return this.fetch<AuthResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(data),
     })
   }
 
   async getProfile() {
-    return this.fetch<any>('/auth/profile')
+    return this.fetch<AuthUser>('/auth/profile')
   }
 
   async logout() {
@@ -73,31 +74,31 @@ class ApiClient {
 
   // 테마
   async getTheme(authorSlug: string) {
-    return this.fetch<any>(`/themes/${authorSlug}`)
+    return this.fetch<Theme>(`/themes/${authorSlug}`)
   }
 
   async generateTheme(description: string) {
-    return this.fetch<any>('/themes/generate', {
+    return this.fetch<{ themeId: string; preview: Record<string, unknown> }>('/themes/generate', {
       method: 'POST',
       body: JSON.stringify({ description }),
     })
   }
 
   async updateTheme(themeId: string, overrides: Record<string, unknown>) {
-    return this.fetch<any>(`/themes/${themeId}`, {
+    return this.fetch<{ themeId: string; overrides: Record<string, unknown> }>(`/themes/${themeId}`, {
       method: 'PUT',
       body: JSON.stringify({ overrides }),
     })
   }
 
   async publishTheme(authorSlug: string) {
-    return this.fetch<any>(`/themes/publish/${authorSlug}`, {
+    return this.fetch<{ cssUrl: string }>(`/themes/publish/${authorSlug}`, {
       method: 'POST',
     })
   }
 
   async getMyThemes() {
-    return this.fetch<any[]>('/themes/mine')
+    return this.fetch<Theme[]>('/themes/mine')
   }
 
   // 작가 공간
@@ -130,7 +131,7 @@ class ApiClient {
 
   // Google 로그인
   async googleLogin(googleToken: string) {
-    return this.fetch<{ user: any }>('/auth/google', {
+    return this.fetch<AuthResponse>('/auth/google', {
       method: 'POST',
       body: JSON.stringify({ token: googleToken }),
     })
@@ -138,7 +139,7 @@ class ApiClient {
 
   // 결제/크레딧
   async getProducts() {
-    return this.fetch<any[]>('/payments/products')
+    return this.fetch<Product[]>('/payments/products')
   }
 
   async getCredits() {
@@ -169,7 +170,7 @@ class ApiClient {
 
   // 원고 파싱
   async parseManuscript(rawText: string) {
-    return this.fetch<any>('/manuscripts/parse', {
+    return this.fetch<{ frontmatter: Record<string, string>; blocks: Record<string, unknown>[] }>('/manuscripts/parse', {
       method: 'POST',
       body: JSON.stringify({ rawText }),
     })
@@ -177,7 +178,7 @@ class ApiClient {
 
   // 북마크
   async toggleBookmark(episodeId: string) {
-    return this.fetch<any>(`/reader/bookmarks/${episodeId}`, { method: 'POST' })
+    return this.fetch<{ bookmarked: boolean }>(`/reader/bookmarks/${episodeId}`, { method: 'POST' })
   }
   async getBookmarks() {
     return this.fetch<any[]>('/reader/bookmarks')
@@ -185,13 +186,13 @@ class ApiClient {
 
   // 읽은 위치
   async saveProgress(episodeId: string, blockIndex: number) {
-    return this.fetch<any>('/reader/progress', {
+    return this.fetch<{ episodeId: string; blockIndex: number }>('/reader/progress', {
       method: 'POST',
       body: JSON.stringify({ episodeId, blockIndex }),
     })
   }
   async getProgress(episodeId: string) {
-    return this.fetch<any>(`/reader/progress/${episodeId}`)
+    return this.fetch<{ episodeId: string; blockIndex: number }>(`/reader/progress/${episodeId}`)
   }
 
   // 탐색
@@ -282,10 +283,10 @@ class ApiClient {
 
   // 관리자
   async getAdminStats() {
-    return this.fetch<any>('/admin/stats')
+    return this.fetch<{ totalAuthors: number; totalWorks: number; totalEpisodes: number; totalCreditsConsumed: number }>('/admin/stats')
   }
   async adminGrantCredits(authorId: string, amount: number, reason: string) {
-    return this.fetch<any>('/admin/credits', {
+    return this.fetch<{ credits: number }>('/admin/credits', {
       method: 'POST',
       body: JSON.stringify({ authorId, amount, reason }),
     })
