@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* 시스템 다크 모드 무시 — 플랫폼은 항상 라이트, 작가 테마는 CSS Variables로 제어 */
+@custom-variant dark (&:is(.dark *));
+
 /*
  * Grimoire 디자인 토큰
  * --g-* CSS 변수를 Tailwind 토큰으로 매핑
@@ -69,6 +72,7 @@
 :root {
   --background: #ffffff;
   --foreground: #111111;
+  color-scheme: light;
 }
 
 body {
