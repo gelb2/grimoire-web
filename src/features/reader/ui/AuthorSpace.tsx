@@ -171,7 +171,7 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
         &larr; 탐색
       </Link>
       {theme.navStyle !== "hidden" && (
-        <span className="text-sm font-medium text-g-text-bright tracking-widest uppercase">{author.name}</span>
+        <Link href={`/${authorSlug}/profile`} className="text-sm font-medium text-g-text-bright tracking-widest uppercase hover:text-g-accent transition">{author.name}</Link>
       )}
       <div className="flex items-center gap-4">
         {showWorkCount != null && (

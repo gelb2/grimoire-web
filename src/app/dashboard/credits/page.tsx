@@ -44,6 +44,7 @@ export default function CreditsPage() {
       <PlatformNav />
 
       <main className="max-w-3xl mx-auto px-6 py-8">
+        <Link href="/dashboard" className="text-sm text-neutral-500 hover:text-amber-500 transition mb-6 inline-block">&larr; 대시보드</Link>
         <div className="text-center mb-8">
           <p className="text-neutral-400 mb-2">현재 잔액</p>
           <p className="text-5xl font-bold text-amber-500">{user.credits}</p>
