@@ -12,11 +12,11 @@ A24 영화 감성의 다크 판타지 소설 뷰어.
 
 ## 멀티 작가 테마 시스템
 
-각 작가는 고유한 테마를 가진다. 테마는 CSS Variables (`--u-*`)로 `[author]/layout.tsx`에서 동적 주입된다.
+각 작가는 고유한 테마를 가진다. 테마는 CSS Variables (`--g-*`)로 `[author]/layout.tsx`에서 동적 주입된다.
 
 - 작가가 텍스트로 분위기를 구술 → Claude API가 테마 JSON 생성 → CSS Variables로 동적 렌더링
 - 아래 DeerDevil 토큰은 **기본(baseline) 테마**이자 디자인 시스템의 참조 기준이다
-- 작가별 테마가 로드되면 해당 `--u-*` 변수가 오버라이드된다
+- 작가별 테마가 로드되면 해당 `--g-*` 변수가 오버라이드된다
 - 테마 파라미터 명세: `docs/theme-spec.md` 참조
 
 ---
@@ -26,7 +26,7 @@ A24 영화 감성의 다크 판타지 소설 뷰어.
 **Tailwind CSS 4 유틸리티 클래스 기반** + CSS Variables.
 
 - `globals.css`의 `@theme inline`에서 디자인 토큰 정의
-- `universe/layout.tsx`에서 `--u-*` CSS 변수 선언 (Universe 스코프)
+- `reader/layout.tsx`에서 `--g-*` CSS 변수 선언 (Universe 스코프)
 - 컴포넌트에서는 `bg-u-bg`, `text-u-accent2`, `tracking-u-wide` 등 토큰 클래스 사용
 - `cn()` 유틸 (`clsx` + `tailwind-merge`)로 조건부 클래스 병합
 - 인라인 `style={{}}` 사용 금지 — CSS 변수 선언 영역(layout.tsx)만 예외
@@ -39,17 +39,17 @@ A24 영화 감성의 다크 판타지 소설 뷰어.
 
 | Tailwind 클래스 | CSS 변수 | 값 | 용도 |
 |----------------|----------|------|------|
-| `bg-u-bg` / `text-u-bg` | `--u-bg` | `#07070a` | 메인 배경 |
-| `bg-u-bg2` | `--u-bg2` | `#0d0d12` | 카드/블록 배경 |
-| `text-u-text` | `--u-text` | `#cdc8bc` | 본문 텍스트 |
-| `text-u-text-muted` | `--u-text-muted` | `#7a7570` | 부제/보조 텍스트 |
-| `text-u-text-dim` | `--u-text-dim` | `#4a4740` | 레이블/희미한 텍스트 |
+| `bg-u-bg` / `text-u-bg` | `--g-bg` | `#07070a` | 메인 배경 |
+| `bg-u-bg2` | `--g-bg2` | `#0d0d12` | 카드/블록 배경 |
+| `text-u-text` | `--g-text` | `#cdc8bc` | 본문 텍스트 |
+| `text-u-text-muted` | `--g-text-muted` | `#7a7570` | 부제/보조 텍스트 |
+| `text-u-text-dim` | `--g-text-dim` | `#4a4740` | 레이블/희미한 텍스트 |
 | `text-u-text-bright` | — | `#e8e3d8` | 제목/h1 (밝은 크림) |
 | `text-u-text-warm` | — | `#b0a895` | 이탤릭 본문 |
 | `text-u-text-soft` | — | `#c8c3b8` | 특수 카드 제목 |
-| `text-u-accent` / `bg-u-accent` | `--u-accent` | `#9a8060` | 액센트 (구분선, 뿔 SVG) |
-| `text-u-accent2` | `--u-accent2` | `#c4a46a` | 강조 (활성 탭, 챕터 제목) |
-| `border-u-border` | `--u-border` | `#1e1e26` | 테두리 |
+| `text-u-accent` / `bg-u-accent` | `--g-accent` | `#9a8060` | 액센트 (구분선, 뿔 SVG) |
+| `text-u-accent2` | `--g-accent2` | `#c4a46a` | 강조 (활성 탭, 챕터 제목) |
+| `border-u-border` | `--g-border` | `#1e1e26` | 테두리 |
 
 ### 폰트 토큰
 

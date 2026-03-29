@@ -4,33 +4,31 @@
 
 ---
 
-## 알려진 버그
+## 코드 정리
 
-- [ ] frontmatter가 에피소드 블록에 노출되는 문제
-- [ ] EpisodeViewer에 DeerDevil 하드코딩 잔재 (범용화 필요)
-- [ ] 페이지 넘김 애니메이션(PageFlipTransition) 제거 후 대체 전환 효과 미구현
-
-## 서버 연동
-
-- [ ] 커스텀 테마 에디터 완성 (Color Picker, 폰트 선택)
-- [ ] 테마 Baking 후 CDN CSS 로드
-- [ ] Google OAuth 실제 연동 (Client ID 필요)
-
-## 대시보드 고도화
-
-- [ ] 작가 대시보드 고도화 (조회수 통계 차트, 작품 CRUD UI)
-- [ ] 크레딧 충전 UI (PAYAPP 연동)
-- [ ] 크레딧-원화-AI토큰 비용 정밀 계산식 UI
+- [ ] 전역 리네이밍 (별도 브랜치: features/universe → features/reader, --u-* → --g-*, UniverseNav → SeriesNav 등)
 
 ## 테스트
 
-- [ ] EpisodeViewer 유닛테스트 (타이핑 애니메이션 스테이지)
-- [ ] UniverseNav 유닛테스트 (라우팅, 활성 탭)
-- [ ] UniverseLanding 유닛테스트 (콘텐츠 필터링/정렬)
+- [ ] EpisodeViewer 유닛테스트 보강 (타이핑 애니메이션 스테이지별 검증)
+- [ ] UniverseNav 유닛테스트 (라우팅, 활성 탭) — 리네이밍 후 SeriesNav
+- [ ] UniverseLanding 유닛테스트 (콘텐츠 필터링/정렬) — 리네이밍 후 SeriesLanding
+
+## 외부 연동 (자격증명 필요)
+
+- [ ] Google OAuth 실제 연동 (Client ID 필요, 로그인 버튼 UI 추가)
+- [ ] 커버이미지 프론트 업로드 UI (Azure Blob — 서버 코드 완성, 환경변수만 필요)
+- [ ] 크레딧 충전 UI (PAYAPP 실제 연동)
+- [ ] 테마 Baking 후 CDN CSS 로드
 
 ## 기타
 
-- [ ] HTML 파서 (최후순위)
+- [ ] HTML 파서 (최후순위, 서버와 동시)
+- [ ] Cloudflare DNS 설정 완료 후 URL 검증
+
+## 장기
+
+- [ ] 크레딧-원화-AI토큰 비용 정밀 계산식 UI
 
 ## 참조
 

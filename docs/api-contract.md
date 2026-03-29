@@ -14,7 +14,7 @@
 ### 인증
 
 - `JWT` 표기가 있는 엔드포인트는 `Authorization: Bearer <token>` 헤더 필요
-- `admin` 표기가 있는 엔드포인트는 관리자 권한 추가 필요 (TODO: admin guard)
+- `admin` 표기가 있는 엔드포인트는 관리자 권한 필요 (AdminGuard 적용)
 - `크레딧 N` 표기가 있는 엔드포인트는 크레딧 N 차감
 
 ### 입력 검증
@@ -50,6 +50,7 @@
 | POST | `/api/auth/login` | 로그인 (JWT 발급) | - |
 | GET | `/api/auth/profile` | 내 프로필 조회 | JWT |
 | POST | `/api/auth/google` | Google OAuth 로그인 | - |
+| POST | `/api/auth/logout` | 로그아웃 (쿠키 삭제) | JWT |
 
 ### Theme
 
@@ -59,12 +60,17 @@
 | GET | `/api/themes/:authorSlug` | 작가 테마 조회 | - |
 | POST | `/api/themes/publish/:authorSlug` | 테마 퍼블리시 (CSS 베이킹) | JWT |
 | GET | `/api/themes/css/:authorSlug` | Baked CSS 반환 | - |
+| GET | `/api/themes/mine` | 내 테마 목록 | JWT |
+| PUT | `/api/themes/:themeId` | 테마 커스텀 수정 (overrides) | JWT |
+| DELETE | `/api/themes/:themeId` | 테마 삭제 (슬롯 반환) | JWT |
+| GET | `/api/themes/resolve/:authorSlug` | 작품별 테마 resolve (`?work=slug`) | - |
 
 ### Manuscript
 
 | Method | Path | 용도 | 인증 |
 |--------|------|------|------|
-| POST | `/api/manuscripts/parse` | 원고 파싱 (md/txt/docx → Block[]) | - |
+| POST | `/api/manuscripts/parse` | 원고 파싱 (md/txt/docx/html → Block[]) | - |
+| POST | `/api/manuscripts/upload` | 파일 업로드 파싱 (multipart) | JWT |
 
 ### Work Management
 
@@ -75,12 +81,15 @@
 | DELETE | `/api/works/:id` | 작품 삭제 | JWT |
 | POST | `/api/works/:workId/episodes` | 에피소드 생성 | JWT |
 | DELETE | `/api/episodes/:id` | 에피소드 삭제 | JWT |
+| PUT | `/api/works/:id/cover` | 커버 이미지 업로드 | JWT |
 
 ### Author (공개)
 
 | Method | Path | 용도 | 인증 |
 |--------|------|------|------|
 | GET | `/api/authors/:slug` | 작가 공간 데이터 (테마 + 작품 목록) | - |
+| GET | `/api/authors/:slug/profile` | 작가 공개 프로필 (통계 포함) | - |
+| PATCH | `/api/authors/:slug/profile` | 작가 bio 수정 | JWT |
 
 ### Content (공개)
 
@@ -101,6 +110,7 @@
 | POST | `/api/social/comments/:episodeId` | 댓글 작성 | JWT |
 | GET | `/api/social/comments/:episodeId` | 댓글 목록 조회 | - |
 | DELETE | `/api/social/comments/:commentId` | 댓글 삭제 (본인만) | JWT |
+| POST | `/api/social/gift/:authorSlug` | 크레딧 선물 | JWT |
 
 ### Reader
 
@@ -110,6 +120,7 @@
 | GET | `/api/reader/bookmarks` | 내 북마크 목록 | JWT |
 | POST | `/api/reader/progress` | 읽은 위치 저장 | JWT |
 | GET | `/api/reader/progress/:episodeId` | 읽은 위치 조회 | JWT |
+| GET | `/api/reader/library` | 서재 (북마크 + 구독 + 읽던 위치) | JWT |
 
 ### Discovery
 
@@ -118,6 +129,7 @@
 | GET | `/api/discover/authors` | 작가 검색 (`?q=검색어&limit=10`) | - |
 | GET | `/api/discover/works/popular` | 인기 작품 (`?limit=10`) | - |
 | GET | `/api/discover/works/recent` | 최신 작품 (`?limit=10`) | - |
+| GET | `/api/discover/authors/most-gifted` | 응원받는 작가 랭킹 (`?limit=8`) | - |
 
 ### Payment
 
@@ -125,7 +137,24 @@
 |--------|------|------|------|
 | GET | `/api/payments/products` | 크레딧 상품 목록 | - |
 | POST | `/api/payments/webhook` | PAYAPP 결제 콜백 | - |
+| POST | `/api/payments/initiate` | 결제 시작 | JWT |
+| GET | `/api/payments/history` | 결제 내역 | JWT |
 | GET | `/api/payments/credits` | 내 크레딧 잔액 | JWT |
+
+### Credits
+
+| Method | Path | 용도 | 인증 |
+|--------|------|------|------|
+| POST | `/api/credits/gift` | 크레딧 선물 (독자 → 작가) | JWT |
+| GET | `/api/credits/ranking` | 응원받는 작가 랭킹 | - |
+| GET | `/api/credits/balance` | 크레딧 잔액 조회 | JWT |
+| GET | `/api/credits/logs` | 크레딧 로그 조회 | JWT |
+
+### Stats
+
+| Method | Path | 용도 | 인증 |
+|--------|------|------|------|
+| GET | `/api/works/:workId/stats` | 작품 조회수 통계 (소유자만) | JWT |
 
 ### Admin
 

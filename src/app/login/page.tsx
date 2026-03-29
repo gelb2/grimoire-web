@@ -28,7 +28,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-950 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-platform-bg px-4">
       <div className="w-full max-w-md">
         <h1 className="text-3xl font-bold text-white text-center mb-2">
           <Link href="/" className="hover:text-amber-500 transition">Grimoire</Link>
@@ -78,7 +78,7 @@ export default function LoginPage() {
         <div className="mt-6">
           <div className="relative">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-neutral-800"></div></div>
-            <div className="relative flex justify-center text-sm"><span className="px-2 bg-neutral-950 text-neutral-600">또는</span></div>
+            <div className="relative flex justify-center text-sm"><span className="px-2 bg-platform-bg text-neutral-600">또는</span></div>
           </div>
           <button
             type="button"
@@ -101,7 +101,7 @@ export default function LoginPage() {
           <p className="text-neutral-600 text-xs text-center mb-3">테스트 계정</p>
           <button
             type="button"
-            onClick={() => { setEmail('test@grimoire.app'); setPassword('password123') }}
+            onClick={() => { setEmail('test@grimoire.app'); setPassword('test1234') }}
             className="w-full py-2 bg-neutral-800 hover:bg-neutral-750 text-neutral-400 text-sm rounded-lg transition"
           >
             테스트 계정으로 채우기

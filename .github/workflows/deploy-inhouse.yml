@@ -56,6 +56,6 @@ jobs:
         run: |
           az containerapp update \
             --name grimoire-web-inhouse \
-            --resource-group zenith-rg \
+            --resource-group grimoire-rg \
             --image grimoireacr.azurecr.io/grimoire-web:inhouse-${{ github.sha }} \
             -o none

@@ -1,10 +1,10 @@
 import type { ReactNode } from "react"
 import { EB_Garamond, Noto_Serif_KR } from "next/font/google"
-import { CardTransitionProvider } from "@/features/universe/ui/CardTransition"
+import { CardTransitionProvider } from "@/features/reader/ui/CardTransition"
 import { ThemeProvider } from "@/features/theme"
 import type { AuthorTheme } from "@/features/theme"
 import { AuthProvider } from "@/features/auth"
-import { UniverseNav } from "@/features/universe/ui/UniverseNav"
+import { SeriesNav } from "@/features/reader/ui/SeriesNav"
 
 // 완전 동적 — SSR on every request
 export const dynamic = "force-dynamic"
@@ -86,7 +86,7 @@ interface Props {
   children: ReactNode
 }
 
-// 작가 정보 로드 — 이름 + 첫 작품 슬러그 + 에피소드 목록 (UniverseNav에 전달)
+// 작가 정보 로드 — 이름 + 첫 작품 슬러그 + 에피소드 목록 (SeriesNav에 전달)
 interface NavEpisode {
   slug: string
   num?: string
@@ -112,7 +112,7 @@ async function loadAuthorInfo(authorSlug: string): Promise<AuthorInfo> {
       const name = data.author?.name ?? data.name ?? authorSlug
       const workSlug = data.works?.[0]?.slug
 
-      // 첫 작품의 에피소드 목록도 로드 (UniverseNav 탭용)
+      // 첫 작품의 에피소드 목록도 로드 (SeriesNav 탭용)
       let episodes: NavEpisode[] | undefined
       if (workSlug) {
         try {
@@ -154,16 +154,16 @@ export default async function AuthorLayout({ params, children }: Props) {
     loadAuthorInfo(author),
   ])
 
-  const isUniverse = theme.layout === 'universe'
+  const isSeriesLayout = theme.layout === 'series'
 
   return (
     <div className={`${garamond.variable} ${notoSerifKR.variable}`}>
       <AuthProvider>
         <ThemeProvider theme={theme}>
           <CardTransitionProvider>
-            {/* universe 레이아웃: UniverseNav를 모든 하위 페이지에 표시 (원본 DeerDevil 동작) */}
-            {isUniverse && (
-              <UniverseNav
+            {/* series 레이아웃: 탭 네비게이션을 모든 하위 페이지에 표시 */}
+            {isSeriesLayout && (
+              <SeriesNav
                 authorName={authorInfo.name}
                 workSlug={authorInfo.workSlug}
                 apiEpisodes={authorInfo.episodes}

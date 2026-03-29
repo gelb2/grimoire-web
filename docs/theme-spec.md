@@ -38,8 +38,8 @@ interface AuthorTheme {
   tone: "dark" | "light" | "sepia"
 
   // 레이아웃
-  layout: "universe" | "grid" | "classic"
-  // - "universe": DeerDevil 스타일 — 에피소드 네비게이션 탭 + 카드 그리드 + 타이핑 애니메이션
+  layout: "series" | "grid" | "classic"
+  // - "series": 시리즈 소설 — 에피소드 네비게이션 탭 + 카드 그리드 + 타이핑 애니메이션
   // - "grid": 기본 그리드 레이아웃 — 작품 카드 목록
   // - "classic": 전통적 웹소설 목록형
 
@@ -73,7 +73,7 @@ interface AuthorTheme {
 
 | 이름 | tone | layout | bgPrimary | textPrimary | fontBody | animation |
 |------|------|--------|-----------|-------------|----------|-----------|
-| Midnight | dark | universe | #07070a | #cdc8bc | serif | typing |
+| Midnight | dark | series | #07070a | #cdc8bc | serif | typing |
 | Parchment | sepia | grid | #f5f0e8 | #3d3529 | serif | fade |
 | Morning | light | grid | #ffffff | #1a1a1a | sans-serif | slide |
 | Neon | dark | grid | #0d0d0d | #e0e0e0 | monospace | none |
@@ -81,7 +81,7 @@ interface AuthorTheme {
 
 ## 레이아웃 타입
 
-### universe (DeerDevil 스타일)
+### series (시리즈 소설)
 - 상단 네비게이션: 작가 브랜드 + 에피소드 탭
 - 랜딩: 작가 아이콘 + 에피소드 카드 그리드 + 번외/후기 섹션
 - 에피소드 뷰어: 타이핑 애니메이션 + 순차 페이드인 + 장식 구분선
@@ -112,7 +112,7 @@ interface AuthorTheme {
   "fontHeading": "serif",
   "animation": "typing",
   "tone": "dark",
-  "layout": "universe",
+  "layout": "series",
   "decorations": {
     "dividerIcon": "antler",
     "dividerColor": "#9a8060",
