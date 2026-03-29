@@ -1,5 +1,31 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.12.0] - 2026-03-30
+
+### 테마 시스템 v2 + 에러 핸들링 + OAuth + 배포
+
+#### Added
+- 레디맥 리서치 기반 테마 Phase 1/2 구현 (타이포그래피 5개 파라미터 + 레이아웃 프리셋 3종)
+- gallery/magazine/minimal 레이아웃 컴포넌트 구현
+- SeriesLanding heroStyle 3종 (fullname/cover/minimal)
+- Google OAuth 로그인 버튼 (@react-oauth/google)
+- sonner toast 에러 피드백 전수 적용 (13개 silent catch 수정)
+- MinimalNav — gallery/magazine/minimal 레이아웃 고아 방지 네비게이션
+- 프리셋 8종: midnight, parchment, morning, neon, cream, magazine, gallery, minimal
+- DESIGN_REFERENCE_READYMAG.md — 레디맥 리서치 결과 문서
+- PROPOSAL_DIGITAL_SHOWROOM.md — 디지털 쇼룸 제안서
+
+#### Fixed
+- 고아 페이지 3건 수정 (dashboard/credits, dashboard/profile 뒤로가기, /[author]/profile 링크)
+- 플랫폼 배경색 분리 (#0d0f1a — 작가 테마와 시각적 구분)
+- Cloudflare/Azure SSL 525 오류 완전 수정 (managed certificate binding)
+
+#### Deployment
+- 6개 Container App 전체 배포 (dev/inhouse/prod × web/server)
+- grimoire-book.com, api.grimoire-book.com, inhouse.grimoire-book.com, inhouse-api.grimoire-book.com 전 환경 정상
+
+---
+
 ## [0.11.0] - 2026-03-28
 
 ### 전역 리네이밍 + 테마 시스템 강화 + 네비게이션/훅 전수 수정
