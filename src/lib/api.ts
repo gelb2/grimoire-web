@@ -101,14 +101,14 @@ class ApiClient {
     return this.fetch<Theme[]>('/themes/mine')
   }
 
-  // 작가 공간
-  async getAuthorSpace(slug: string) {
-    return this.fetch<any>(`/authors/${slug}`)
+  // 작가 공간 — 호출처에서 타입 지정 가능
+  async getAuthorSpace<T = Record<string, unknown>>(slug: string) {
+    return this.fetch<T>(`/authors/${slug}`)
   }
 
-  // 작가 공개 프로필
-  async getAuthorProfile(slug: string) {
-    return this.fetch<any>(`/authors/${slug}/profile`)
+  // 작가 공개 프로필 — 호출처에서 타입 지정 가능
+  async getAuthorProfile<T = Record<string, unknown>>(slug: string) {
+    return this.fetch<T>(`/authors/${slug}/profile`)
   }
 
   // 작가 bio 업데이트
@@ -119,14 +119,14 @@ class ApiClient {
     })
   }
 
-  // 작품
-  async getWork(authorSlug: string, workSlug: string) {
-    return this.fetch<any>(`/works/${authorSlug}/${workSlug}`)
+  // 작품 — 호출처에서 타입 지정 가능
+  async getWork<T = Record<string, unknown>>(authorSlug: string, workSlug: string) {
+    return this.fetch<T>(`/works/${authorSlug}/${workSlug}`)
   }
 
-  // 에피소드
-  async getEpisode(authorSlug: string, workSlug: string, episodeSlug: string) {
-    return this.fetch<any>(`/episodes/${authorSlug}/${workSlug}/${episodeSlug}`)
+  // 에피소드 — 호출처에서 타입 지정 가능
+  async getEpisode<T = Record<string, unknown>>(authorSlug: string, workSlug: string, episodeSlug: string) {
+    return this.fetch<T>(`/episodes/${authorSlug}/${workSlug}/${episodeSlug}`)
   }
 
   // Google 로그인

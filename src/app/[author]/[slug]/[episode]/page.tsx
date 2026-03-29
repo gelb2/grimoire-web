@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { author, slug, episode } = await params
 
   try {
-    const episodeData = await api.getEpisode(author, slug, episode)
+    const episodeData = await api.getEpisode<{ title: string; description?: string }>(author, slug, episode)
     const title = episodeData.title || episode
     const description = episodeData.description ?? `${author} — ${title}`
 
@@ -65,11 +65,12 @@ export default async function EpisodePage({ params }: Props) {
 
   try {
     // 에피소드 + 작가 정보 + 테마 레이아웃 + 작품(에피소드 목록) 동시 로드
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [episodeData, authorRes, themeLayout, workData] = await Promise.all([
-      api.getEpisode(author, slug, episode),
-      api.getAuthorSpace(author).catch(() => null),
+      api.getEpisode<any>(author, slug, episode),
+      api.getAuthorSpace<any>(author).catch(() => null),
       getThemeLayout(author),
-      api.getWork(author, slug).catch(() => null),
+      api.getWork<any>(author, slug).catch(() => null),
     ])
 
     // API 응답에서 num 파싱: orderNum → 2자리 zero-padded 문자열

@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   try {
     // 서버 API에서 작가 정보 로드
-    const authorData = await api.getAuthorSpace(author)
+    const authorData = await api.getAuthorSpace<any>(author)
     const authorName = authorData.author?.name ?? author
     const authorDesc = authorData.author?.bio ?? `${author}의 작가 공간`
     return {

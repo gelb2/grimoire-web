@@ -49,7 +49,7 @@ export default function AuthorProfilePage() {
   const fetchProfile = useCallback(() => {
     setLoading(true)
     setError(false)
-    api.getAuthorProfile(authorSlug)
+    api.getAuthorProfile<any>(authorSlug)
       .then((data: AuthorProfile) => {
         setProfile(data)
         setSubscriberCount(data.subscriberCount)

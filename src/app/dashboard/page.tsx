@@ -45,7 +45,7 @@ export default function DashboardPage() {
   // 작품 목록 로드
   useEffect(() => {
     if (user) {
-      api.getAuthorSpace(user.slug)
+      api.getAuthorSpace<any>(user.slug)
         .then(data => setWorks(data.works || []))
         .catch(() => setWorks([]))
         .finally(() => setWorksLoading(false))
@@ -77,7 +77,7 @@ export default function DashboardPage() {
     setCreating(true)
     setError('')
     try {
-      const work = await api.createWork(newWork)
+      const work = await api.createWork(newWork) as any
       setWorks(prev => [...prev, { ...work, episodeCount: 0 }])
       setShowNewWork(false)
       setNewWork({ title: '', slug: '', description: '' })

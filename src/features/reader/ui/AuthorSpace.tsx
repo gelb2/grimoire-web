@@ -58,7 +58,7 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
     setLoading(true)
     setError(false)
 
-    api.getAuthorSpace(authorSlug)
+    api.getAuthorSpace<any>(authorSlug)
       .then(async (res) => {
         if (!mounted) return
         const authorInfo = res.author ?? res
@@ -68,7 +68,7 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
           ? await Promise.all(
               works.map(async (work: Work) => {
                 try {
-                  const workRes = await api.getWork(authorSlug, work.slug)
+                  const workRes = await api.getWork<any>(authorSlug, work.slug)
                   const episodes = workRes.episodes ?? workRes.work?.episodes ?? []
                   return { ...work, episodes }
                 } catch {

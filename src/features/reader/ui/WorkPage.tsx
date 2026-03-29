@@ -53,7 +53,7 @@ export function WorkPage({ authorSlug, workSlug }: WorkPageProps) {
     setLoading(true)
     setError(false)
 
-    api.getWork(authorSlug, workSlug)
+    api.getWork<any>(authorSlug, workSlug)
       .then(async (data) => {
         if (cancelled) return
 
@@ -62,7 +62,7 @@ export function WorkPage({ authorSlug, workSlug }: WorkPageProps) {
         // 에피소드가 정확히 1개이면 해당 에피소드를 바로 로드
         if (data.episodes && data.episodes.length === 1) {
           try {
-            const ep = await api.getEpisode(authorSlug, workSlug, data.episodes[0].slug)
+            const ep = await api.getEpisode<any>(authorSlug, workSlug, data.episodes[0].slug)
             if (!cancelled) setSingleEpisode(ep)
           } catch {
             // 에피소드 로드 실패 — 목록으로 폴백
