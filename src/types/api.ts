@@ -27,29 +27,28 @@ export interface Theme {
 }
 
 export interface AuthorSpace {
-  author?: {
+  author: {
     id: string
     slug: string
     name: string
     bio?: string
+    [key: string]: unknown
   }
-  // 플랫 구조 폴백
-  id?: string
-  slug?: string
-  name?: string
   theme: Theme | null
   works: WorkSummary[]
+  [key: string]: unknown
 }
 
 export interface AuthorProfile {
-  id: string
-  slug: string
-  name: string
-  bio: string | null
-  createdAt: string
+  author: Record<string, unknown> & {
+    id: string
+    slug: string
+    name: string
+  }
+  works: WorkSummary[]
   subscriberCount: number
   totalLikes: number
-  works: WorkSummary[]
+  [key: string]: unknown
 }
 
 export interface WorkSummary {
@@ -65,12 +64,8 @@ export interface WorkSummary {
 }
 
 export interface WorkDetail {
-  work?: WorkSummary
-  episodes?: EpisodeSummary[]
-  // 플랫 구조 폴백
-  id?: string
-  slug?: string
-  title?: string
+  work: WorkSummary
+  episodes: EpisodeSummary[]
   [key: string]: unknown
 }
 

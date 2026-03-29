@@ -15,12 +15,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     // 서버 API에서 작가 정보 로드
     const authorData = await api.getAuthorSpace(author)
+    const authorName = authorData.author?.name ?? author
+    const authorDesc = authorData.author?.bio ?? `${author}의 작가 공간`
     return {
-      title: authorData.name || author,
-      description: authorData.description || `${author}의 작가 공간`,
+      title: authorName,
+      description: authorDesc,
       openGraph: {
-        title: `${authorData.name || author} | Grimoire`,
-        description: authorData.description || `${author}의 작가 공간`,
+        title: `${authorName} | Grimoire`,
+        description: authorDesc,
       },
     }
   } catch {

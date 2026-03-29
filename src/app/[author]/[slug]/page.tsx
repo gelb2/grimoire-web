@@ -16,8 +16,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     // 모든 작가 — API에서 작품 메타데이터 시도
     const workData = await api.getWork(author, slug)
-    const title = workData.title
-    const description = workData.description ?? `${author} — ${title}`
+    const title = workData.work?.title ?? slug
+    const description = workData.work?.description ?? `${author} — ${title}`
 
     return {
       title,

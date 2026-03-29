@@ -81,14 +81,14 @@ export default async function EpisodePage({ params }: Props) {
       type: (episodeData.type || "episode") as "episode" | "bonus" | "preface" | "afterword",
       num: episodeNum,
       title: episodeData.title,
-      subtitle: episodeData.subtitle,
+      subtitle: episodeData.subtitle ?? undefined,
       description: episodeData.description,
     }
 
     // 작가 이름: API 응답 > 작가 공간(중첩 구조) > slug 폴백
-    const authorName = episodeData.authorName || authorRes?.author?.name || authorRes?.name || author
+    const authorName = episodeData.authorName || authorRes?.author?.name || (authorRes as Record<string, unknown>)?.name as string || author
     // 작품 제목: 에피소드 응답에 포함된 workTitle 또는 slug 폴백
-    const workTitle = episodeData.workTitle || slug
+    const workTitle = episodeData.workTitle ?? slug
 
     const isSeriesLayout = themeLayout === 'series'
 
@@ -117,7 +117,7 @@ export default async function EpisodePage({ params }: Props) {
             currentEpisodeSlug={episode}
           />
         )}
-        <EpisodeViewer key={`${author}-${slug}-${episode}`} meta={meta} data={episodeData} authorName={authorName} />
+        <EpisodeViewer key={`${author}-${slug}-${episode}`} meta={meta} data={{ slug: episodeData.slug, title: episodeData.title, subtitle: episodeData.subtitle ?? undefined, blocks: episodeData.blocks as never[] }} authorName={authorName} />
         <EpisodeFooter
           episodeId={episodeData.id || episode}
           authorSlug={author}

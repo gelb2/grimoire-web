@@ -1,4 +1,4 @@
-import type { AuthResponse, AuthUser, Theme, AuthorSpace, AuthorProfile, WorkDetail, GiftedAuthor, WorkStats, Product, WorkSummary } from "@/types/api"
+import type { AuthResponse, AuthUser, Theme, GiftedAuthor, WorkStats, Product } from "@/types/api"
 /** 페이지네이션 작품 응답 타입 */
 export interface PaginatedWorksResponse {
   works: Array<{
