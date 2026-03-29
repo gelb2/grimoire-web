@@ -84,7 +84,7 @@ export function WorkPage({ authorSlug, workSlug }: WorkPageProps) {
   if (loading) {
     return (
       <div className="min-h-screen bg-platform-bg">
-        <PlatformNav />
+        <PlatformNav variant="author-space" />
         <main className="max-w-6xl mx-auto px-6 py-16">
           <div className="text-center text-neutral-500">Loading...</div>
         </main>
@@ -131,7 +131,7 @@ export function WorkPage({ authorSlug, workSlug }: WorkPageProps) {
 
   return (
     <div className="min-h-screen bg-platform-bg">
-      <PlatformNav />
+      <PlatformNav variant="author-space" />
 
       <main className="max-w-4xl mx-auto px-6 py-8">
         {/* 뒤로가기 */}
