@@ -213,13 +213,13 @@ export default function ThemeEditorPage() {
       <PlatformNav />
 
       {/* 테마 에디터 액션 바 */}
-      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between border-b border-neutral-800/50">
-        <span className="text-neutral-400 text-sm">테마 에디터</span>
+      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between border-b border-neutral-200">
+        <span className="text-neutral-500 text-sm">테마 에디터</span>
         <div className="flex items-center gap-3">
           <button
             onClick={handlePublish}
             disabled={saving}
-            className="px-4 py-2 bg-amber-600 hover:bg-amber-500 disabled:bg-neutral-700 text-white text-sm rounded-lg transition"
+            className="px-4 py-2 bg-black hover:bg-neutral-800 disabled:bg-neutral-300 text-white text-sm rounded-lg transition"
           >
             {saving ? '저장 중...' : '퍼블리시'}
           </button>
@@ -228,7 +228,7 @@ export default function ThemeEditorPage() {
 
       {message && (
         <div className="max-w-7xl mx-auto px-6 mt-4">
-          <div className="bg-amber-900/20 border border-amber-800/50 text-amber-300 px-4 py-3 rounded-lg text-sm">
+          <div className="border-l-2 border-platform-accent text-platform-accent px-4 py-3 text-sm">
             {message}
           </div>
         </div>
@@ -239,11 +239,11 @@ export default function ThemeEditorPage() {
         <div className="space-y-6 overflow-y-auto max-h-[calc(100vh-120px)]">
           {/* 프리셋 선택 */}
           <div>
-            <label className="block text-sm text-neutral-300 mb-2">프리셋으로 시작</label>
+            <label className="block text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-2">프리셋으로 시작</label>
             <select
               value={selectedPreset}
               onChange={e => loadPreset(e.target.value)}
-              className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm"
+              className="w-full px-3 py-2 bg-platform-bg2 border border-neutral-300 rounded-lg text-black text-sm"
             >
               {Object.keys(themePresets).map(name => (
                 <option key={name} value={name}>{name}</option>
@@ -253,23 +253,23 @@ export default function ThemeEditorPage() {
 
           {/* 색상 */}
           <div>
-            <h3 className="text-sm font-medium text-neutral-300 mb-3">색상</h3>
+            <h3 className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-3">색상</h3>
             <div className="space-y-3">
               {colorFields.map(field => (
                 <div key={field.key} className="flex items-center justify-between">
-                  <label className="text-sm text-neutral-400">{field.label}</label>
+                  <label className="text-sm text-neutral-500">{field.label}</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
                       value={(theme as unknown as Record<string, unknown>)[field.key] as string || '#000000'}
                       onChange={e => updateTheme(field.key, e.target.value)}
-                      className="w-8 h-8 rounded border border-neutral-700 cursor-pointer"
+                      className="w-8 h-8 rounded border border-neutral-300 cursor-pointer"
                     />
                     <input
                       type="text"
                       value={(theme as unknown as Record<string, unknown>)[field.key] as string || ''}
                       onChange={e => updateTheme(field.key, e.target.value)}
-                      className="w-20 px-2 py-1 bg-neutral-900 border border-neutral-700 rounded text-white text-xs font-mono"
+                      className="w-20 px-2 py-1 bg-platform-bg2 border border-neutral-300 rounded text-black text-xs font-mono"
                     />
                   </div>
                 </div>
@@ -279,11 +279,11 @@ export default function ThemeEditorPage() {
 
           {/* 폰트 */}
           <div>
-            <label className="block text-sm text-neutral-300 mb-2">본문 폰트</label>
+            <label className="block text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-2">본문 폰트</label>
             <select
               value={theme.fontBody}
               onChange={e => updateTheme('fontBody', e.target.value)}
-              className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm"
+              className="w-full px-3 py-2 bg-platform-bg2 border border-neutral-300 rounded-lg text-black text-sm"
             >
               {fontOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -293,11 +293,11 @@ export default function ThemeEditorPage() {
 
           {/* 애니메이션 */}
           <div>
-            <label className="block text-sm text-neutral-300 mb-2">애니메이션</label>
+            <label className="block text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-2">애니메이션</label>
             <select
               value={theme.animation}
               onChange={e => updateTheme('animation', e.target.value)}
-              className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm"
+              className="w-full px-3 py-2 bg-platform-bg2 border border-neutral-300 rounded-lg text-black text-sm"
             >
               {animationOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -307,7 +307,7 @@ export default function ThemeEditorPage() {
 
           {/* 톤 */}
           <div>
-            <label className="block text-sm text-neutral-300 mb-2">톤</label>
+            <label className="block text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-2">톤</label>
             <div className="flex gap-2">
               {toneOptions.map(opt => (
                 <button
@@ -315,8 +315,8 @@ export default function ThemeEditorPage() {
                   onClick={() => updateTheme('tone', opt.value)}
                   className={`flex-1 py-2 rounded-lg text-sm transition ${
                     theme.tone === opt.value
-                      ? 'bg-amber-600 text-white'
-                      : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700'
+                      ? 'bg-black text-white'
+                      : 'bg-platform-bg2 text-neutral-500 hover:border hover:border-neutral-300'
                   }`}
                 >
                   {opt.label}
@@ -326,41 +326,41 @@ export default function ThemeEditorPage() {
           </div>
 
           {/* ── 타이포그래피 (Phase 1) ── */}
-          <div className="border-t border-neutral-800 pt-4">
-            <h3 className="text-sm font-medium text-neutral-300 mb-3">타이포그래피</h3>
+          <div className="border-t border-neutral-200 pt-4">
+            <h3 className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-3">타이포그래피</h3>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs text-neutral-400 mb-1">제목 크기</label>
+                <label className="block text-xs text-neutral-500 mb-1">제목 크기</label>
                 <select value={theme.titleSize ?? 'lg'} onChange={e => updateTheme('titleSize', e.target.value)}
-                  className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm">
+                  className="w-full px-3 py-2 bg-platform-bg2 border border-neutral-300 rounded-lg text-black text-sm">
                   {titleSizeOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-neutral-400 mb-1">제목 두께</label>
+                <label className="block text-xs text-neutral-500 mb-1">제목 두께</label>
                 <select value={theme.titleWeight ?? 'bold'} onChange={e => updateTheme('titleWeight', e.target.value)}
-                  className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm">
+                  className="w-full px-3 py-2 bg-platform-bg2 border border-neutral-300 rounded-lg text-black text-sm">
                   {titleWeightOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-neutral-400 mb-1">자간</label>
+                <label className="block text-xs text-neutral-500 mb-1">자간</label>
                 <select value={theme.letterSpacing ?? 'normal'} onChange={e => updateTheme('letterSpacing', e.target.value)}
-                  className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm">
+                  className="w-full px-3 py-2 bg-platform-bg2 border border-neutral-300 rounded-lg text-black text-sm">
                   {letterSpacingOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-neutral-400 mb-1">본문 행간</label>
+                <label className="block text-xs text-neutral-500 mb-1">본문 행간</label>
                 <select value={theme.bodyLineHeight ?? 'relaxed'} onChange={e => updateTheme('bodyLineHeight', e.target.value)}
-                  className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm">
+                  className="w-full px-3 py-2 bg-platform-bg2 border border-neutral-300 rounded-lg text-black text-sm">
                   {lineHeightOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-neutral-400 mb-1">읽기 영역 폭</label>
+                <label className="block text-xs text-neutral-500 mb-1">읽기 영역 폭</label>
                 <select value={theme.contentWidth ?? 'normal'} onChange={e => updateTheme('contentWidth', e.target.value)}
-                  className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm">
+                  className="w-full px-3 py-2 bg-platform-bg2 border border-neutral-300 rounded-lg text-black text-sm">
                   {contentWidthOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
               </div>
@@ -368,27 +368,27 @@ export default function ThemeEditorPage() {
           </div>
 
           {/* ── 레이아웃 (Phase 2) ── */}
-          <div className="border-t border-neutral-800 pt-4">
-            <h3 className="text-sm font-medium text-neutral-300 mb-3">레이아웃</h3>
+          <div className="border-t border-neutral-200 pt-4">
+            <h3 className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-3">레이아웃</h3>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs text-neutral-400 mb-1">레이아웃 스타일</label>
+                <label className="block text-xs text-neutral-500 mb-1">레이아웃 스타일</label>
                 <select value={theme.layout ?? 'grid'} onChange={e => updateTheme('layout', e.target.value)}
-                  className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm">
+                  className="w-full px-3 py-2 bg-platform-bg2 border border-neutral-300 rounded-lg text-black text-sm">
                   {layoutOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-neutral-400 mb-1">히어로 스타일</label>
+                <label className="block text-xs text-neutral-500 mb-1">히어로 스타일</label>
                 <select value={theme.heroStyle ?? 'minimal'} onChange={e => updateTheme('heroStyle', e.target.value)}
-                  className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm">
+                  className="w-full px-3 py-2 bg-platform-bg2 border border-neutral-300 rounded-lg text-black text-sm">
                   {heroStyleOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-neutral-400 mb-1">네비게이션</label>
+                <label className="block text-xs text-neutral-500 mb-1">네비게이션</label>
                 <select value={theme.navStyle ?? 'top'} onChange={e => updateTheme('navStyle', e.target.value)}
-                  className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm">
+                  className="w-full px-3 py-2 bg-platform-bg2 border border-neutral-300 rounded-lg text-black text-sm">
                   {navStyleOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
               </div>
@@ -396,11 +396,11 @@ export default function ThemeEditorPage() {
           </div>
 
           {/* AI 재생성 */}
-          <div className="border-t border-neutral-800 pt-4">
+          <div className="border-t border-neutral-200 pt-4">
             {!showAiInput ? (
               <button
                 onClick={() => setShowAiInput(true)}
-                className="w-full py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-sm rounded-lg transition"
+                className="w-full py-2 border border-neutral-300 hover:border-neutral-400 text-neutral-600 text-sm rounded-lg transition"
               >
                 AI로 다시 생성 (1 크레딧)
               </button>
@@ -410,20 +410,20 @@ export default function ThemeEditorPage() {
                   value={aiDescription}
                   onChange={e => setAiDescription(e.target.value)}
                   rows={3}
-                  className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm placeholder-neutral-500 resize-none"
+                  className="w-full px-3 py-2 bg-platform-bg2 border border-neutral-300 rounded-lg text-black text-sm placeholder-neutral-400 resize-none"
                   placeholder="원하는 분위기를 설명하세요..."
                 />
                 <div className="flex gap-2">
                   <button
                     onClick={handleAiGenerate}
                     disabled={generating || !aiDescription.trim()}
-                    className="flex-1 py-2 bg-amber-600 hover:bg-amber-500 disabled:bg-neutral-700 text-white text-sm rounded-lg transition"
+                    className="flex-1 py-2 bg-black hover:bg-neutral-800 disabled:bg-neutral-300 text-white text-sm rounded-lg transition"
                   >
                     {generating ? '생성 중...' : '생성 (1 크레딧)'}
                   </button>
                   <button
                     onClick={() => { setShowAiInput(false); setAiDescription('') }}
-                    className="px-4 py-2 bg-neutral-800 text-neutral-400 text-sm rounded-lg"
+                    className="px-4 py-2 border border-neutral-300 text-neutral-500 text-sm rounded-lg"
                   >
                     취소
                   </button>
@@ -433,11 +433,11 @@ export default function ThemeEditorPage() {
           </div>
 
           {/* 내 공간 미리보기 링크 */}
-          <div className="border-t border-neutral-800 pt-4">
+          <div className="border-t border-neutral-200 pt-4">
             <Link
               href={`/${user.slug}`}
               target="_blank"
-              className="block w-full py-2 text-center bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-sm rounded-lg transition"
+              className="block w-full py-2 text-center border border-neutral-300 hover:border-neutral-400 text-neutral-600 text-sm rounded-lg transition"
             >
               내 공간 열기 (새 탭) &rarr;
             </Link>

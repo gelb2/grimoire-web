@@ -48,15 +48,8 @@ export default function LibraryPage() {
   useEffect(() => {
     if (user) {
       api.getLibrary()
-        .then(data => {
-          setBookmarked(data.bookmarked || [])
-          setSubscribed(data.subscribed || [])
-          setLoadError(false)
-        })
-        .catch(() => {
-          setLoadError(true)
-          toast.error('서재 데이터를 불러올 수 없습니다')
-        })
+        .then(data => { setBookmarked(data.bookmarked || []); setSubscribed(data.subscribed || []); setLoadError(false) })
+        .catch(() => { setLoadError(true); toast.error('서재 데이터를 불러올 수 없습니다') })
         .finally(() => setDataLoading(false))
     }
   }, [user])
@@ -67,37 +60,37 @@ export default function LibraryPage() {
     <div className="min-h-screen bg-platform-bg">
       <PlatformNav />
 
-      <main className="max-w-5xl mx-auto px-6 py-8">
-        {/* 헤더 */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 mb-6">
-          <h1 className="text-2xl font-bold text-white">내 서재</h1>
-          <p className="text-neutral-400 text-sm mt-1">북마크한 작품과 구독 작가의 작품을 한눈에 확인하세요.</p>
+      <main className="max-w-5xl mx-auto px-6 py-12">
+        {/* 헤더 — 에디토리얼 */}
+        <div className="mb-8">
+          <p className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-3">YOUR LIBRARY</p>
+          <h1 className="text-4xl md:text-5xl font-black text-black leading-tight">내 서재</h1>
         </div>
 
         {/* 탭 */}
-        <div className="flex gap-4 border-b border-neutral-800 mb-6">
+        <div className="flex gap-6 border-b border-neutral-200 mb-8">
           <button
             onClick={() => setTab('bookmarked')}
-            className={`pb-3 text-sm font-medium transition ${tab === 'bookmarked' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-neutral-500'}`}
+            className={`pb-3 text-xs uppercase tracking-widest font-medium transition ${tab === 'bookmarked' ? 'text-black border-b-2 border-platform-accent' : 'text-neutral-400 hover:text-black'}`}
           >
             내 서재 {bookmarked.length > 0 && `(${bookmarked.length})`}
           </button>
           <button
             onClick={() => setTab('subscribed')}
-            className={`pb-3 text-sm font-medium transition ${tab === 'subscribed' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-neutral-500'}`}
+            className={`pb-3 text-xs uppercase tracking-widest font-medium transition ${tab === 'subscribed' ? 'text-black border-b-2 border-platform-accent' : 'text-neutral-400 hover:text-black'}`}
           >
             구독 작품 {subscribed.length > 0 && `(${subscribed.length})`}
           </button>
         </div>
 
         {dataLoading ? (
-          <p className="text-neutral-500 text-center py-16">로딩 중...</p>
+          <p className="text-neutral-400 text-center py-16">로딩 중...</p>
         ) : loadError ? (
           <div className="text-center py-16">
-            <p className="text-red-400 mb-4">서재 데이터를 불러오지 못했습니다</p>
+            <p className="text-platform-accent mb-4">서재 데이터를 불러오지 못했습니다</p>
             <button
               onClick={() => { setDataLoading(true); setLoadError(false); api.getLibrary().then(data => { setBookmarked(data.bookmarked || []); setSubscribed(data.subscribed || []) }).catch(() => setLoadError(true)).finally(() => setDataLoading(false)) }}
-              className="px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-500 transition"
+              className="px-6 py-2 bg-black text-white rounded-lg hover:bg-neutral-800 transition"
             >
               다시 시도
             </button>
@@ -109,54 +102,42 @@ export default function LibraryPage() {
               bookmarked.length === 0 ? (
                 <div className="text-center py-16">
                   <p className="text-neutral-500 mb-4">북마크한 작품이 없습니다</p>
-                  <p className="text-neutral-600 text-sm mb-4">에피소드를 읽으며 북마크를 추가해 보세요.</p>
-                  <Link href="/explore" className="inline-block px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-500 transition">
-                    갤러리 보기
-                  </Link>
+                  <Link href="/explore" className="text-sm text-platform-accent hover:underline">탐색하러 가기 &rarr;</Link>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {bookmarked.map((item) => (
-                    <div key={item.workId} className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 hover:border-neutral-700 transition">
-                      {/* 작품 정보 */}
-                      <Link href={`/${item.authorSlug}/${item.workSlug}`} className="block mb-3">
-                        <h3 className="text-white font-medium hover:text-amber-500 transition">{item.workTitle}</h3>
-                        <p className="text-neutral-500 text-sm mt-1">
+                <div>
+                  {bookmarked.map((item, i) => (
+                    <div key={item.workId} className="grid grid-cols-[50px_1fr_auto] items-start gap-4 py-5 border-b border-neutral-200">
+                      <span className="text-sm font-mono text-neutral-300 pt-0.5">{String(i + 1).padStart(2, '0')}</span>
+                      <div>
+                        <Link href={`/${item.authorSlug}/${item.workSlug}`} className="text-base font-bold text-black hover:text-platform-accent transition">
+                          {item.workTitle}
+                        </Link>
+                        <p className="text-sm text-neutral-500 mt-0.5">
                           {item.authorName} · {item.episodeCount}화
-                          {item.subscribed && <span className="ml-2 text-amber-600 text-xs">구독 중</span>}
+                          {item.subscribed && <span className="ml-2 text-platform-accent text-xs">구독 중</span>}
                         </p>
-                      </Link>
-
-                      {/* 읽기 진행도 바 */}
-                      <div className="mb-3">
-                        <div className="flex justify-between text-xs text-neutral-500 mb-1">
-                          <span>{item.readEpisodeCount}/{item.episodeCount}화 읽음</span>
-                          <span>{item.episodeCount > 0 ? Math.round((item.readEpisodeCount / item.episodeCount) * 100) : 0}%</span>
-                        </div>
-                        <div className="w-full h-1.5 bg-neutral-800 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-amber-600 rounded-full transition-all"
-                            style={{ width: `${item.episodeCount > 0 ? (item.readEpisodeCount / item.episodeCount) * 100 : 0}%` }}
-                          />
+                        {/* 진행도 */}
+                        <div className="mt-2 max-w-xs">
+                          <div className="flex justify-between text-[10px] text-neutral-400 mb-1">
+                            <span>{item.readEpisodeCount}/{item.episodeCount}화</span>
+                            <span>{item.episodeCount > 0 ? Math.round((item.readEpisodeCount / item.episodeCount) * 100) : 0}%</span>
+                          </div>
+                          <div className="w-full h-1 bg-neutral-200 rounded-full overflow-hidden">
+                            <div className="h-full bg-black rounded-full transition-all"
+                              style={{ width: `${item.episodeCount > 0 ? (item.readEpisodeCount / item.episodeCount) * 100 : 0}%` }} />
+                          </div>
                         </div>
                       </div>
-
-                      {/* 이어읽기 버튼 */}
-                      {item.lastReadEpisodeSlug ? (
-                        <Link
-                          href={`/${item.authorSlug}/${item.workSlug}/${item.lastReadEpisodeSlug}`}
-                          className="inline-block px-4 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs rounded-lg transition"
-                        >
-                          이어읽기 — {item.lastReadEpisodeTitle}
-                        </Link>
-                      ) : (
-                        <Link
-                          href={`/${item.authorSlug}/${item.workSlug}`}
-                          className="inline-block px-4 py-1.5 bg-neutral-700 hover:bg-neutral-600 text-neutral-300 text-xs rounded-lg transition"
-                        >
-                          처음부터 읽기
-                        </Link>
-                      )}
+                      <div className="pt-0.5">
+                        {item.lastReadEpisodeSlug ? (
+                          <Link href={`/${item.authorSlug}/${item.workSlug}/${item.lastReadEpisodeSlug}`}
+                            className="text-xs text-platform-accent hover:underline">이어읽기</Link>
+                        ) : (
+                          <Link href={`/${item.authorSlug}/${item.workSlug}`}
+                            className="text-xs text-neutral-500 hover:text-black underline transition">처음부터</Link>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -168,27 +149,21 @@ export default function LibraryPage() {
               subscribed.length === 0 ? (
                 <div className="text-center py-16">
                   <p className="text-neutral-500 mb-4">구독한 작가의 작품이 없습니다</p>
-                  <p className="text-neutral-600 text-sm mb-4">갤러리에서 마음에 드는 작가를 구독해 보세요.</p>
-                  <Link href="/explore" className="inline-block px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-500 transition">
-                    갤러리 보기
-                  </Link>
+                  <Link href="/explore" className="text-sm text-platform-accent hover:underline">탐색하러 가기 &rarr;</Link>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {subscribed.map((work) => (
-                    <Link
-                      key={work.workId}
-                      href={`/${work.authorSlug}/${work.workSlug}`}
-                      className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 hover:border-amber-600 transition"
-                    >
-                      <h3 className="text-white font-medium">{work.workTitle}</h3>
-                      <p className="text-neutral-500 text-sm mt-1">{work.authorName}</p>
-                      <div className="flex items-center gap-3 mt-3 text-xs text-neutral-500">
-                        <span>{work.episodeCount}화</span>
-                        {work.latestEpisodeTitle && (
-                          <span className="text-amber-600">최신: {work.latestEpisodeTitle}</span>
-                        )}
+                <div>
+                  {subscribed.map((work, i) => (
+                    <Link key={work.workId} href={`/${work.authorSlug}/${work.workSlug}`}
+                      className="group grid grid-cols-[50px_1fr_auto] items-baseline gap-4 py-5 border-b border-neutral-200 hover:border-black transition-colors">
+                      <span className="text-sm font-mono text-neutral-300 group-hover:text-platform-accent transition-colors">{String(i + 1).padStart(2, '0')}</span>
+                      <div>
+                        <h3 className="text-base font-bold text-black group-hover:text-platform-accent transition-colors">{work.workTitle}</h3>
+                        <p className="text-sm text-neutral-500 mt-0.5">{work.authorName} · {work.episodeCount}화</p>
                       </div>
+                      {work.latestEpisodeTitle && (
+                        <span className="text-xs text-platform-accent">최신: {work.latestEpisodeTitle}</span>
+                      )}
                     </Link>
                   ))}
                 </div>
