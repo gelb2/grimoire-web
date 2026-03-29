@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/features/auth'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import { PlatformNav } from '@/components/PlatformNav'
 import { themePresets, AuthorTheme } from '@/features/theme'
@@ -67,7 +68,9 @@ export default function ThemeEditorPage() {
           setSelectedPreset('custom')
         }
       }
-    }).catch(() => {})
+    }).catch(() => {
+      toast.error('저장된 테마를 불러올 수 없습니다. 기본 테마로 시작합니다.')
+    })
   }, [user])
 
   const updateTheme = (key: string, value: string) => {

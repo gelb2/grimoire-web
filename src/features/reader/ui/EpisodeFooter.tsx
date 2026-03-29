@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import { useThrottledAction } from '@/hooks/useThrottle'
 
@@ -50,7 +51,9 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
         const result = await api.toggleLike(episodeId)
         setLiked(result.liked)
         setLikeCount(result.likeCount)
-      } catch { /* 로그인 필요 */ }
+      } catch {
+        toast.error('로그인이 필요합니다')
+      }
     })
   }
 
@@ -61,7 +64,9 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
       const comment = await api.createComment(episodeId, newComment)
       setComments(prev => [...prev, comment])
       setNewComment('')
-    } catch { /* 로그인 필요 */ }
+    } catch {
+      toast.error('댓글 작성에 실패했습니다. 로그인을 확인하세요.')
+    }
     finally { setSubmitting(false) }
   }
 
@@ -73,7 +78,9 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
       setComments(prev => [...prev, comment])
       setReplyContent('')
       setReplyingTo(null)
-    } catch { /* 로그인 필요 */ }
+    } catch {
+      toast.error('답글 작성에 실패했습니다')
+    }
     finally { setSubmitting(false) }
   }
 
@@ -84,7 +91,9 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
       await api.deleteComment(commentId)
       // 댓글 삭제 시 해당 댓글의 대댓글도 제거
       setComments(prev => prev.filter(c => c.id !== commentId && c.parentId !== commentId))
-    } catch {}
+    } catch {
+      toast.error('댓글 삭제에 실패했습니다')
+    }
     finally {
       setDeletingComments(prev => {
         const next = new Map(prev)

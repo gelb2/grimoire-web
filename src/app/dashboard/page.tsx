@@ -4,6 +4,7 @@ import { useAuth } from '@/features/auth'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import { PlatformNav } from '@/components/PlatformNav'
 import { ViewChart } from '@/components/ViewChart'
@@ -47,7 +48,10 @@ export default function DashboardPage() {
     if (user) {
       api.getAuthorSpace<any>(user.slug)
         .then(data => setWorks(data.works || []))
-        .catch(() => setWorks([]))
+        .catch(() => {
+          setWorks([])
+          toast.error('작품 목록을 불러올 수 없습니다')
+        })
         .finally(() => setWorksLoading(false))
     }
   }, [user])
@@ -61,7 +65,10 @@ export default function DashboardPage() {
     setStatsLoading(true)
     api.getWorkStats(selectedWorkId)
       .then(setStatsData)
-      .catch(() => setStatsData(null))
+      .catch(() => {
+        setStatsData(null)
+        toast.error('통계 데이터를 불러올 수 없습니다')
+      })
       .finally(() => setStatsLoading(false))
   }, [selectedWorkId])
 

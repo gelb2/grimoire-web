@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import { PlatformNav } from '@/components/PlatformNav'
 
@@ -12,7 +13,9 @@ export default function AdminPage() {
   const [message, setMessage] = useState('')
 
   useEffect(() => {
-    api.getAdminStats().then(setStats).catch(() => {})
+    api.getAdminStats().then(setStats).catch(() => {
+      toast.error('관리자 통계를 불러올 수 없습니다')
+    })
   }, [])
 
   const handleGrant = async () => {
