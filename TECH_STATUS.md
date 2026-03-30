@@ -33,23 +33,11 @@
 
 ---
 
-## 3. 서버-웹 싱크 갭
-
-> 서버 API는 구현됐으나 웹에 연결되지 않은 기능들.
-
-| 서버 기능 | 웹 상태 | 비고 |
-|-----------|---------|------|
-| **좋아요** (toggleLike, getLikeCount) | api.ts에 메서드 있음, UI 없음 | 에피소드 뷰어에 좋아요 버튼 필요 |
-| **댓글** (createComment, getComments, deleteComment) | api.ts에 메서드 있음, UI 없음 | 에피소드 뷰어에 댓글 섹션 필요 |
-| **북마크** (toggleBookmark, saveProgress, getProgress) | api.ts 있음, 에피소드 뷰어에서 미사용 | 뷰어 내 북마크 버튼 연결 필요 |
-| **커버 이미지 업로드** | api.ts 없음, UI 없음 | 서버 100% 완료, 프론트 미구현 |
-| **결제 시작** (createPayment/PAYAPP) | 버튼 비활성, initiatePayment 주석 | PAYAPP API 키 발급 후 연동 필요 |
-| **Analysis (RAG 일관성 체크)** | api.ts 없음, UI 없음 | 대시보드에 분석 탭 필요 |
-| **크레딧 선물** (giftCredits) | api.ts에 메서드 있음, UI 없음 | 작가 프로필에서 선물 버튼 필요 |
+> 서버-웹 싱크 갭: 루트 `SYNC_STATUS.md` 참조
 
 ---
 
-## 4. API 클라이언트 커버리지 (`src/lib/api.ts`)
+## 3. API 클라이언트 커버리지 (`src/lib/api.ts`)
 
 서버 API 카테고리 대비 api.ts 메서드 구현 현황:
 
@@ -104,8 +92,9 @@
 
 ---
 
-## 8. 참조 문서
+## 7. 참조 문서
 
+- 루트 `SYNC_STATUS.md` — 서버-웹 연결 현황 + 갭 (정본)
 - `docs/api-contract.md` — 서버 API 명세 (정본)
 - `SCREENS.md` — 화면/컴포넌트 카탈로그
 - `TODO.md` — 남은 작업
