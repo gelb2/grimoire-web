@@ -29,6 +29,7 @@ interface CommentData {
 export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug, nextEpisodeSlug }: EpisodeFooterProps) {
   const [liked, setLiked] = useState(false)
   const [likeCount, setLikeCount] = useState(0)
+  const [bookmarked, setBookmarked] = useState(false)
   const [comments, setComments] = useState<CommentData[]>([])
   const [newComment, setNewComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -43,6 +44,12 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
   useEffect(() => {
     api.getLikeCount(episodeId).then(data => setLikeCount(data.count)).catch(() => {})
     api.getComments(episodeId).then(setComments).catch(() => {})
+    // 북마크 상태 확인
+    api.getBookmarks().then(bookmarks => {
+      setBookmarked(bookmarks.some((b: { episodeId: string }) => b.episodeId === episodeId))
+    }).catch(() => {})
+    // 읽기 진행도 저장 (이 에피소드를 읽고 있음 — blockIndex 0)
+    api.saveProgress(episodeId, 0).catch(() => {})
   }, [episodeId])
 
   const handleLike = () => {
@@ -55,6 +62,16 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
         toast.error('로그인이 필요합니다')
       }
     })
+  }
+
+  const handleBookmark = async () => {
+    try {
+      const result = await api.toggleBookmark(episodeId)
+      setBookmarked(result.bookmarked)
+      toast.success(result.bookmarked ? '서재에 추가됐습니다' : '서재에서 제거됐습니다')
+    } catch {
+      toast.error('로그인이 필요합니다')
+    }
   }
 
   const handleComment = async () => {
@@ -143,6 +160,10 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
 
         <button onClick={handleLike} disabled={likeThrottle.pending} className={`px-6 py-2 rounded-full border text-sm transition hover:opacity-80 disabled:opacity-50 ${liked ? 'border-g-accent text-g-accent' : 'border-g-border text-g-text-muted'}`}>
           {liked ? '\u2665' : '\u2661'} {likeCount} 좋아요
+        </button>
+
+        <button onClick={handleBookmark} className={`px-4 py-2 rounded-full border text-sm transition hover:opacity-80 ${bookmarked ? 'border-g-accent text-g-accent' : 'border-g-border text-g-text-muted'}`}>
+          {bookmarked ? '★' : '☆'} 서재
         </button>
 
         <div className="relative">
