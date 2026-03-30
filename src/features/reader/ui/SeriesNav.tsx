@@ -73,7 +73,7 @@ export function SeriesNav({ authorName = "Grimoire", workSlug, apiEpisodes, apiW
       {/* CI 로고 — 플랫폼 홈으로 이동 (대조색: g-text-bright로 어두운 배경에서 가독성 확보) */}
       <Link
         href="/explore"
-        className="font-[var(--font-logo)] text-sm uppercase tracking-[0.15em] text-g-text-muted hover:text-g-accent2 transition-colors duration-200 shrink-0"
+        className="font-ci text-sm uppercase tracking-[0.15em] text-g-text-muted hover:text-g-accent2 transition-colors duration-200 shrink-0"
       >
         Grimoire
       </Link>
