@@ -27,6 +27,7 @@
   /* ── 폰트 토큰 ── */
   --font-g-serif: var(--g-serif);
   --font-g-sans: var(--g-sans);
+  --font-ci: var(--font-logo);
 
   /* ── 간격 토큰 (방어책: 컴포넌트 간 통일된 스케일) ── */
   --spacing-g-section: 3.5rem;
