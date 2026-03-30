@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, memo } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import { useDebounce } from '@/hooks/useThrottle'
+import { useTypingPlaceholder } from '@/hooks/useTypingPlaceholder'
 import { PlatformNav } from '@/components/PlatformNav'
 import { WorkCard } from '@/components/WorkCard'
 import { useExploreStore } from '@/stores/useExploreStore'
@@ -13,67 +14,8 @@ interface AuthorResult { id: string; slug: string; name: string }
 
 const PAGE_SIZE = 12
 
-// 타이핑 → 지우기 → 반복 애니메이션 훅
-function useTypingPlaceholder(phrases: string[], typingSpeed = 80, deleteSpeed = 40, pauseMs = 2000) {
-  const [text, setText] = useState('')
-  const phraseIdx = useRef(0)
-  const charIdx = useRef(0)
-  const deleting = useRef(false)
-
-  useEffect(() => {
-    const tick = () => {
-      const currentPhrase = phrases[phraseIdx.current]
-
-      if (!deleting.current) {
-        // 타이핑
-        charIdx.current++
-        setText(currentPhrase.slice(0, charIdx.current))
-
-        if (charIdx.current === currentPhrase.length) {
-          // 다 쳤으면 잠시 멈추고 지우기 시작
-          deleting.current = true
-          return pauseMs
-        }
-        return typingSpeed
-      } else {
-        // 지우기
-        charIdx.current--
-        setText(currentPhrase.slice(0, charIdx.current))
-
-        if (charIdx.current === 0) {
-          // 다 지웠으면 다음 문구로
-          deleting.current = false
-          phraseIdx.current = (phraseIdx.current + 1) % phrases.length
-          return typingSpeed * 3
-        }
-        return deleteSpeed
-      }
-    }
-
-    let timer: ReturnType<typeof setTimeout>
-    const schedule = () => {
-      const delay = tick()
-      timer = setTimeout(schedule, delay)
-    }
-    timer = setTimeout(schedule, typingSpeed)
-
-    return () => clearTimeout(timer)
-  }, [phrases, typingSpeed, deleteSpeed, pauseMs])
-
-  return text
-}
-
 export default function ExplorePage() {
-  const [query, setQuery] = useState('')
-  const [authors, setAuthors] = useState<AuthorResult[]>([])
-  const [searching, setSearching] = useState(false)
   const [giftedAuthors, setGiftedAuthors] = useState<{ id: string; slug: string; name: string; bio: string | null; totalGifted: number }[]>([])
-  const debounce = useDebounce(300)
-  const animatedPlaceholder = useTypingPlaceholder([
-    '작가 이름으로 검색...',
-    '작품 제목으로 검색...',
-    '좋아하는 장르를 찾아보세요...',
-  ])
 
   const {
     popularWorks, recentWorks, scrollY, loaded,
@@ -152,70 +94,13 @@ export default function ExplorePage() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [handleScroll])
 
-  const handleSearch = async () => {
-    if (!query.trim()) return
-    setSearching(true)
-    try {
-      const results = await api.searchAuthors(query)
-      setAuthors(results)
-    } catch {
-      setAuthors([])
-      toast.error('검색에 실패했습니다')
-    }
-    finally { setSearching(false) }
-  }
-
   return (
     <div className="min-h-screen bg-platform-bg">
       <PlatformNav />
 
       <main className="max-w-5xl mx-auto px-6 py-12">
-        {/* 히어로 — 에디토리얼 대형 타이포 */}
-        <div className="mb-16">
-          <p className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-4">DISCOVER STORIES</p>
-          <h1 className="text-5xl md:text-7xl font-black text-black leading-none mb-6">
-            작가와 작품을<br />탐색하세요
-          </h1>
-
-          {/* 검색 — 밑줄 인풋 */}
-          <div className="flex items-center gap-4 border-b-2 border-black pb-2 mt-8">
-            <input
-              type="text"
-              value={query}
-              onChange={e => {
-                setQuery(e.target.value)
-                const val = e.target.value
-                debounce(() => { if (val.trim()) handleSearch() })
-              }}
-              onKeyDown={e => e.key === 'Enter' && handleSearch()}
-              placeholder={query ? '' : animatedPlaceholder}
-              className="flex-1 py-2 bg-transparent text-black placeholder-neutral-400 text-lg focus:outline-none"
-            />
-            <button
-              onClick={handleSearch}
-              disabled={searching}
-              className="text-sm font-medium text-neutral-500 hover:text-black transition disabled:opacity-50 uppercase tracking-widest"
-            >
-              {searching ? '...' : 'Search'}
-            </button>
-          </div>
-
-          {/* 검색 결과 */}
-          {authors.length > 0 && (
-            <div className="mt-6 border-t border-neutral-200 pt-4">
-              {authors.map(author => (
-                <Link
-                  key={author.id}
-                  href={`/${author.slug}`}
-                  className="group flex items-baseline gap-3 py-3 border-b border-neutral-200 hover:border-black transition-colors"
-                >
-                  <span className="text-lg font-bold text-black group-hover:text-platform-accent transition">{author.name}</span>
-                  <span className="text-sm text-neutral-400">/{author.slug}</span>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* 히어로 + 검색 — 별도 컴포넌트로 리렌더링 격리 */}
+        <SearchSection />
 
         {/* 인기 작품 — 매거진 비대칭 그리드 */}
         <section className="mb-16">
@@ -319,8 +204,82 @@ export default function ExplorePage() {
   )
 }
 
-// ── 매거진 비대칭 그리드 ──
-// 3개씩 묶어서: 큰 카드 1 + 작은 카드 2 (좌우 번갈아)
+// ── 검색 섹션 — 별도 컴포넌트 (타이핑 애니메이션 리렌더링 격리) ──
+
+function SearchSection() {
+  const [query, setQuery] = useState('')
+  const [authors, setAuthors] = useState<AuthorResult[]>([])
+  const [searching, setSearching] = useState(false)
+  const debounce = useDebounce(300)
+  const animatedPlaceholder = useTypingPlaceholder([
+    '작가 이름으로 검색...',
+    '작품 제목으로 검색...',
+    '좋아하는 장르를 찾아보세요...',
+  ])
+
+  const handleSearch = useCallback(async (searchQuery: string) => {
+    if (!searchQuery.trim()) return
+    setSearching(true)
+    try {
+      const results = await api.searchAuthors(searchQuery)
+      setAuthors(results)
+    } catch {
+      setAuthors([])
+      toast.error('검색에 실패했습니다')
+    }
+    finally { setSearching(false) }
+  }, [])
+
+  return (
+    <div className="mb-16">
+      <p className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-4">DISCOVER STORIES</p>
+      <h1 className="text-5xl md:text-7xl font-black text-black leading-none mb-6">
+        작가와 작품을<br />탐색하세요
+      </h1>
+
+      {/* 검색 — 밑줄 인풋 */}
+      <div className="flex items-center gap-4 border-b-2 border-black pb-2 mt-8">
+        <input
+          type="text"
+          value={query}
+          onChange={e => {
+            const val = e.target.value
+            setQuery(val)
+            debounce(() => { if (val.trim()) handleSearch(val) })
+          }}
+          onKeyDown={e => e.key === 'Enter' && handleSearch(query)}
+          placeholder={query ? '' : animatedPlaceholder}
+          className="flex-1 py-2 bg-transparent text-black placeholder-neutral-400 text-lg focus:outline-none"
+        />
+        <button
+          onClick={() => handleSearch(query)}
+          disabled={searching}
+          className="text-sm font-medium text-neutral-500 hover:text-black transition disabled:opacity-50 uppercase tracking-widest"
+        >
+          {searching ? '...' : 'Search'}
+        </button>
+      </div>
+
+      {/* 검색 결과 */}
+      {authors.length > 0 && (
+        <div className="mt-6 border-t border-neutral-200 pt-4">
+          {authors.map(author => (
+            <Link
+              key={author.id}
+              href={`/${author.slug}`}
+              className="group flex items-baseline gap-3 py-3 border-b border-neutral-200 hover:border-black transition-colors"
+            >
+              <span className="text-lg font-bold text-black group-hover:text-platform-accent transition">{author.name}</span>
+              <span className="text-sm text-neutral-400">/{author.slug}</span>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── 매거진 비대칭 그리드 (memo로 불필요한 리렌더링 방지) ──
 
 interface MagazineWork {
   id: string
@@ -333,8 +292,7 @@ interface MagazineWork {
   viewCount?: number
 }
 
-function MagazineGrid({ works }: { works: MagazineWork[] }) {
-  // 3개씩 그룹으로 나누기
+const MagazineGrid = memo(function MagazineGrid({ works }: { works: MagazineWork[] }) {
   const groups: MagazineWork[][] = []
   for (let i = 0; i < works.length; i += 3) {
     groups.push(works.slice(i, i + 3))
@@ -347,7 +305,6 @@ function MagazineGrid({ works }: { works: MagazineWork[] }) {
         const big = group[0]
         const smalls = group.slice(1)
 
-        // 3개 미만인 마지막 그룹 — 균등 그리드
         if (group.length < 3) {
           return (
             <div key={gi} className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -418,4 +375,4 @@ function MagazineGrid({ works }: { works: MagazineWork[] }) {
       })}
     </div>
   )
-}
+})
