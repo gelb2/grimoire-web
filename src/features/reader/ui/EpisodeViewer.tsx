@@ -217,14 +217,18 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
           )}
         </h1>
 
-        {meta.subtitle && (
+        {/* description 우선, 없으면 subtitle 폴백 */}
+        {(meta.description || meta.subtitle) && (
           <motion.div
-            className="font-g-sans text-g-caption text-g-text-muted tracking-g-normal"
+            className={meta.description
+              ? "text-sm text-g-text-muted leading-relaxed mt-2 max-w-prose"
+              : "font-g-sans text-g-caption text-g-text-muted tracking-g-normal"
+            }
             initial={showImmediately ? false : { opacity: 0 }}
             animate={{ opacity: stage >= 3 ? 1 : 0 }}
             transition={{ duration: 0.5 }}
           >
-            {meta.subtitle}
+            {meta.description || meta.subtitle}
           </motion.div>
         )}
 
