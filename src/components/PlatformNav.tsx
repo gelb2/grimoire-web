@@ -144,13 +144,16 @@ export function PlatformNav({ variant = 'platform' }: PlatformNavProps) {
                     >
                       내 공간 보기
                     </Link>
-                    <Link
-                      href="/admin"
-                      onClick={() => setDropdownOpen(false)}
-                      className={s.dropdownAdmin}
-                    >
-                      관리자
-                    </Link>
+                    {/* 관리자 전용 메뉴 */}
+                    {user.role === 'admin' && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setDropdownOpen(false)}
+                        className={s.dropdownAdmin}
+                      >
+                        관리자
+                      </Link>
+                    )}
                     <div className={s.dropdownDivider} />
                     <button
                       onClick={() => {

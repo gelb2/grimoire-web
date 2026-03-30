@@ -34,8 +34,6 @@
 | 경로 | 파일 | 설명 | API |
 |------|------|------|-----|
 | `/[author]` | `app/[author]/page.tsx` | 작가 랜딩 (작품 목록) | `GET /api/authors/:slug` |
-| `/[author]/preface` | `app/[author]/preface/page.tsx` | 일러두기 | - |
-| `/[author]/afterword` | `app/[author]/afterword/page.tsx` | 후기 | - |
 | `/[author]/[slug]` | `app/[author]/[slug]/page.tsx` | 작품 페이지 (에피소드 목록) | `GET /api/works/:authorSlug/:workSlug` |
 | `/[author]/[slug]/[episode]` | `app/[author]/[slug]/[episode]/page.tsx` | 에피소드 읽기 뷰어 | `GET /api/episodes/:a/:w/:e` |
 
