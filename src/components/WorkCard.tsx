@@ -1,5 +1,7 @@
-// 작품 카드 — 탐색 페이지 그리드용
-// 다크 배경 + hover glow 효과, EpisodeCard 스타일 참고
+// 작품 카드 — 세 가지 variant
+// "platform" (기본): 에디토리얼 넘버링 리스트 행
+// "magazine": 매거진 카드 (라이트 테마, 호버 효과)
+// "author-space": 기존 다크 카드 (작가공간 grid/classic용)
 
 import Link from 'next/link'
 
@@ -15,6 +17,10 @@ export interface WorkCardProps {
   context?: 'explore' | 'author-space'
   /** 단일 에피소드 작품일 때 바로 이동할 에피소드 slug */
   firstEpisodeSlug?: string
+  /** 시각 variant */
+  variant?: 'platform' | 'magazine' | 'author-space'
+  /** 넘버링 인덱스 (platform variant에서 01, 02... 표시) */
+  index?: number
 }
 
 export function WorkCard({
@@ -27,6 +33,8 @@ export function WorkCard({
   viewCount,
   context = 'explore',
   firstEpisodeSlug,
+  variant = 'platform',
+  index,
 }: WorkCardProps) {
   // explore: 작가 공간으로 이동
   // author-space: 단일 에피소드면 바로 에피소드, 다중이면 작품 상세
@@ -39,6 +47,71 @@ export function WorkCard({
     }
   }
 
+  // ── platform variant: 에디토리얼 넘버링 리스트 행 ──
+  if (variant === 'platform') {
+    return (
+      <Link
+        href={href}
+        className="group grid grid-cols-[50px_1fr_auto] items-baseline gap-4 py-5 border-b border-neutral-200 hover:border-black transition-colors"
+      >
+        {/* 넘버링 */}
+        <span className="text-sm font-mono text-neutral-300 group-hover:text-platform-accent transition-colors">
+          {index != null ? String(index + 1).padStart(2, '0') : '—'}
+        </span>
+
+        {/* 제목 + 작가 */}
+        <div>
+          {genre && (
+            <span className="text-[10px] uppercase tracking-widest text-neutral-400 block mb-1">
+              {genre}
+            </span>
+          )}
+          <h3 className="text-lg font-bold text-black group-hover:text-platform-accent transition-colors leading-snug">
+            {title}
+          </h3>
+          {context === 'explore' && (
+            <p className="text-sm text-neutral-500 mt-0.5">{authorName}</p>
+          )}
+        </div>
+
+        {/* 통계 */}
+        <div className="flex items-center gap-3 text-xs text-neutral-400">
+          <span>{episodeCount}화</span>
+          {viewCount != null && viewCount > 0 && (
+            <span>{viewCount.toLocaleString()}뷰</span>
+          )}
+        </div>
+      </Link>
+    )
+  }
+
+  // ── magazine variant: 라이트 매거진 카드 ──
+  if (variant === 'magazine') {
+    return (
+      <Link
+        href={href}
+        className="group block h-full border border-neutral-200 rounded-lg p-6 hover:border-black transition-colors"
+      >
+        {genre && (
+          <span className="text-[10px] uppercase tracking-widest text-neutral-400 block mb-2">
+            {genre}
+          </span>
+        )}
+        <h3 className="text-xl font-bold text-black group-hover:text-platform-accent transition-colors leading-snug mb-2">
+          {title}
+        </h3>
+        <p className="text-sm text-neutral-500 mb-4">{authorName}</p>
+        <div className="flex items-center gap-3 text-xs text-neutral-400 mt-auto">
+          <span>{episodeCount}화</span>
+          {viewCount != null && viewCount > 0 && (
+            <span>{viewCount.toLocaleString()}뷰</span>
+          )}
+        </div>
+      </Link>
+    )
+  }
+
+  // ── author-space variant: 기존 다크 카드 ──
   return (
     <Link
       href={href}
@@ -54,7 +127,7 @@ export function WorkCard({
         </span>
       )}
 
-      {/* 작품 제목 — 최대 2줄, 넘치면 말줄임 */}
+      {/* 작품 제목 */}
       <h3 className="text-lg font-semibold text-white leading-snug mb-1.5 group-hover:text-amber-50 transition-colors truncate">
         {title}
       </h3>

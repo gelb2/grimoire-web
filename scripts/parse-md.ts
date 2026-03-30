@@ -109,22 +109,31 @@ export function parseEpisodeBlocks(body: string): { title: string; blocks: Block
       continue
     }
 
-    // ### 에필로그 패턴
-    if (trimmed.startsWith("### ") && /에필로그/.test(trimmed)) {
-      blocks.push({ type: "epilogue" })
-      // 에필로그 뒤에 부제가 있을 수 있음 (예: "### 에필로그: 유황불의 도시")
-      const epilogueTitle = trimmed.replace(/^###\s*에필로그[:\s]*/, "").trim()
-      if (epilogueTitle) {
-        blocks.push({ type: "paragraph", text: epilogueTitle })
+    // ### N. 챕터 제목 (번호 있는 챕터 — 에필로그 키워드 포함 여부 체크)
+    const chapterMatch = trimmed.match(/^###\s+(\d+)\.\s+(.+)$/)
+    if (chapterMatch) {
+      const chapterTitle = chapterMatch[2]
+      if (/에필로그/.test(chapterTitle)) {
+        // ### 9. 에필로그 → epilogue 블록
+        blocks.push({ type: "epilogue" })
+        const epilogueSubtitle = chapterTitle.replace(/에필로그[:\s]*/, "").trim()
+        if (epilogueSubtitle) {
+          blocks.push({ type: "paragraph", text: epilogueSubtitle })
+        }
+      } else {
+        blocks.push({ type: "chapter", num: chapterMatch[1], title: chapterTitle })
       }
       i++
       continue
     }
 
-    // ### N. 챕터 제목
-    const chapterMatch = trimmed.match(/^###\s+(\d+)\.\s+(.+)$/)
-    if (chapterMatch) {
-      blocks.push({ type: "chapter", num: chapterMatch[1], title: chapterMatch[2] })
+    // ### 에필로그 (번호 없는 에필로그)
+    if (trimmed.startsWith("### ") && /에필로그/.test(trimmed)) {
+      blocks.push({ type: "epilogue" })
+      const epilogueTitle = trimmed.replace(/^###\s*에필로그[:\s]*/, "").trim()
+      if (epilogueTitle) {
+        blocks.push({ type: "paragraph", text: epilogueTitle })
+      }
       i++
       continue
     }

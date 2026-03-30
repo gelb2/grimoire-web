@@ -25,6 +25,14 @@ interface WorkStatsData {
   totalViews: number
 }
 
+const quickActions = [
+  { href: '/dashboard/upload', title: '원고 업로드', desc: 'MD, TXT, DOCX' },
+  { href: '/dashboard/theme', title: '테마 설정', desc: 'AI 공간 꾸미기' },
+  { href: '/dashboard/credits', title: '크레딧 충전', desc: '크레딧 관리' },
+  { href: '/dashboard/profile', title: '프로필 설정', desc: '작가 정보 수정' },
+  { href: '/library', title: '서재', desc: '작품 + 구독 관리' },
+]
+
 export default function DashboardPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
@@ -43,202 +51,178 @@ export default function DashboardPage() {
     if (!loading && !user) router.push('/login')
   }, [user, loading, router])
 
-  // 작품 목록 로드
   useEffect(() => {
     if (user) {
       api.getAuthorSpace<any>(user.slug)
         .then(data => setWorks(data.works || []))
-        .catch(() => {
-          setWorks([])
-          toast.error('작품 목록을 불러올 수 없습니다')
-        })
+        .catch(() => { setWorks([]); toast.error('작품 목록을 불러올 수 없습니다') })
         .finally(() => setWorksLoading(false))
     }
   }, [user])
 
-  // 통계 데이터 로드
   useEffect(() => {
-    if (!selectedWorkId) {
-      setStatsData(null)
-      return
-    }
+    if (!selectedWorkId) { setStatsData(null); return }
     setStatsLoading(true)
     api.getWorkStats(selectedWorkId)
       .then(setStatsData)
-      .catch(() => {
-        setStatsData(null)
-        toast.error('통계 데이터를 불러올 수 없습니다')
-      })
+      .catch(() => { setStatsData(null); toast.error('통계 데이터를 불러올 수 없습니다') })
       .finally(() => setStatsLoading(false))
   }, [selectedWorkId])
 
-  // 작품 목록 로드 후 첫 번째 작품 자동 선택
   useEffect(() => {
-    if (works.length > 0 && !selectedWorkId) {
-      setSelectedWorkId(works[0].id)
-    }
+    if (works.length > 0 && !selectedWorkId) setSelectedWorkId(works[0].id)
   }, [works, selectedWorkId])
 
   const handleCreateWork = async () => {
     if (!newWork.title.trim() || !newWork.slug.trim()) return
-    setCreating(true)
-    setError('')
+    setCreating(true); setError('')
     try {
       const work = await api.createWork(newWork) as any
       setWorks(prev => [...prev, { ...work, episodeCount: 0 }])
-      setShowNewWork(false)
-      setNewWork({ title: '', slug: '', description: '' })
-    } catch (err: any) {
-      setError(err.message || '작품 생성에 실패했습니다')
-    } finally {
-      setCreating(false)
-    }
+      setShowNewWork(false); setNewWork({ title: '', slug: '', description: '' })
+    } catch (err: any) { setError(err.message || '작품 생성에 실패했습니다') }
+    finally { setCreating(false) }
   }
 
   const handleDeleteWork = async (workId: string, title: string) => {
-    if (deletingWorks.has(workId)) return  // 이미 삭제 중
+    if (deletingWorks.has(workId)) return
     if (!confirm(`"${title}"을(를) 삭제하시겠습니까? 모든 에피소드가 함께 삭제됩니다.`)) return
     setDeletingWorks(prev => new Set(prev).add(workId))
     try {
       await api.deleteWork(workId)
       setWorks(prev => prev.filter(w => w.id !== workId))
-    } catch (err: any) {
-      alert(err.message || '삭제에 실패했습니다')
-    } finally {
-      setDeletingWorks(prev => {
-        const next = new Set(prev)
-        next.delete(workId)
-        return next
-      })
+    } catch (err: any) { alert(err.message || '삭제에 실패했습니다') }
+    finally {
+      setDeletingWorks(prev => { const next = new Set(prev); next.delete(workId); return next })
     }
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-platform-bg flex items-center justify-center">
-        <p className="text-neutral-400">로딩 중...</p>
-      </div>
-    )
-  }
-
+  if (loading) return <div className="min-h-screen bg-platform-bg flex items-center justify-center"><p className="text-neutral-400">로딩 중...</p></div>
   if (!user) return null
 
   return (
     <div className="min-h-screen bg-platform-bg">
-      {/* 헤더 */}
       <PlatformNav />
 
-      <main className="max-w-5xl mx-auto px-6 py-8">
-        {/* 환영 카드 */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 mb-8">
-          <h1 className="text-2xl font-bold text-white mb-2">환영합니다, {user.name}님!</h1>
-          <p className="text-neutral-400">
-            내 공간: <Link href={`/${user.slug}`} className="text-amber-500 hover:text-amber-400" target="_blank">grimoire-book.com/{user.slug}</Link>
-          </p>
-        </div>
-
-        {/* 빠른 액션 */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-          <Link href="/dashboard/upload" className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:border-amber-600 transition group">
-            <div className="text-2xl mb-2">📝</div>
-            <h3 className="text-white font-medium group-hover:text-amber-500 transition">원고 업로드</h3>
-            <p className="text-neutral-500 text-sm mt-1">MD, TXT, DOCX 파일 업로드</p>
-          </Link>
-          <Link href="/dashboard/theme" className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:border-amber-600 transition group">
-            <div className="text-2xl mb-2">🎨</div>
-            <h3 className="text-white font-medium group-hover:text-amber-500 transition">테마 설정</h3>
-            <p className="text-neutral-500 text-sm mt-1">AI로 나만의 공간을 꾸미세요</p>
-          </Link>
-          <Link href="/dashboard/credits" className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:border-amber-600 transition group">
-            <div className="text-2xl mb-2">💳</div>
-            <h3 className="text-white font-medium group-hover:text-amber-500 transition">크레딧 충전</h3>
-            <p className="text-neutral-500 text-sm mt-1">크레딧을 충전하세요</p>
-          </Link>
-          <Link href="/dashboard/profile" className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:border-amber-600 transition group">
-            <div className="text-2xl mb-2">👤</div>
-            <h3 className="text-white font-medium group-hover:text-amber-500 transition">프로필 설정</h3>
-            <p className="text-neutral-500 text-sm mt-1">작가 정보 수정</p>
-          </Link>
-          <Link href="/library" className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:border-amber-600 transition group">
-            <div className="text-2xl mb-2">📚</div>
-            <h3 className="text-white font-medium group-hover:text-amber-500 transition">서재</h3>
-            <p className="text-neutral-500 text-sm mt-1">내 작품 + 구독 관리</p>
+      <main className="max-w-5xl mx-auto px-6 py-12">
+        {/* 환영 — 에디토리얼 */}
+        <div className="mb-12">
+          <p className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-3">YOUR SPACE</p>
+          <h1 className="text-4xl md:text-5xl font-black text-black leading-tight mb-3">
+            {user.name}
+          </h1>
+          <Link href={`/${user.slug}`} className="text-sm text-platform-accent hover:underline" target="_blank">
+            grimoire-book.com/{user.slug}
           </Link>
         </div>
 
-        {/* 내 작품 목록 */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-white">내 작품</h2>
-            <button onClick={() => setShowNewWork(true)} className="text-sm text-amber-500 hover:text-amber-400">+ 새 작품</button>
+        {/* 빠른 액션 — 넘버링 리스트 */}
+        <section className="mb-12">
+          <div className="flex items-baseline gap-4 mb-2">
+            <h2 className="text-2xl font-black text-black">빠른 액션</h2>
+            <div className="flex-1 h-px bg-black" />
+          </div>
+          {quickActions.map((action, i) => (
+            <Link
+              key={action.href}
+              href={action.href}
+              className="group grid grid-cols-[50px_1fr_auto] items-baseline gap-4 py-4 border-b border-neutral-200 hover:border-black transition-colors"
+            >
+              <span className="text-sm font-mono text-neutral-300 group-hover:text-platform-accent transition-colors">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <div>
+                <h3 className="text-base font-bold text-black group-hover:text-platform-accent transition-colors">{action.title}</h3>
+                <p className="text-xs text-neutral-500">{action.desc}</p>
+              </div>
+              <span className="text-xs text-neutral-400 group-hover:text-black transition-colors">&rarr;</span>
+            </Link>
+          ))}
+        </section>
+
+        {/* 내 작품 */}
+        <section className="mb-12">
+          <div className="flex items-baseline justify-between mb-2">
+            <div className="flex items-baseline gap-4 flex-1">
+              <h2 className="text-2xl font-black text-black">내 작품</h2>
+              <div className="flex-1 h-px bg-black" />
+            </div>
+            <button onClick={() => setShowNewWork(true)} className="text-sm text-platform-accent hover:underline ml-4">+ 새 작품</button>
           </div>
 
           {error && (
-            <div className="bg-red-900/30 border border-red-800 text-red-300 px-4 py-3 rounded-lg text-sm mb-4">{error}</div>
+            <div className="border-l-2 border-platform-accent pl-4 text-platform-accent text-sm py-2 mb-4">{error}</div>
           )}
 
           {/* 새 작품 폼 */}
           {showNewWork && (
-            <div className="bg-neutral-800 rounded-lg p-4 mb-4 space-y-3">
+            <div className="border border-neutral-200 rounded-lg p-5 mb-4 space-y-3 bg-platform-bg2">
               <input type="text" placeholder="작품 제목" value={newWork.title}
                 onChange={e => {
                   setNewWork(prev => ({ ...prev, title: e.target.value }))
                   if (!newWork.slug) setNewWork(prev => ({ ...prev, slug: e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') }))
                 }}
-                className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm placeholder-neutral-500" />
-              <input type="text" placeholder="슬러그 (URL 경로)" value={newWork.slug}
+                className="w-full px-3 py-2 bg-white border border-neutral-300 rounded-lg text-black text-sm placeholder-neutral-400 focus:outline-none focus:border-black transition" />
+              <input type="text" placeholder="작품 주소 (영문, 예: my-novel)" value={newWork.slug}
                 onChange={e => setNewWork(prev => ({ ...prev, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') }))}
-                className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm placeholder-neutral-500" />
+                className="w-full px-3 py-2 bg-white border border-neutral-300 rounded-lg text-black text-sm placeholder-neutral-400 focus:outline-none focus:border-black transition" />
               <textarea placeholder="설명 (선택)" value={newWork.description} rows={2}
                 onChange={e => setNewWork(prev => ({ ...prev, description: e.target.value }))}
-                className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-white text-sm placeholder-neutral-500 resize-none" />
+                className="w-full px-3 py-2 bg-white border border-neutral-300 rounded-lg text-black text-sm placeholder-neutral-400 resize-none focus:outline-none focus:border-black transition" />
               <div className="flex gap-2">
                 <button onClick={handleCreateWork} disabled={creating}
-                  className="px-4 py-2 bg-amber-600 hover:bg-amber-500 disabled:bg-neutral-700 text-white text-sm rounded-lg">{creating ? '생성 중...' : '작품 만들기'}</button>
+                  className="px-4 py-2 bg-black hover:bg-neutral-800 disabled:bg-neutral-300 text-white text-sm rounded-lg transition">{creating ? '생성 중...' : '작품 만들기'}</button>
                 <button onClick={() => setShowNewWork(false)}
-                  className="px-4 py-2 bg-neutral-700 text-neutral-300 text-sm rounded-lg">취소</button>
+                  className="px-4 py-2 border border-neutral-300 text-neutral-500 text-sm rounded-lg hover:border-black hover:text-black transition">취소</button>
               </div>
             </div>
           )}
 
           {worksLoading ? (
-            <p className="text-neutral-500 text-center py-8">로딩 중...</p>
+            <p className="text-neutral-400 text-center py-8">로딩 중...</p>
           ) : works.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-neutral-500 mb-4">아직 작품이 없습니다</p>
-              <button onClick={() => setShowNewWork(true)} className="inline-block px-6 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition">
+              <button onClick={() => setShowNewWork(true)} className="px-6 py-2 bg-black text-white rounded-lg hover:bg-neutral-800 transition">
                 첫 작품 만들기
               </button>
             </div>
           ) : (
-            <div className="space-y-3">
-              {works.map(work => (
-                <div key={work.id} className="flex items-center justify-between p-4 bg-neutral-800 rounded-lg">
+            <div>
+              {works.map((work, i) => (
+                <div key={work.id} className="grid grid-cols-[50px_1fr_auto] items-center gap-4 py-4 border-b border-neutral-200">
+                  <span className="text-sm font-mono text-neutral-300">{String(i + 1).padStart(2, '0')}</span>
                   <div>
-                    <Link href={`/${user.slug}/${work.slug}`} className="text-white font-medium hover:text-amber-500 transition">{work.title}</Link>
-                    <p className="text-neutral-500 text-sm mt-1">
-                      {work.episodeCount}화{work.viewCount ? ` · 조회 ${work.viewCount.toLocaleString()}` : ''}
+                    <Link href={`/${user.slug}/${work.slug}`} className="text-base font-bold text-black hover:text-platform-accent transition">{work.title}</Link>
+                    <p className="text-xs text-neutral-500 mt-0.5">
+                      {work.episodeCount}화{work.viewCount ? ` · ${work.viewCount.toLocaleString()}뷰` : ''}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Link href={`/dashboard/upload?work=${work.id}`} className="text-xs text-neutral-400 hover:text-amber-500 px-3 py-1 bg-neutral-700 rounded">에피소드 추가</Link>
-                    <button onClick={() => handleDeleteWork(work.id, work.title)} disabled={deletingWorks.has(work.id)} className="text-xs text-red-500 hover:text-red-400 disabled:text-neutral-500 disabled:cursor-not-allowed px-3 py-1 bg-neutral-700 rounded">{deletingWorks.has(work.id) ? '삭제 중...' : '삭제'}</button>
+                  <div className="flex items-center gap-3">
+                    <Link href={`/dashboard/upload?work=${work.id}`} className="text-xs text-neutral-500 hover:text-black underline transition">추가</Link>
+                    <button onClick={() => handleDeleteWork(work.id, work.title)} disabled={deletingWorks.has(work.id)}
+                      className="text-xs text-platform-accent hover:underline disabled:text-neutral-400 disabled:cursor-not-allowed transition">
+                      {deletingWorks.has(work.id) ? '삭제 중...' : '삭제'}
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
           )}
-        </div>
+        </section>
 
         {/* 조회수 통계 */}
         {works.length > 0 && (
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 mt-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-white">조회수 통계</h2>
+          <section className="mb-12">
+            <div className="flex items-baseline justify-between mb-4">
+              <div className="flex items-baseline gap-4 flex-1">
+                <h2 className="text-2xl font-black text-black">조회수 통계</h2>
+                <div className="flex-1 h-px bg-black" />
+              </div>
               <select
                 value={selectedWorkId}
                 onChange={(e) => setSelectedWorkId(e.target.value)}
-                className="bg-neutral-800 border border-neutral-700 text-neutral-300 text-sm rounded-lg px-3 py-1.5"
+                className="bg-white border border-neutral-300 text-black text-sm rounded-lg px-3 py-1.5 ml-4 focus:outline-none focus:border-black"
               >
                 {works.map(w => (
                   <option key={w.id} value={w.id}>{w.title}</option>
@@ -247,36 +231,35 @@ export default function DashboardPage() {
             </div>
 
             {statsLoading ? (
-              <p className="text-neutral-500 text-center py-8 text-sm">통계 로딩 중...</p>
+              <p className="text-neutral-400 text-center py-8 text-sm">통계 로딩 중...</p>
             ) : statsData ? (
-              <ViewChart
-                dates={statsData.dates}
-                counts={statsData.counts}
-                totalViews={statsData.totalViews}
-              />
+              <ViewChart dates={statsData.dates} counts={statsData.counts} totalViews={statsData.totalViews} />
             ) : (
-              <p className="text-neutral-500 text-center py-8 text-sm">통계 데이터를 불러올 수 없습니다</p>
+              <p className="text-neutral-400 text-center py-8 text-sm">통계 데이터를 불러올 수 없습니다</p>
             )}
-          </div>
+          </section>
         )}
 
         {/* 크레딧 현황 */}
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 mt-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-white">크레딧 현황</h2>
-            <Link href="/dashboard/credits" className="text-sm text-amber-500 hover:text-amber-400">충전하기 &rarr;</Link>
+        <section className="mb-12">
+          <div className="flex items-baseline justify-between mb-4">
+            <div className="flex items-baseline gap-4 flex-1">
+              <h2 className="text-2xl font-black text-black">크레딧</h2>
+              <div className="flex-1 h-px bg-black" />
+            </div>
+            <Link href="/dashboard/credits" className="text-sm text-platform-accent hover:underline ml-4">충전하기 &rarr;</Link>
           </div>
           <div className="flex items-center gap-8">
             <div>
-              <p className="text-3xl font-bold text-amber-500">{user.credits}</p>
+              <p className="text-4xl font-black text-black">{user.credits}</p>
               <p className="text-neutral-500 text-sm">잔여 크레딧</p>
             </div>
-            <div className="text-neutral-600 text-sm">
+            <div className="text-neutral-400 text-sm">
               <p>테마 AI 생성: 1 크레딧</p>
               <p>수동 테마 수정: 무료</p>
             </div>
           </div>
-        </div>
+        </section>
       </main>
     </div>
   )
