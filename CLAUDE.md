@@ -170,6 +170,12 @@ API_URL=http://localhost:3000/api
 | 작업 완료/추가 | `TODO.md` |
 | 모든 의미 있는 변경 | `CHANGELOG.md` |
 
+### 참고 연구 문서
+
+| 문서 | 내용 |
+|------|------|
+| `docs/DESIGN_REFERENCE_READYMAG.md` | 레디맥 디자인 리서치 (테마 Phase 1/2 참고) |
+
 ---
 
 ## 8. 참고 프로젝트
