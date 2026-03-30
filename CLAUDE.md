@@ -21,6 +21,19 @@ ProjectGrimoire의 프론트엔드. DeerDevil(사슴악마 단편소설 웹 뷰�
 - **주석/커밋/문서**: 한국어
 - **소설 콘텐츠**: 한국어 원문 유지, 절대 수정 금지
 
+### 크로스 브라우저 호환성 — 필수 규칙
+
+모든 웹 UI는 **Chrome + Safari** 양쪽에서 동일하게 렌더링되어야 한다.
+
+- CSS/Tailwind 구현 시 어두운 배경에 어두운 텍스트, 밝은 배경에 밝은 텍스트가 되는 사태를 반드시 방지
+- `@layer` 누락으로 유틸리티 클래스가 무시되는 문제 주의 (특히 Safari)
+  - 전역 리셋(`a { color: inherit }` 등)은 반드시 `@layer base { }` 안에 작성
+  - unlayered CSS는 Tailwind 유틸리티(`text-white` 등)보다 우선하여 Safari에서 깨짐
+- `font-[var(--font-*)]` 사용 시 해당 CSS 변수가 모든 컨텍스트에서 유효한지 확인
+- 네비게이션 컴포넌트 이중 렌더링 금지:
+  - `[author]/layout.tsx`가 SeriesNav를 담당 → 하위 페이지에서 PlatformNav/WorkNav 렌더링 금지
+  - 플랫폼 페이지(`explore`, `dashboard`, `library` 등)에서만 PlatformNav 사용
+
 ### 문서 동기화 체크리스트 (커밋 전 확인)
 
 - 테마 파라미터 변경 → `docs/theme-spec.md` 업데이트

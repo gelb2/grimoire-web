@@ -8,9 +8,12 @@ COPY package*.json ./
 RUN npm ci
 COPY . .
 
-# NEXT_PUBLIC_APP_ENV만 빌드 시 주입 (API URL은 런타임에 결정)
+# 빌드 시 주입 (NEXT_PUBLIC_* 는 빌드 타임에 인라인됨)
 ARG NEXT_PUBLIC_APP_ENV=production
 ENV NEXT_PUBLIC_APP_ENV=${NEXT_PUBLIC_APP_ENV}
+
+ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID=""
+ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=${NEXT_PUBLIC_GOOGLE_CLIENT_ID}
 
 RUN npm run build
 
