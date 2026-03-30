@@ -166,6 +166,7 @@ API_URL=http://localhost:3000/api
 |-----------|--------------|
 | UI/스타일 변경 | `DESIGN.md` |
 | 새 화면/컴포넌트 추가 | `SCREENS.md` |
+| API 연결 추가/변경 | `TECH_STATUS.md` |
 | 작업 완료/추가 | `TODO.md` |
 | 모든 의미 있는 변경 | `CHANGELOG.md` |
 
