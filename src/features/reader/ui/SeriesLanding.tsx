@@ -1,4 +1,4 @@
-import { contents as localContents, type ContentMeta } from "@/features/reader/data"
+import { type ContentMeta } from "@/features/reader/data"
 import { EpisodeCard } from "./EpisodeCard"
 import { SpecialCard } from "./SpecialCard"
 import { SectionLabel } from "./SectionLabel"
@@ -29,7 +29,7 @@ interface SeriesLandingProps {
 
 // contents를 props로 받으면 사용, 없으면 로컬 데이터 폴백
 export function SeriesLanding({
-  contents = localContents,
+  contents = [],
   authorName = "Grimoire",
   workSlug,
   decorations = DEFAULT_DECORATIONS,

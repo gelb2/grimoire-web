@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { contents } from "@/features/reader/data"
 import { cn } from "@/lib/utils"
 
 interface NavEpisode {
@@ -31,10 +30,8 @@ export function SeriesNav({ authorName = "Grimoire", workSlug, apiEpisodes }: Se
 
   const isLanding = pathname === base
 
-  // 탭 데이터: API 에피소드가 있으면 사용, 없으면 로컬 데이터 폴백
-  const allEpisodes: NavEpisode[] = apiEpisodes
-    ? apiEpisodes
-    : contents.map((c) => ({ slug: c.slug, num: c.num, type: c.type }))
+  // 탭 데이터: API 에피소드 사용
+  const allEpisodes: NavEpisode[] = apiEpisodes ?? []
 
   // 현재 에피소드 slug 감지:
   // 3단계 URL /{author}/{work}/{episode} → segments[2]
