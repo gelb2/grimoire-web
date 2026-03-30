@@ -6,7 +6,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { api } from '@/lib/api'
-import { PlatformNav } from '@/components/PlatformNav'
 import { ErrorPopup } from '@/components/ErrorPopup'
 import { EpisodeViewer } from '@/features/reader/ui/EpisodeViewer'
 import { EpisodeFooter } from '@/features/reader/ui/EpisodeFooter'
@@ -83,10 +82,9 @@ export function WorkPage({ authorSlug, workSlug }: WorkPageProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-platform-bg">
-        <PlatformNav variant="author-space" />
+      <div className="min-h-screen bg-g-bg">
         <main className="max-w-6xl mx-auto px-6 py-16">
-          <div className="text-center text-neutral-500">Loading...</div>
+          <div className="text-center text-g-text-muted">Loading...</div>
         </main>
       </div>
     )
@@ -130,47 +128,34 @@ export function WorkPage({ authorSlug, workSlug }: WorkPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-platform-bg">
-      <PlatformNav variant="author-space" />
-
+    <div className="min-h-screen bg-g-bg">
       <main className="max-w-4xl mx-auto px-6 py-8">
-        {/* 뒤로가기 */}
-        <Link
-          href={`/${authorSlug}`}
-          className="inline-flex items-center gap-1 text-sm text-neutral-500 hover:text-amber-500 transition mb-8"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          작가 공간으로
-        </Link>
-
         {/* 작품 헤더 */}
-        <div className="mb-10 pb-8 border-b border-neutral-800">
+        <div className="mb-10 pb-8 border-b border-g-border">
           {work.genre && (
-            <span className="inline-block mb-3 px-2.5 py-1 text-[11px] font-medium tracking-wide uppercase text-amber-500/80 bg-amber-500/10 rounded">
+            <span className="inline-block mb-3 px-2.5 py-1 text-[11px] font-medium tracking-wide uppercase text-g-accent/80 bg-g-accent/10 rounded">
               {work.genre}
             </span>
           )}
-          <h1 className="text-3xl font-bold text-white mb-2">{work.title}</h1>
+          <h1 className="text-3xl font-bold text-g-text-bright mb-2">{work.title}</h1>
           {work.subtitle && (
-            <p className="text-lg text-neutral-400 mb-3">{work.subtitle}</p>
+            <p className="text-lg text-g-text-muted mb-3">{work.subtitle}</p>
           )}
           {work.description && (
-            <p className="text-neutral-500 leading-relaxed">{work.description}</p>
+            <p className="text-g-text-dim leading-relaxed">{work.description}</p>
           )}
         </div>
 
         {/* 에피소드 목록 */}
         <section>
           <div className="flex items-center gap-3 mb-6">
-            <h2 className="text-lg font-bold text-white">목차</h2>
-            <div className="flex-1 h-px bg-neutral-800" />
-            <span className="text-sm text-neutral-500">{episodes.length}화</span>
+            <h2 className="text-lg font-bold text-g-text-bright">목차</h2>
+            <div className="flex-1 h-px bg-g-border" />
+            <span className="text-sm text-g-text-dim">{episodes.length}화</span>
           </div>
 
           {episodes.length === 0 ? (
-            <p className="text-neutral-500 text-center py-12">
+            <p className="text-g-text-muted text-center py-12">
               아직 등록된 에피소드가 없습니다.
             </p>
           ) : (
@@ -179,25 +164,20 @@ export function WorkPage({ authorSlug, workSlug }: WorkPageProps) {
                 <Link
                   key={ep.id}
                   href={`/${authorSlug}/${workSlug}/${ep.slug}`}
-                  className="group flex items-center gap-4 p-4 rounded-lg border border-neutral-800 bg-neutral-900/60 hover:border-amber-600/50 hover:bg-neutral-900 transition-all duration-200"
+                  className="group flex items-center gap-4 p-4 rounded-lg border border-g-border bg-g-bg2/60 hover:border-g-accent/50 hover:bg-g-bg2 transition-all duration-200"
                 >
-                  {/* 에피소드 번호 */}
-                  <span className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-neutral-800 text-neutral-400 text-sm font-medium group-hover:bg-amber-600/20 group-hover:text-amber-500 transition">
+                  <span className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-g-bg2 text-g-text-muted text-sm font-medium group-hover:bg-g-accent/20 group-hover:text-g-accent transition">
                     {ep.orderNum ?? idx + 1}
                   </span>
-
-                  {/* 에피소드 정보 */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-white font-medium truncate group-hover:text-amber-50 transition-colors">
+                    <h3 className="text-g-text-bright font-medium truncate group-hover:text-g-accent2 transition-colors">
                       {ep.title}
                     </h3>
                     {ep.subtitle && (
-                      <p className="text-sm text-neutral-500 truncate">{ep.subtitle}</p>
+                      <p className="text-sm text-g-text-dim truncate">{ep.subtitle}</p>
                     )}
                   </div>
-
-                  {/* 화살표 */}
-                  <svg className="flex-shrink-0 w-4 h-4 text-neutral-700 group-hover:text-amber-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="flex-shrink-0 w-4 h-4 text-g-text-dim group-hover:text-g-accent transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </Link>
