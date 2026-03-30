@@ -71,10 +71,10 @@ describe("SeriesNav", () => {
     expect(ciLink).toBeTruthy()
   })
 
-  it("작가 이름 링크가 작가 랜딩 페이지를 가리킨다", () => {
+  it("작가 이름 링크가 프로필 페이지를 가리킨다", () => {
     render(<SeriesNav authorName="테스트" apiEpisodes={[]} />)
     const nameLink = screen.getByText("테스트")
-    expect(nameLink.closest("a")).toHaveAttribute("href", "/test-author")
+    expect(nameLink.closest("a")).toHaveAttribute("href", "/test-author/profile")
   })
 
   it("num이 없는 에피소드는 slug에서 번호를 추출한다", () => {
