@@ -281,6 +281,22 @@ class ApiClient {
     return this.fetch<{ dates: string[]; counts: number[]; totalViews: number }>(`/works/${workId}/stats`)
   }
 
+  // 커버 이미지 업로드
+  async uploadCover(workId: string, file: File) {
+    const formData = new FormData()
+    formData.append('file', file)
+    const res = await fetch(`${getApiBase()}/works/${workId}/cover`, {
+      method: 'PUT',
+      credentials: 'include',
+      body: formData,
+    })
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}))
+      throw new Error(body.message || `API 오류: ${res.status}`)
+    }
+    return res.json() as Promise<{ coverImage: string }>
+  }
+
   // 관리자
   async getAdminStats() {
     return this.fetch<{ totalAuthors: number; totalWorks: number; totalEpisodes: number; totalCreditsConsumed: number }>('/admin/stats')

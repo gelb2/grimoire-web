@@ -17,6 +17,7 @@ interface Work {
   description: string | null
   episodeCount: number
   viewCount?: number
+  coverImage?: string | null
 }
 
 interface WorkStatsData {
@@ -200,6 +201,26 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <Link href={`/dashboard/upload?work=${work.id}`} className="text-xs text-neutral-500 hover:text-black underline transition">추가</Link>
+                    <label className="text-xs text-neutral-500 hover:text-black underline transition cursor-pointer">
+                      {work.coverImage ? '커버 변경' : '커버'}
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0]
+                          if (!file) return
+                          try {
+                            const result = await api.uploadCover(work.id, file)
+                            setWorks(prev => prev.map(w => w.id === work.id ? { ...w, coverImage: result.coverImage } : w))
+                            toast.success('커버 이미지가 업로드됐습니다')
+                          } catch (err: any) {
+                            toast.error(err.message || '커버 업로드에 실패했습니다')
+                          }
+                          e.target.value = ''
+                        }}
+                      />
+                    </label>
                     <button onClick={() => handleDeleteWork(work.id, work.title)} disabled={deletingWorks.has(work.id)}
                       className="text-xs text-platform-accent hover:underline disabled:text-neutral-400 disabled:cursor-not-allowed transition">
                       {deletingWorks.has(work.id) ? '삭제 중...' : '삭제'}
