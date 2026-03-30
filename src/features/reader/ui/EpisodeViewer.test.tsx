@@ -39,7 +39,7 @@ const mockUseTheme = vi.fn(() => ({
   animation: "typing",
 }))
 vi.mock("@/features/theme", () => ({
-  useTheme: (...args: any[]) => mockUseTheme(...args),
+  useTheme: () => mockUseTheme(),
 }))
 
 const mockMeta: ContentMeta = {
