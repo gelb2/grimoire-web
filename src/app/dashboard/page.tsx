@@ -163,7 +163,7 @@ export default function DashboardPage() {
                   if (!newWork.slug) setNewWork(prev => ({ ...prev, slug: e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') }))
                 }}
                 className="w-full px-3 py-2 bg-white border border-neutral-300 rounded-lg text-black text-sm placeholder-neutral-400 focus:outline-none focus:border-black transition" />
-              <input type="text" placeholder="슬러그 (URL 경로)" value={newWork.slug}
+              <input type="text" placeholder="작품 주소 (영문, 예: my-novel)" value={newWork.slug}
                 onChange={e => setNewWork(prev => ({ ...prev, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') }))}
                 className="w-full px-3 py-2 bg-white border border-neutral-300 rounded-lg text-black text-sm placeholder-neutral-400 focus:outline-none focus:border-black transition" />
               <textarea placeholder="설명 (선택)" value={newWork.description} rows={2}

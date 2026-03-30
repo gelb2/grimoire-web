@@ -53,12 +53,12 @@ export default function ProfilePage() {
           </div>
 
           <div>
-            <label className="block text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-1">슬러그 (URL)</label>
+            <label className="block text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-1">내 공간 주소</label>
             <div className="flex items-center">
               <span className="text-neutral-400 text-sm mr-2">grimoire-book.com/</span>
               <input type="text" value={user.slug} disabled className="flex-1 px-4 py-3 bg-platform-bg2 border border-neutral-300 rounded-lg text-neutral-500 cursor-not-allowed" />
             </div>
-            <p className="text-neutral-600 text-xs mt-1">슬러그 변경은 추후 지원 예정</p>
+            <p className="text-neutral-600 text-xs mt-1">공간 주소 변경은 추후 지원 예정</p>
           </div>
 
           <div>

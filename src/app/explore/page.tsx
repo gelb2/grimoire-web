@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
@@ -13,12 +13,67 @@ interface AuthorResult { id: string; slug: string; name: string }
 
 const PAGE_SIZE = 12
 
+// 타이핑 → 지우기 → 반복 애니메이션 훅
+function useTypingPlaceholder(phrases: string[], typingSpeed = 80, deleteSpeed = 40, pauseMs = 2000) {
+  const [text, setText] = useState('')
+  const phraseIdx = useRef(0)
+  const charIdx = useRef(0)
+  const deleting = useRef(false)
+
+  useEffect(() => {
+    const tick = () => {
+      const currentPhrase = phrases[phraseIdx.current]
+
+      if (!deleting.current) {
+        // 타이핑
+        charIdx.current++
+        setText(currentPhrase.slice(0, charIdx.current))
+
+        if (charIdx.current === currentPhrase.length) {
+          // 다 쳤으면 잠시 멈추고 지우기 시작
+          deleting.current = true
+          return pauseMs
+        }
+        return typingSpeed
+      } else {
+        // 지우기
+        charIdx.current--
+        setText(currentPhrase.slice(0, charIdx.current))
+
+        if (charIdx.current === 0) {
+          // 다 지웠으면 다음 문구로
+          deleting.current = false
+          phraseIdx.current = (phraseIdx.current + 1) % phrases.length
+          return typingSpeed * 3
+        }
+        return deleteSpeed
+      }
+    }
+
+    let timer: ReturnType<typeof setTimeout>
+    const schedule = () => {
+      const delay = tick()
+      timer = setTimeout(schedule, delay)
+    }
+    timer = setTimeout(schedule, typingSpeed)
+
+    return () => clearTimeout(timer)
+  }, [phrases, typingSpeed, deleteSpeed, pauseMs])
+
+  return text
+}
+
 export default function ExplorePage() {
   const [query, setQuery] = useState('')
   const [authors, setAuthors] = useState<AuthorResult[]>([])
   const [searching, setSearching] = useState(false)
   const [giftedAuthors, setGiftedAuthors] = useState<{ id: string; slug: string; name: string; bio: string | null; totalGifted: number }[]>([])
   const debounce = useDebounce(300)
+  const animatedPlaceholder = useTypingPlaceholder([
+    '작가 이름으로 검색...',
+    '작품 제목으로 검색...',
+    '좋아하는 장르를 찾아보세요...',
+  ])
 
   const {
     popularWorks, recentWorks, scrollY, loaded,
@@ -133,7 +188,7 @@ export default function ExplorePage() {
                 debounce(() => { if (val.trim()) handleSearch() })
               }}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
-              placeholder="작가 이름 또는 슬러그 검색..."
+              placeholder={query ? '' : animatedPlaceholder}
               className="flex-1 py-2 bg-transparent text-black placeholder-neutral-400 text-lg focus:outline-none"
             />
             <button

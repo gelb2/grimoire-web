@@ -74,7 +74,7 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-xs uppercase tracking-widest text-neutral-500 mb-2">슬러그 (URL 경로)</label>
+            <label className="block text-xs uppercase tracking-widest text-neutral-500 mb-2">내 공간 주소</label>
             <div className="flex items-center">
               <span className="text-neutral-400 text-sm mr-2">grimoire-book.com/</span>
               <input type="text" value={form.slug}
