@@ -149,11 +149,12 @@ npm run test:coverage # 커버리지 리포트
 API_URL=http://localhost:3000/api
 ```
 
-| 환경 | API URL | 배포 |
-|------|---------|------|
-| development | localhost:3000 | localhost:3001 |
-| inhouse | inhouse-api.grimoire-book.com | Azure Container Apps |
-| production | api.grimoire-book.com | Azure Container Apps |
+| 환경 | API URL | 웹 |
+|------|---------|-----|
+| localhost | localhost:3000 | localhost:3001 |
+| development | dev-api.grimoire-book.com | dev.grimoire-book.com |
+| inhouse | inhouse-api.grimoire-book.com | inhouse.grimoire-book.com |
+| production | api.grimoire-book.com | grimoire-book.com |
 
 상세: `docs/environments.md` 참조.
 
