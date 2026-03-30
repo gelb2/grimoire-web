@@ -10,16 +10,24 @@ interface NavEpisode {
   type?: string
 }
 
+interface NavWork {
+  slug: string
+  title: string
+  episodeCount?: number
+}
+
 interface SeriesNavProps {
   /** 작가 이름 — 네비게이션 브랜드 표시 */
   authorName?: string
   /** 작품 슬러그 — 3단계 URL 생성에 사용 (/{author}/{work}/{episode}) */
   workSlug?: string
-  /** API에서 받은 에피소드 목록 — 제공 시 로컬 데이터 대신 사용 */
+  /** API에서 받은 에피소드 목록 — 단일 작품일 때 사용 */
   apiEpisodes?: NavEpisode[]
+  /** API에서 받은 작품 목록 — 다중 작품일 때 사용 */
+  apiWorks?: NavWork[]
 }
 
-export function SeriesNav({ authorName = "Grimoire", workSlug, apiEpisodes }: SeriesNavProps) {
+export function SeriesNav({ authorName = "Grimoire", workSlug, apiEpisodes, apiWorks }: SeriesNavProps) {
   const pathname = usePathname()
   const router = useRouter()
 
@@ -29,16 +37,16 @@ export function SeriesNav({ authorName = "Grimoire", workSlug, apiEpisodes }: Se
   const base = `/${authorSlug}`
 
   const isLanding = pathname === base
+  const isProfile = pathname === `${base}/profile`
 
-  // 탭 데이터: API 에피소드 사용
-  const allEpisodes: NavEpisode[] = apiEpisodes ?? []
+  // 다중 작품 모드 vs 단일 작품(에피소드) 모드
+  const isMultiWork = (apiWorks?.length ?? 0) > 1
 
-  // 현재 에피소드 slug 감지:
-  // 3단계 URL /{author}/{work}/{episode} → segments[2]
-  // 2단계 URL /{author}/{episode} → segments[1]
-  const currentEpisodeSlug = segments.length >= 3 ? segments[2] : (segments.length >= 2 ? segments[1] : null)
+  // 현재 작품/에피소드 slug 감지
+  const currentWorkSlug = segments[1] ?? null
+  const currentEpisodeSlug = segments.length >= 3 ? segments[2] : null
 
-  // 에피소드 URL 생성: workSlug가 있으면 3단계, 없으면 2단계
+  // 에피소드 URL 생성
   const episodeUrl = (slug: string) =>
     workSlug ? `${base}/${workSlug}/${slug}` : `${base}/${slug}`
 
@@ -49,13 +57,11 @@ export function SeriesNav({ authorName = "Grimoire", workSlug, apiEpisodes }: Se
       case "preface": return "일러두기"
       case "afterword": return "후기"
       case "bonus": {
-        // bonus1, bonus2, ... → 번외1, 번외2, ...
         const bonusNum = ep.slug.replace("bonus", "")
         return `번외${bonusNum}`
       }
       case "episode":
       default:
-        // num이 있으면 그대로 사용, 없으면 slug에서 숫자 추출
         if (ep.num) return ep.num
         const match = ep.slug.match(/\d+/)
         return match ? match[0].padStart(2, "0") : String(idx + 1).padStart(2, "0")
@@ -64,40 +70,53 @@ export function SeriesNav({ authorName = "Grimoire", workSlug, apiEpisodes }: Se
 
   return (
     <nav className="sticky top-0 z-50 bg-g-bg/95 backdrop-blur-sm border-b border-g-border px-4 md:px-8 py-2.5 md:py-3 flex items-center gap-4">
-      {/* 플랫폼 복귀 링크 */}
+      {/* CI 로고 — 플랫폼 홈으로 이동 (대조색: g-text-bright로 어두운 배경에서 가독성 확보) */}
       <Link
         href="/explore"
-        className="font-g-sans text-[11px] text-g-text-muted hover:text-g-accent2 transition-colors duration-200 shrink-0"
+        className="font-[var(--font-logo)] text-sm uppercase tracking-[0.15em] text-g-text-muted hover:text-g-accent2 transition-colors duration-200 shrink-0"
       >
-        &larr; 탐색으로
+        Grimoire
       </Link>
       <span className="text-g-border">|</span>
-      {/* 브랜드 — 클릭 시 프로필 페이지 이동 */}
+      {/* 작가명 — 클릭 시 작가 공간 랜딩 */}
       <Link
-        href={`${base}/profile`}
+        href={base}
         className={cn(
           "font-g-sans text-[13px] font-medium tracking-g-tight transition-colors duration-200 hover:text-g-accent2 shrink-0",
-          isLanding ? "text-g-accent2" : "text-g-text"
+          (isLanding || isProfile) ? "text-g-accent2" : "text-g-text"
         )}
       >
         {authorName}
       </Link>
 
-      {/* 탭 목록 — 모바일에서 가로 스크롤, API 데이터 기반 */}
+      {/* 탭 목록 — 다중 작품이면 작품 탭, 단일 작품이면 에피소드 탭 */}
       <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
         <NavTab
           label="전체"
           active={isLanding}
           onClick={() => router.push(base)}
         />
-        {allEpisodes.map((ep, idx) => (
-          <NavTab
-            key={ep.slug}
-            label={pillLabel(ep, idx)}
-            active={currentEpisodeSlug === ep.slug}
-            onClick={() => router.push(episodeUrl(ep.slug))}
-          />
-        ))}
+        {isMultiWork ? (
+          // 다중 작품: 작품명 탭
+          apiWorks!.map((work, idx) => (
+            <NavTab
+              key={work.slug}
+              label={work.title}
+              active={currentWorkSlug === work.slug}
+              onClick={() => router.push(`${base}/${work.slug}`)}
+            />
+          ))
+        ) : (
+          // 단일 작품: 에피소드 탭
+          (apiEpisodes ?? []).map((ep, idx) => (
+            <NavTab
+              key={ep.slug}
+              label={pillLabel(ep, idx)}
+              active={currentEpisodeSlug === ep.slug}
+              onClick={() => router.push(episodeUrl(ep.slug))}
+            />
+          ))
+        )}
       </div>
     </nav>
   )

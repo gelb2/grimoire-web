@@ -7,7 +7,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { api } from '@/lib/api'
-import { PlatformNav } from '@/components/PlatformNav'
 import { WorkCard } from '@/components/WorkCard'
 import { useThrottledAction } from '@/hooks/useThrottle'
 
@@ -82,7 +81,7 @@ export default function AuthorProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-g-bg">
-        <PlatformNav variant="author-space" />
+
         <main className="max-w-4xl mx-auto px-6 py-16">
           <div className="text-center mb-12">
             <div className="h-10 w-48 bg-g-bg2 rounded mx-auto mb-4 animate-pulse" />
@@ -103,7 +102,7 @@ export default function AuthorProfilePage() {
   if (error || !profile) {
     return (
       <div className="min-h-screen bg-g-bg">
-        <PlatformNav variant="author-space" />
+
         <main className="max-w-4xl mx-auto px-6 py-16 text-center">
           <p className="text-g-text-muted">작가를 찾을 수 없습니다.</p>
           <Link href="/explore" className="text-g-accent mt-4 inline-block">
@@ -123,8 +122,6 @@ export default function AuthorProfilePage() {
 
   return (
     <div className="min-h-screen bg-g-bg">
-      <PlatformNav variant="author-space" />
-
       <main className="max-w-4xl mx-auto px-6 py-12">
         {/* 작가 헤더 */}
         <section className="text-center mb-12">
