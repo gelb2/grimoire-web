@@ -135,7 +135,7 @@ function SingleBlock({ block }: { block: Block }) {
       )
 
     case "reviews-wrap":
-      return <ReviewsWrap children={block.children} />
+      return <ReviewsWrap>{block.children}</ReviewsWrap>
 
     case "heading-1":
       // EpisodeViewer 헤더에서 제목을 이미 표시하므로 본문에서는 생략
