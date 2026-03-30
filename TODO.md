@@ -12,9 +12,7 @@
 - [ ] 테마 Baking 후 CDN CSS 로드
 
 ### 테스트
-- [ ] EpisodeViewer 유닛테스트 보강 (타이핑 애니메이션 스테이지별 검증)
-- [ ] SeriesNav 유닛테스트 (라우팅, 활성 탭)
-- [ ] SeriesLanding 유닛테스트 (콘텐츠 필터링/정렬)
+- 유닛테스트 보강 완료 (EpisodeViewer/SeriesNav/SeriesLanding) → CHANGELOG 0.13.0
 
 ### 디자인 개선 (deferred)
 - [ ] 플랫폼 페이지 레디맥 디자인 적용 (login, explore, dashboard, library)
