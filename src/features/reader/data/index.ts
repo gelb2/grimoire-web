@@ -45,6 +45,4 @@ export interface EpisodeData {
   blocks: Block[]
 }
 
-// contents와 episodeSlugs는 MD 파일에서 자동 생성됨
-// npm run parse 실행 시 generated/contents.ts에 출력
-export { generatedContents as contents, generatedEpisodeSlugs as episodeSlugs } from "./contentDataSource/contents"
+// 로컬 콘텐츠 데이터는 제거됨 — 모든 작가(사슴악마 포함)가 서버 API에서 데이터를 로드
