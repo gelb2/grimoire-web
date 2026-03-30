@@ -99,3 +99,60 @@ describe("SeriesLanding", () => {
     expect(container.querySelector("header")).toBeInTheDocument()
   })
 })
+
+describe("SeriesLanding heroStyle 분기", () => {
+  it("heroStyle=fullname이면 h1에 작가 이름을 표시한다", () => {
+    const { container } = render(
+      <SeriesLanding contents={[]} authorName="윤동주" decorations={minimalDecorations} heroStyle="fullname" />
+    )
+    const h1 = container.querySelector("h1")
+    expect(h1).toBeInTheDocument()
+    expect(h1?.textContent).toBe("윤동주")
+    expect(h1?.classList.contains("italic")).toBe(true)
+  })
+
+  it("heroStyle=fullname에서 headerSubtitle이 있으면 표시한다", () => {
+    const withSubtitle = { ...minimalDecorations, headerSubtitle: "단편 선집" }
+    render(
+      <SeriesLanding contents={[]} decorations={withSubtitle} heroStyle="fullname" />
+    )
+    expect(screen.getByText("단편 선집")).toBeInTheDocument()
+  })
+
+  it("heroStyle=cover이면 가운데 정렬 헤더를 표시한다", () => {
+    const { container } = render(
+      <SeriesLanding contents={[]} authorName="김소월" decorations={minimalDecorations} heroStyle="cover" />
+    )
+    const h1 = container.querySelector("h1")
+    expect(h1?.textContent).toBe("김소월")
+    const header = h1?.closest("header")
+    expect(header?.classList.contains("text-center")).toBe(true)
+  })
+
+  it("heroStyle=cover에서 headerSubtitle이 있으면 표시한다", () => {
+    const withSubtitle = { ...minimalDecorations, headerSubtitle: "A24 감성" }
+    render(
+      <SeriesLanding contents={[]} decorations={withSubtitle} heroStyle="cover" />
+    )
+    expect(screen.getByText("A24 감성")).toBeInTheDocument()
+  })
+
+  it("heroStyle=none이면 히어로 헤더가 없다", () => {
+    const { container } = render(
+      <SeriesLanding contents={[]} decorations={minimalDecorations} heroStyle="none" />
+    )
+    expect(container.querySelector("header")).toBeNull()
+  })
+
+  it("heroStyle=minimal (기본값)이면 아이콘과 작가명을 표시한다", () => {
+    render(<SeriesLanding contents={[]} authorName="이상" decorations={minimalDecorations} />)
+    expect(screen.getByText("이상")).toBeInTheDocument()
+  })
+
+  it("workSlug가 전달되어도 에러 없이 렌더링된다", () => {
+    render(
+      <SeriesLanding contents={mockContents} workSlug="my-novel" decorations={minimalDecorations} />
+    )
+    expect(screen.getAllByText("첫 화").length).toBeGreaterThanOrEqual(1)
+  })
+})
