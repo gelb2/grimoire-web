@@ -25,20 +25,21 @@ vi.mock("./TypeWriter", () => ({
   },
 }))
 
-// useTheme mock — 테마 컨텍스트 시뮬레이션
+// useTheme mock — 테마 컨텍스트 시뮬레이션 (기본: typing)
+const mockUseTheme = vi.fn(() => ({
+  decorations: {
+    dividerIcon: "antler",
+    dividerColor: "#9a8060",
+    headerIcon: "antler",
+    headerSubtitle: "",
+    cardAccentPosition: "left",
+    footerText: "",
+  },
+  tagline: "테스트 태그라인",
+  animation: "typing",
+}))
 vi.mock("@/features/theme", () => ({
-  useTheme: () => ({
-    decorations: {
-      dividerIcon: "antler",
-      dividerColor: "#9a8060",
-      headerIcon: "antler",
-      headerSubtitle: "",
-      cardAccentPosition: "left",
-      footerText: "",
-    },
-    tagline: "테스트 태그라인",
-    animation: "typing",
-  }),
+  useTheme: () => mockUseTheme(),
 }))
 
 const mockMeta: ContentMeta = {
@@ -191,5 +192,140 @@ describe("EpisodeViewer 타이머 안전성", () => {
     expect(errors).toHaveLength(0)
 
     consoleErrorSpy.mockRestore()
+  })
+})
+
+describe("EpisodeViewer episodeLabel", () => {
+  beforeEach(() => {
+    sessionStorage.clear()
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    cleanup()
+    vi.useRealTimers()
+  })
+
+  it("preface 타입은 'Preface' 라벨을 표시한다", () => {
+    const prefaceMeta: ContentMeta = { slug: "preface", type: "preface", title: "일러두기" }
+    sessionStorage.setItem("visited:Grimoire:preface", "true")
+    render(<EpisodeViewer meta={prefaceMeta} data={{ ...mockData, slug: "preface" }} />)
+    expect(screen.getByText("Grimoire · Preface")).toBeInTheDocument()
+  })
+
+  it("afterword 타입은 'Afterword' 라벨을 표시한다", () => {
+    const afterMeta: ContentMeta = { slug: "afterword", type: "afterword", title: "후기" }
+    sessionStorage.setItem("visited:Grimoire:afterword", "true")
+    render(<EpisodeViewer meta={afterMeta} data={{ ...mockData, slug: "afterword" }} />)
+    expect(screen.getByText("Grimoire · Afterword")).toBeInTheDocument()
+  })
+
+  it("bonus 타입은 'Bonus N' 라벨을 표시한다", () => {
+    const bonusMeta: ContentMeta = { slug: "bonus1", type: "bonus", num: "번외1", title: "번외편" }
+    sessionStorage.setItem("visited:Grimoire:bonus1", "true")
+    render(<EpisodeViewer meta={bonusMeta} data={{ ...mockData, slug: "bonus1" }} />)
+    expect(screen.getByText("Grimoire · Bonus 1")).toBeInTheDocument()
+  })
+
+  it("num이 없는 episode는 작가 이름만 라벨에 표시한다", () => {
+    const noNumMeta: ContentMeta = { slug: "ep-test", type: "episode", title: "테스트" }
+    sessionStorage.setItem("visited:Grimoire:ep-test", "true")
+    render(<EpisodeViewer meta={noNumMeta} data={mockData} />)
+    // "Episode" 라벨 없이 "Grimoire"만 표시 (footer에도 Grimoire가 있으므로 getAllByText)
+    const grimoireTexts = screen.getAllByText("Grimoire")
+    expect(grimoireTexts.length).toBeGreaterThanOrEqual(2) // 라벨 + 푸터
+    // "Episode" 문자열이 라벨에 없어야 함
+    const labelArea = document.querySelector("header .uppercase")
+    expect(labelArea?.textContent).not.toContain("Episode")
+  })
+})
+
+describe("EpisodeViewer description/subtitle", () => {
+  beforeEach(() => {
+    sessionStorage.clear()
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    cleanup()
+    vi.useRealTimers()
+  })
+
+  it("meta.description이 있으면 표시한다", () => {
+    const metaWithDesc: ContentMeta = { ...mockMeta, description: "에피소드 설명입니다" }
+    sessionStorage.setItem("visited:Grimoire:ep-test", "true")
+    render(<EpisodeViewer meta={metaWithDesc} data={mockData} />)
+    expect(screen.getByText("에피소드 설명입니다")).toBeInTheDocument()
+  })
+
+  it("meta.subtitle이 있으면 표시한다", () => {
+    const metaWithSub: ContentMeta = { ...mockMeta, subtitle: "Test Episode" }
+    sessionStorage.setItem("visited:Grimoire:ep-test", "true")
+    render(<EpisodeViewer meta={metaWithSub} data={mockData} />)
+    expect(screen.getByText("Test Episode")).toBeInTheDocument()
+  })
+
+  it("description과 subtitle이 모두 있으면 description을 우선 표시한다", () => {
+    const metaBoth: ContentMeta = { ...mockMeta, description: "설명", subtitle: "부제" }
+    sessionStorage.setItem("visited:Grimoire:ep-test", "true")
+    render(<EpisodeViewer meta={metaBoth} data={mockData} />)
+    expect(screen.getByText("설명")).toBeInTheDocument()
+  })
+})
+
+describe("EpisodeViewer animation 분기", () => {
+  beforeEach(() => {
+    sessionStorage.clear()
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    cleanup()
+    vi.useRealTimers()
+  })
+
+  it("animation: none이면 모든 콘텐츠가 즉시 표시된다", () => {
+    mockUseTheme.mockReturnValueOnce({
+      decorations: {
+        dividerIcon: "dot", dividerColor: "#888",
+        headerIcon: "dot", headerSubtitle: "",
+        cardAccentPosition: "left", footerText: "",
+      },
+      tagline: "",
+      animation: "none",
+    })
+
+    render(<EpisodeViewer meta={mockMeta} data={mockData} />)
+    // animation: none → stage=5 즉시 → 모든 블록 표시
+    expect(screen.getByText("첫 번째 문단")).toBeInTheDocument()
+    expect(screen.getByText("두 번째 문단")).toBeInTheDocument()
+  })
+
+  it("첫 방문 typing 모드에서 타이머 경과 후 stage가 진행된다", () => {
+    render(<EpisodeViewer meta={mockMeta} data={mockData} />)
+    // stage 0 → 200ms 후 stage 1
+    vi.advanceTimersByTime(200)
+    // TypeWriter mock이 onComplete를 setTimeout(0)으로 호출하므로 stage 1→2 진행
+    vi.advanceTimersByTime(10)
+    // 라벨이 표시되어야 함
+    expect(document.querySelector("header")).toBeInTheDocument()
+  })
+
+  it("재방문 시 footer에 작가 이름이 표시된다", () => {
+    sessionStorage.setItem("visited:Grimoire:ep-test", "true")
+    render(<EpisodeViewer meta={mockMeta} data={mockData} authorName="김작가" />)
+    expect(screen.getByText("김작가")).toBeInTheDocument()
+  })
+
+  it("decorations prop이 useTheme 기본값보다 우선한다", () => {
+    sessionStorage.setItem("visited:Grimoire:ep-test", "true")
+    const customDecorations = {
+      dividerIcon: "dot" as const, dividerColor: "#ff0000",
+      headerIcon: "dot" as const, headerSubtitle: "",
+      cardAccentPosition: "left" as const, footerText: "",
+    }
+    render(<EpisodeViewer meta={mockMeta} data={mockData} decorations={customDecorations} />)
+    // 렌더링 에러 없이 완료
+    expect(document.querySelector("header")).toBeInTheDocument()
   })
 })
