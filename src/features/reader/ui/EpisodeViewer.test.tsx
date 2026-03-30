@@ -320,8 +320,8 @@ describe("EpisodeViewer animation 분기", () => {
   it("decorations prop이 useTheme 기본값보다 우선한다", () => {
     sessionStorage.setItem("visited:Grimoire:ep-test", "true")
     const customDecorations = {
-      dividerIcon: "line" as const, dividerColor: "#ff0000",
-      headerIcon: "line" as const, headerSubtitle: "",
+      dividerIcon: "dot" as const, dividerColor: "#ff0000",
+      headerIcon: "dot" as const, headerSubtitle: "",
       cardAccentPosition: "left" as const, footerText: "",
     }
     render(<EpisodeViewer meta={mockMeta} data={mockData} decorations={customDecorations} />)
