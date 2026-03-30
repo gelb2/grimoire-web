@@ -29,25 +29,30 @@ export default function ExplorePage() {
     isStale, reset,
   } = useExploreStore()
 
+  const [initialLoading, setInitialLoading] = useState(!loaded)
+
   const fetchInitialData = useCallback(async () => {
-    try {
-      const [popularRes, recentRes, giftedRes] = await Promise.all([
-        api.getPopularWorksPaginated(1, PAGE_SIZE),
-        api.getRecentWorksPaginated(1, PAGE_SIZE),
-        api.getMostGiftedAuthors(8).catch(() => []),
-      ])
-      setGiftedAuthors(giftedRes)
+    setInitialLoading(true)
+    // 개별 호출 에러 격리 — 하나 실패해도 나머지는 정상 표시
+    const [popularRes, recentRes, giftedRes] = await Promise.all([
+      api.getPopularWorksPaginated(1, PAGE_SIZE).catch(() => null),
+      api.getRecentWorksPaginated(1, PAGE_SIZE).catch(() => null),
+      api.getMostGiftedAuthors(8).catch(() => []),
+    ])
+    setGiftedAuthors(giftedRes)
+    if (popularRes) {
       setPopularWorks(popularRes.works)
       setPopularHasMore(popularRes.hasMore)
       setPopularPage(1)
+    }
+    if (recentRes) {
       setRecentWorks(recentRes.works)
       setRecentHasMore(recentRes.hasMore)
       setRecentPage(1)
-      const hasData = popularRes.works.length > 0 || recentRes.works.length > 0
-      if (hasData) setLoaded(true)
-    } catch {
-      toast.error('작품 데이터를 불러올 수 없습니다')
     }
+    const hasData = (popularRes?.works.length ?? 0) > 0 || (recentRes?.works.length ?? 0) > 0
+    if (hasData) setLoaded(true)
+    setInitialLoading(false)
   }, [setPopularWorks, setRecentWorks, setLoaded,
       setPopularHasMore, setRecentHasMore, setPopularPage, setRecentPage])
 
@@ -69,7 +74,7 @@ export default function ExplorePage() {
       appendPopularWorks(res.works)
       setPopularPage(nextPage)
       setPopularHasMore(res.hasMore)
-    } catch { toast.error('작품을 더 불러올 수 없습니다') }
+    } catch { /* 인라인 에러는 hasMore가 false로 유지되므로 버튼 자체가 사라짐 */ }
     finally { setPopularLoading(false) }
   }, [popularLoading, popularHasMore, popularPage,
       appendPopularWorks, setPopularPage, setPopularHasMore, setPopularLoading])
@@ -83,7 +88,7 @@ export default function ExplorePage() {
       appendRecentWorks(res.works)
       setRecentPage(nextPage)
       setRecentHasMore(res.hasMore)
-    } catch { toast.error('작품을 더 불러올 수 없습니다') }
+    } catch { /* 더 보기 실패 시 조용히 처리 */ }
     finally { setRecentLoading(false) }
   }, [recentLoading, recentHasMore, recentPage,
       appendRecentWorks, setRecentPage, setRecentHasMore, setRecentLoading])
@@ -108,16 +113,10 @@ export default function ExplorePage() {
             <h2 className="text-3xl font-black text-black">인기 작품</h2>
             <div className="flex-1 h-px bg-black" />
           </div>
-          {popularWorks.length === 0 && !popularLoading ? (
-            <div className="py-8 text-neutral-500">
-              <p>아직 작품이 없습니다.</p>
-              <button
-                onClick={() => { reset(); fetchInitialData() }}
-                className="mt-2 text-sm underline text-neutral-400 hover:text-black transition"
-              >
-                새로고침
-              </button>
-            </div>
+          {initialLoading ? (
+            <SkeletonGrid />
+          ) : popularWorks.length === 0 ? (
+            <InlineRetry onRetry={() => { reset(); fetchInitialData() }} />
           ) : (
             <>
               <MagazineGrid works={popularWorks} />
@@ -140,16 +139,10 @@ export default function ExplorePage() {
             <h2 className="text-3xl font-black text-black">최신 작품</h2>
             <div className="flex-1 h-px bg-black" />
           </div>
-          {recentWorks.length === 0 && !recentLoading ? (
-            <div className="py-8 text-neutral-500">
-              <p>아직 작품이 없습니다.</p>
-              <button
-                onClick={() => { reset(); fetchInitialData() }}
-                className="mt-2 text-sm underline text-neutral-400 hover:text-black transition"
-              >
-                새로고침
-              </button>
-            </div>
+          {initialLoading ? (
+            <SkeletonGrid />
+          ) : recentWorks.length === 0 ? (
+            <InlineRetry onRetry={() => { reset(); fetchInitialData() }} />
           ) : (
             <>
               <MagazineGrid works={recentWorks} />
@@ -376,3 +369,33 @@ const MagazineGrid = memo(function MagazineGrid({ works }: { works: MagazineWork
     </div>
   )
 })
+
+// ── 스켈레톤 로딩 그리드 ──
+
+function SkeletonGrid() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-4">
+      <div className="h-48 rounded-lg bg-neutral-100 animate-pulse" />
+      <div className="flex flex-col gap-4">
+        <div className="h-[92px] rounded-lg bg-neutral-100 animate-pulse" />
+        <div className="h-[92px] rounded-lg bg-neutral-100 animate-pulse" />
+      </div>
+    </div>
+  )
+}
+
+// ── 인라인 에러 + 새로고침 ──
+
+function InlineRetry({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="py-8 text-neutral-500">
+      <p>작품을 불러올 수 없습니다.</p>
+      <button
+        onClick={onRetry}
+        className="mt-2 text-sm underline text-neutral-400 hover:text-black transition"
+      >
+        새로고침
+      </button>
+    </div>
+  )
+}
