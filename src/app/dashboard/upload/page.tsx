@@ -86,15 +86,15 @@ export default function UploadPage() {
       <PlatformNav />
 
       <main className="max-w-4xl mx-auto px-6 py-8">
-        <h1 className="text-2xl font-bold text-white mb-2">원고 업로드</h1>
-        <p className="text-neutral-400 mb-6">
+        <h1 className="text-3xl font-black text-black mb-2">원고 업로드</h1>
+        <p className="text-neutral-500 mb-6">
           MD, TXT, DOCX 파일을 업로드하거나 텍스트를 직접 붙여넣으세요.
-          에디팅이 아닌 <span className="text-amber-500">업로드</span>입니다 — 글은 작가님의 앱에서 쓰세요.
+          에디팅이 아닌 <span className="text-platform-accent">업로드</span>입니다 — 글은 작가님의 앱에서 쓰세요.
         </p>
 
-        <div className="bg-amber-900/20 border border-amber-800/50 rounded-lg px-4 py-3 mb-6">
-          <p className="text-amber-400 text-sm font-medium mb-1">권장 업로드 포맷</p>
-          <p className="text-amber-300/70 text-xs">
+        <div className="border-l-2 border-platform-accent px-4 py-3 mb-6">
+          <p className="text-platform-accent text-sm font-medium mb-1">권장 업로드 포맷</p>
+          <p className="text-neutral-500 text-xs">
             .md (Markdown), .txt (텍스트), .docx (Word) 를 권장합니다.
             Bear, Obsidian, Notion, VS Code 등 대부분의 글쓰기 앱에서 이 포맷으로 내보내기를 지원합니다.
             Pages 파일은 Word(.docx)로 내보내기 후 업로드해 주세요.
@@ -102,7 +102,7 @@ export default function UploadPage() {
         </div>
 
         {error && (
-          <div className="bg-red-900/30 border border-red-800 text-red-300 px-4 py-3 rounded-lg text-sm mb-4">
+          <div className="border-l-2 border-platform-accent text-platform-accent px-4 py-3 text-sm mb-4">
             {error}
           </div>
         )}
@@ -111,12 +111,12 @@ export default function UploadPage() {
           {/* 왼쪽: 입력 */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm text-neutral-300 mb-1">에피소드 제목</label>
+              <label className="block text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-1">에피소드 제목</label>
               <input
                 type="text"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
-                className="w-full px-4 py-3 bg-neutral-900 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-amber-500 transition"
+                className="w-full px-4 py-3 bg-platform-bg2 border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black transition"
                 placeholder="제 1화. 시작"
               />
             </div>
@@ -126,9 +126,9 @@ export default function UploadPage() {
               onDragOver={e => e.preventDefault()}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-neutral-700 hover:border-amber-600 rounded-xl p-8 text-center cursor-pointer transition"
+              className="border-2 border-dashed border-neutral-300 hover:border-black rounded-xl p-8 text-center cursor-pointer transition"
             >
-              <p className="text-neutral-400 mb-2">파일을 드래그하거나 클릭하여 업로드</p>
+              <p className="text-neutral-500 mb-2">파일을 드래그하거나 클릭하여 업로드</p>
               <p className="text-neutral-600 text-sm">.md, .txt, .docx 지원</p>
               <input
                 ref={fileInputRef}
@@ -141,54 +141,54 @@ export default function UploadPage() {
 
             {/* 텍스트 직접 입력 */}
             <div>
-              <label className="block text-sm text-neutral-300 mb-1">또는 텍스트 직접 붙여넣기</label>
+              <label className="block text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-1">또는 텍스트 직접 붙여넣기</label>
               <textarea
                 value={content}
                 onChange={e => setContent(e.target.value)}
                 onBlur={handlePaste}
                 rows={12}
-                className="w-full px-4 py-3 bg-neutral-900 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-amber-500 transition font-mono text-sm resize-y"
+                className="w-full px-4 py-3 bg-platform-bg2 border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black transition font-mono text-sm resize-y"
                 placeholder="마크다운 또는 텍스트를 붙여넣으세요..."
               />
             </div>
 
             {format && (
-              <p className="text-sm text-neutral-500">
-                감지된 포맷: <span className="text-amber-500">{format}</span>
+              <p className="text-sm text-neutral-400">
+                감지된 포맷: <span className="text-platform-accent">{format}</span>
               </p>
             )}
 
             <button
               onClick={handlePreview}
               disabled={parsing || !content.trim()}
-              className="w-full py-3 bg-amber-600 hover:bg-amber-500 disabled:bg-neutral-700 text-white font-medium rounded-lg transition"
+              className="w-full py-3 bg-black hover:bg-neutral-800 disabled:bg-neutral-300 text-white font-medium rounded-lg transition"
             >
               {parsing ? '파싱 중...' : '미리보기'}
             </button>
           </div>
 
           {/* 오른쪽: 미리보기 */}
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 min-h-[400px]">
-            <h3 className="text-neutral-400 text-sm mb-4">미리보기</h3>
+          <div className="bg-platform-bg2 border border-neutral-200 rounded-xl p-6 min-h-[400px]">
+            <h3 className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-4">미리보기</h3>
             {preview.length === 0 ? (
               <p className="text-neutral-600 text-center mt-20">
                 왼쪽에서 원고를 입력하고 미리보기를 누르세요
               </p>
             ) : (
-              <div className="space-y-4 text-neutral-200">
-                {title && <h2 className="text-xl font-bold text-white">{title}</h2>}
+              <div className="space-y-4 text-neutral-700">
+                {title && <h2 className="text-xl font-bold text-black">{title}</h2>}
                 {preview.map((block: any, i: number) => {
                   if (block.type === 'paragraph') {
                     return <p key={i} className="leading-relaxed">{block.text}</p>
                   }
                   if (block.type === 'chapter') {
-                    return <h3 key={i} className="text-lg font-bold text-amber-500 mt-6">{block.text}</h3>
+                    return <h3 key={i} className="text-lg font-bold text-platform-accent mt-6">{block.text}</h3>
                   }
                   if (block.type === 'divider') {
-                    return <hr key={i} className="border-neutral-700 my-6" />
+                    return <hr key={i} className="border-neutral-300 my-6" />
                   }
                   if (block.type === 'italic') {
-                    return <p key={i} className="italic text-neutral-400">{block.text}</p>
+                    return <p key={i} className="italic text-neutral-500">{block.text}</p>
                   }
                   return <p key={i}>{block.text}</p>
                 })}
