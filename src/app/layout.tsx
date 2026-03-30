@@ -1,13 +1,14 @@
 import type { Metadata, Viewport } from "next"
 import type { ReactNode } from "react"
-import { Josefin_Sans } from "next/font/google"
+import { EB_Garamond } from "next/font/google"
 import { Toaster } from "sonner"
 import "./globals.css"
 
-// CI 로고 폰트 — 바우하우스 기하학 (Josefin Sans)
-const josefin = Josefin_Sans({
+// CI 로고 폰트 — 클래식 세리프 (EB Garamond)
+const garamondLogo = EB_Garamond({
   subsets: ["latin"],
-  weight: ["300", "700"],
+  weight: ["400", "500"],
+  style: ["normal"],
   variable: "--font-logo",
   display: "swap",
 })
@@ -52,7 +53,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ko">
-      <body className={josefin.variable}>
+      <body className={garamondLogo.variable}>
         {children}
         <Toaster theme="dark" position="bottom-center" richColors />
       </body>

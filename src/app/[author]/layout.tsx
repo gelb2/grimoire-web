@@ -86,22 +86,28 @@ interface Props {
   children: ReactNode
 }
 
-// 작가 정보 로드 — 이름 + 첫 작품 슬러그 + 에피소드 목록 (SeriesNav에 전달)
+// 작가 정보 로드 — 이름 + 작품 목록 + 에피소드 목록 (SeriesNav에 전달)
 interface NavEpisode {
   slug: string
   num?: string
   type?: string
 }
 
+interface NavWork {
+  slug: string
+  title: string
+  episodeCount?: number
+}
+
 interface AuthorInfo {
   name: string
   workSlug?: string
   episodes?: NavEpisode[]
+  works?: NavWork[]
 }
 
 async function loadAuthorInfo(authorSlug: string): Promise<AuthorInfo> {
   try {
-    // 서버 컴포넌트: 백엔드 직접 호출 (BFF 프록시 루프백 방지)
     const apiUrl = process.env.API_URL || 'http://localhost:3000/api'
     const res = await fetch(`${apiUrl}/authors/${authorSlug}`, {
       next: { revalidate: 60 },
@@ -110,11 +116,19 @@ async function loadAuthorInfo(authorSlug: string): Promise<AuthorInfo> {
     if (res.ok) {
       const data = await res.json()
       const name = data.author?.name ?? data.name ?? authorSlug
-      const workSlug = data.works?.[0]?.slug
+      const rawWorks: { slug: string; title: string; episodeCount?: number }[] = data.works ?? []
+      const workSlug = rawWorks[0]?.slug
 
-      // 첫 작품의 에피소드 목록도 로드 (SeriesNav 탭용)
+      // 다중 작품: 작품 목록을 SeriesNav에 전달
+      const works: NavWork[] = rawWorks.map(w => ({
+        slug: w.slug,
+        title: w.title,
+        episodeCount: w.episodeCount,
+      }))
+
+      // 단일 작품: 에피소드 목록도 로드 (SeriesNav 탭용)
       let episodes: NavEpisode[] | undefined
-      if (workSlug) {
+      if (rawWorks.length <= 1 && workSlug) {
         try {
           const workRes = await fetch(`${apiUrl}/works/${authorSlug}/${workSlug}`, {
             next: { revalidate: 60 },
@@ -124,7 +138,6 @@ async function loadAuthorInfo(authorSlug: string): Promise<AuthorInfo> {
             const workData = await workRes.json()
             const rawEpisodes = workData.episodes ?? workData.work?.episodes ?? []
             episodes = rawEpisodes.map((ep: { slug: string; orderNum?: number; type?: string }) => {
-              // episode 타입: slug에서 번호 추출 (ep1 → "01")
               const epType = ep.type ?? 'episode'
               let num: string | undefined
               if (epType === 'episode') {
@@ -135,11 +148,11 @@ async function loadAuthorInfo(authorSlug: string): Promise<AuthorInfo> {
             })
           }
         } catch {
-          // 에피소드 로드 실패 — 로컬 데이터 폴백
+          // 에피소드 로드 실패
         }
       }
 
-      return { name, workSlug, episodes }
+      return { name, workSlug, episodes, works }
     }
   } catch {
     // 작가 정보 로드 실패 — slug 폴백
@@ -154,21 +167,18 @@ export default async function AuthorLayout({ params, children }: Props) {
     loadAuthorInfo(author),
   ])
 
-  const isSeriesLayout = theme.layout === 'series'
-
   return (
     <div className={`${garamond.variable} ${notoSerifKR.variable}`}>
       <AuthProvider>
         <ThemeProvider theme={theme}>
           <CardTransitionProvider>
-            {/* series 레이아웃: 탭 네비게이션을 모든 하위 페이지에 표시 */}
-            {isSeriesLayout && (
-              <SeriesNav
-                authorName={authorInfo.name}
-                workSlug={authorInfo.workSlug}
-                apiEpisodes={authorInfo.episodes}
-              />
-            )}
+            {/* 모든 작가공간에 SeriesNav 표시 (네비 통일) */}
+            <SeriesNav
+              authorName={authorInfo.name}
+              workSlug={authorInfo.workSlug}
+              apiEpisodes={authorInfo.episodes}
+              apiWorks={authorInfo.works}
+            />
             {children}
           </CardTransitionProvider>
         </ThemeProvider>

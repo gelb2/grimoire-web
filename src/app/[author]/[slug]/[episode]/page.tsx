@@ -3,7 +3,7 @@ import { notFound } from "next/navigation"
 import { api } from "@/lib/api"
 import { EpisodeViewer } from "@/features/reader/ui/EpisodeViewer"
 import { EpisodeFooter } from "@/features/reader/ui/EpisodeFooter"
-import { WorkNav } from "@/features/reader/ui/WorkNav"
+// WorkNav 제거 — SeriesNav가 [author]/layout.tsx에서 항상 렌더링됨
 
 // 완전 동적 — SSR on every request
 export const dynamic = "force-dynamic"
@@ -106,18 +106,7 @@ export default async function EpisodePage({ params }: Props) {
 
     return (
       <>
-        {/* series 레이아웃: 탭 네비게이션은 AuthorSpace 레이아웃에서 이미 렌더링됨 */}
-        {/* grid 레이아웃: WorkNav (pill 스타일 에피소드 네비게이션) 표시 */}
-        {!isSeriesLayout && workEpisodes.length > 0 && (
-          <WorkNav
-            authorSlug={author}
-            authorName={authorName}
-            workSlug={slug}
-            workTitle={workTitle}
-            episodes={workEpisodes}
-            currentEpisodeSlug={episode}
-          />
-        )}
+        {/* 네비게이션: SeriesNav가 [author]/layout.tsx에서 항상 렌더링됨 */}
         <EpisodeViewer key={`${author}-${slug}-${episode}`} meta={meta} data={{ slug: episodeData.slug, title: episodeData.title, subtitle: episodeData.subtitle ?? undefined, blocks: episodeData.blocks as never[] }} authorName={authorName} />
         <EpisodeFooter
           episodeId={episodeData.id || episode}
