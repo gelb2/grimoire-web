@@ -78,12 +78,12 @@ export function SeriesNav({ authorName = "Grimoire", workSlug, apiEpisodes, apiW
         Grimoire
       </Link>
       <span className="text-g-border">|</span>
-      {/* 작가명 — 클릭 시 작가 공간 랜딩 */}
+      {/* 작가명 — 클릭 시 프로필 페이지 */}
       <Link
-        href={base}
+        href={`${base}/profile`}
         className={cn(
           "font-g-sans text-[13px] font-medium tracking-g-tight transition-colors duration-200 hover:text-g-accent2 shrink-0",
-          (isLanding || isProfile) ? "text-g-accent2" : "text-g-text"
+          isProfile ? "text-g-accent2" : "text-g-text"
         )}
       >
         {authorName}
