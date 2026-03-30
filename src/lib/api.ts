@@ -31,8 +31,9 @@ class ApiClient {
       ...((options?.headers as Record<string, string>) || {}),
     }
 
-    // SSR 환경에서 타임아웃 설정 (서버 미연결 시 빠른 폴백)
-    const signal = options?.signal ?? AbortSignal.timeout(5000)
+    // 타임아웃: SSR=5초 (서버 미연결 시 빠른 폴백), 클라이언트=10초 (prod Cold Start 대응)
+    const timeout = typeof window === 'undefined' ? 5000 : 10000
+    const signal = options?.signal ?? AbortSignal.timeout(timeout)
 
     const res = await fetch(`${getApiBase()}${path}`, {
       ...options,
