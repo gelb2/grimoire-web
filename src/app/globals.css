@@ -41,7 +41,7 @@ body {
   --spacing-g-paragraph: 1.3rem;
 
   /* ── 읽기 폭 토큰 (Tailwind v4: --max-width-* → max-w-* 유틸리티) ── */
-  --max-width-g-landing: 1280px;
+  --max-width-g-landing: none;
   --max-width-g-reader: none;
   --max-width-g-reader-narrow: none;
 
