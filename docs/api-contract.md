@@ -82,6 +82,8 @@
 | POST | `/api/works/:workId/episodes` | 에피소드 생성 | JWT |
 | DELETE | `/api/episodes/:id` | 에피소드 삭제 | JWT |
 | PUT | `/api/works/:id/cover` | 커버 이미지 업로드 | JWT |
+| PATCH | `/api/works/:workId/episodes/:episodeId/status` | 에피소드 상태 변경 | JWT |
+| POST | `/api/works/:workId/episodes/:episodeId/share` | 공유 링크 생성 | JWT |
 
 ### Author (공개)
 
@@ -95,8 +97,9 @@
 
 | Method | Path | 용도 | 인증 |
 |--------|------|------|------|
-| GET | `/api/works/:authorSlug/:workSlug` | 작품 정보 + 에피소드 목록 | - |
-| GET | `/api/episodes/:authorSlug/:workSlug/:episodeSlug` | 에피소드 본문 (Block[] 포함) | - |
+| GET | `/api/works/:authorSlug/:workSlug` | 작품 정보 + 에피소드 목록 | 선택적 (JWT 시 upload 포함) |
+| GET | `/api/episodes/:authorSlug/:workSlug/:episodeSlug` | 에피소드 본문 (Block[] 포함) | 선택적 (status별 접근 제어) |
+| GET | `/api/shared/:token` | 공유 링크로 에피소드 접근 | - |
 
 ### Social
 
@@ -346,6 +349,44 @@ Response 201: Episode
 Headers: Authorization: Bearer <token>
 Response 200: { "deleted": true }
 Error 403: 본인 에피소드 아님
+```
+
+### PATCH /api/works/:workId/episodes/:episodeId/status
+
+에피소드 상태 변경 (작가 전용).
+
+```
+Headers: Authorization: Bearer <token>
+Body: { "status": "upload" | "public" | "nonPublic" }
+Response 200: Episode (status 반영)
+Error 400: shared 상태로 직접 변경 불가 (createShareLink 사용)
+Error 403: 본인 에피소드 아님
+```
+
+### POST /api/works/:workId/episodes/:episodeId/share
+
+공유 링크 생성 (작가 전용). 에피소드 상태가 shared로 변경됨.
+
+```
+Headers: Authorization: Bearer <token>
+Body: { "expireIn": "12h" | "24h" | "48h" | "never" }
+Response 200:
+{
+  "sharedToken": "hex-string",
+  "sharedUrl": "https://grimoire-book.com/shared/{token}",
+  "expireAt": "2026-04-01T00:00:00.000Z" | null
+}
+Error 403: 본인 에피소드 아님
+```
+
+### GET /api/shared/:token
+
+공유 링크로 에피소드 접근 (비로그인 가능).
+
+```
+Response 200: Episode (rawMd, workId, sharedToken, sharedExpireAt 제외)
+Error 403: 공유 링크 만료 — "이 공유 링크는 만료되었습니다. 로그인 하십시오."
+Error 404: 존재하지 않는 공유 토큰
 ```
 
 ### GET /api/authors/:slug

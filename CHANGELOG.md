@@ -1,5 +1,15 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.14.0] - 2026-03-31
+
+### 에피소드 상태 관리 UI + 공유 링크
+
+#### Added
+- 대시보드: 작품별 에피소드 목록 펼침 (상태 배지 + 상태 변경 드롭다운)
+- 대시보드: 공유 링크 생성 모달 (12h/24h/48h/무한 만료 선택 → 링크 복사)
+- `/shared/[token]` — 공유 에피소드 뷰어 (비로그인 접근 가능, 만료 시 에러 표시)
+- api.ts: updateEpisodeStatus, createShareLink, getSharedEpisode 메서드
+
 ## [0.13.0] - 2026-03-31
 
 ### Explore 버그 수정 + Analytics 대시보드 + 테스트 보강 + 배포 복구
