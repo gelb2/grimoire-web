@@ -56,14 +56,19 @@ export default function ExplorePage() {
   }, [setPopularWorks, setRecentWorks, setLoaded,
       setPopularHasMore, setRecentHasMore, setPopularPage, setRecentPage])
 
+  // 스크롤 복원은 페이지 진입 시 1번만. scrollY를 의존성에 넣지 않는다.
+  // (scrollY가 의존성에 있으면 매 스크롤마다 effect 재실행 → window.scrollTo 충돌 → jank)
+  const scrollYRef = useRef(scrollY)
+  scrollYRef.current = scrollY
+
   useEffect(() => {
     if (loaded && !isStale()) {
-      window.scrollTo(0, scrollY)
+      window.scrollTo(0, scrollYRef.current)
       return
     }
     if (loaded && isStale()) reset()
     fetchInitialData()
-  }, [loaded, scrollY, isStale, reset, fetchInitialData])
+  }, [loaded, isStale, reset, fetchInitialData])
 
   const loadMorePopular = useCallback(async () => {
     if (popularLoading || !popularHasMore) return
@@ -93,22 +98,10 @@ export default function ExplorePage() {
   }, [recentLoading, recentHasMore, recentPage,
       appendRecentWorks, setRecentPage, setRecentHasMore, setRecentLoading])
 
-  // 스크롤 위치 저장 — 페이지 복귀 시 복원용. RAF로 throttle하여 모바일 jank 방지.
-  const rafRef = useRef(0)
-  const handleScroll = useCallback(() => {
-    if (rafRef.current) return
-    rafRef.current = requestAnimationFrame(() => {
-      setScrollY(window.scrollY)
-      rafRef.current = 0
-    })
-  }, [setScrollY])
+  // 스크롤 위치 저장 — 페이지를 떠날 때만 저장 (매 프레임 저장하지 않음 → jank 방지)
   useEffect(() => {
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
-    }
-  }, [handleScroll])
+    return () => { setScrollY(window.scrollY) }
+  }, [setScrollY])
 
   return (
     <div className="min-h-screen bg-platform-bg">
