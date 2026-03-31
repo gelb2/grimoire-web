@@ -69,7 +69,7 @@ export function SeriesNav({ authorName = "Grimoire", workSlug, apiEpisodes, apiW
   }
 
   return (
-    <nav className="sticky top-0 z-50 bg-g-bg/95 backdrop-blur-sm border-b border-g-border px-4 md:px-8 py-2.5 md:py-3 flex items-center gap-4">
+    <nav className="sticky top-0 z-50 bg-g-bg/95 backdrop-blur-sm border-b border-g-border px-4 md:px-8 py-2.5 md:py-3 flex items-center gap-4" style={{ paddingTop: 'max(0.625rem, env(safe-area-inset-top))' }}>
       {/* CI 로고 — 플랫폼 홈으로 이동 (대조색: g-text-bright로 어두운 배경에서 가독성 확보) */}
       <Link
         href="/explore"

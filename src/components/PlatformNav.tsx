@@ -75,7 +75,7 @@ export function PlatformNav({ variant = 'platform' }: PlatformNavProps) {
   const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/')
 
   return (
-    <header className={s.header}>
+    <header className={s.header} style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}>
       <div className="max-w-5xl mx-auto flex items-center justify-between">
         {/* 왼쪽: 로고 + 탐색 */}
         <div className="flex items-center gap-4">

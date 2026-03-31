@@ -169,8 +169,9 @@ export default async function AuthorLayout({ params, children }: Props) {
 
   return (
     <>
-      {/* 모바일 status bar 배경색을 테마 배경색과 통일 */}
+      {/* 모바일: status bar + body 배경색을 테마와 통일 (safe-area 틈 방지) */}
       <meta name="theme-color" content={theme.bgPrimary} />
+      <style>{`html, body { background-color: ${theme.bgPrimary}; }`}</style>
       <div className={`${garamond.variable} ${notoSerifKR.variable}`}>
       <AuthProvider>
         <ThemeProvider theme={theme}>
