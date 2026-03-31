@@ -59,8 +59,10 @@ body {
   --radius-g-pill: var(--g-tab-pill-radius, 20px);
 
   /* ── 폰트 크기 토큰 (Tailwind v4: --text-* → text-* 유틸리티) ── */
-  --text-g-label: 10px;
-  --text-g-caption: 11px;
+  /* 운영 정본 기준: text-g-caption/label 미적용 시 부모 상속 19px이 정본.
+     나중에 디자인 리뉴얼 시 의도적으로 줄일 수 있지만, 지금은 정본 유지. */
+  --text-g-label: 19px;
+  --text-g-caption: 19px;
   --text-g-body-sm: 14px;
 
   /* ── 플랫폼 색상 (에디토리얼 라이트 테마) ── */
