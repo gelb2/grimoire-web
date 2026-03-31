@@ -43,13 +43,14 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
   const decorations = decorationsProp ?? themeCtx.decorations ?? DEFAULT_DECORATIONS
   const tagline = taglineProp ?? themeCtx.tagline
   const animationType = themeCtx.animation ?? "none"
-  const typingSpeed = themeCtx.typingSpeed ?? 15
+  const typingSpeed = themeCtx.typingSpeed ?? 30
   const subtitleStyle = themeCtx.subtitleStyle ?? "italic"
   const sectionSpacing = themeCtx.sectionSpacing ?? "md"
   const episodeLabelFormat = themeCtx.episodeLabelFormat ?? "{author} · {type} {num}"
 
   // 섹션 여백 매핑
-  const spacingMap = { sm: { pt: "pt-6 md:pt-10", pb: "pb-4 md:pb-8" }, md: { pt: "pt-8 md:pt-14", pb: "pb-8 md:pb-14" }, lg: { pt: "pt-12 md:pt-20", pb: "pb-12 md:pb-20" } }
+  // main 원본: pt-12 md:pt-20 pb-8 md:pb-14 → md 기본값을 이에 맞춤
+  const spacingMap = { sm: { pt: "pt-6 md:pt-10", pb: "pb-4 md:pb-8" }, md: { pt: "pt-12 md:pt-20", pb: "pb-8 md:pb-14" }, lg: { pt: "pt-16 md:pt-28", pb: "pb-12 md:pb-20" } }
   const spacing = spacingMap[sectionSpacing]
 
   // 애니메이션 없음(none) → 모든 콘텐츠 즉시 표시
