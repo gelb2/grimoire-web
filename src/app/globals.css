@@ -35,11 +35,6 @@ body {
   --color-g-accent2: var(--g-accent2);
   --color-g-border: var(--g-border);
 
-  /* ── 폰트 토큰 ── */
-  --font-g-serif: var(--g-serif);
-  --font-g-sans: var(--g-sans);
-  --font-ci: var(--font-logo);
-
   /* ── 간격 토큰 (방어책: 컴포넌트 간 통일된 스케일) ── */
   --spacing-g-section: 3.5rem;
   --spacing-g-block: 1.8rem;
@@ -50,27 +45,18 @@ body {
   --max-w-g-reader: var(--g-content-width, 700px);
   --max-w-g-reader-narrow: 640px;
 
-  /* ── 타이포 크기 토큰 ── */
-  --font-size-g-label: 10px;
-  --font-size-g-caption: 11px;
-  --font-size-g-body-sm: 14px;
-  --font-size-g-title: var(--g-title-size, 4rem);
-
   /* ── 자간 토큰 (흔들리던 값 통일) ── */
-  --tracking-g-wide: 0.25em;
+  --tracking-g-wide: var(--g-label-letter-spacing, 0.25em);
   --tracking-g-normal: 0.1em;
   --tracking-g-tight: 0.05em;
   --tracking-g-title: var(--g-letter-spacing, 0);
-
-  /* ── 제목 두께 토큰 ── */
-  --font-weight-g-title: var(--g-title-weight, 700);
 
   /* ── 행간 토큰 ── */
   --leading-g-body: var(--g-line-height, 1.9);
 
   /* ── 둥글기 토큰 ── */
-  --radius-g-card: 8px;
-  --radius-g-pill: 20px;
+  --radius-g-card: var(--g-card-radius, 8px);
+  --radius-g-pill: var(--g-tab-pill-radius, 20px);
 
   /* ── 플랫폼 색상 (에디토리얼 라이트 테마) ── */
   --color-platform-bg: #ffffff;
@@ -79,6 +65,18 @@ body {
   --color-platform-text-muted: #666666;
   --color-platform-accent: #e53e3e;
   --color-platform-border: #e5e5e5;
+}
+
+/* font 토큰: turbopack 호환을 위해 @theme inline 밖에서 선언 */
+:root {
+  --font-g-serif: var(--g-serif);
+  --font-g-sans: var(--g-sans);
+  --font-ci: var(--font-logo);
+  --font-size-g-label: 10px;
+  --font-size-g-caption: 11px;
+  --font-size-g-body-sm: 14px;
+  --font-size-g-title: var(--g-title-size, 4rem);
+  --font-weight-g-title: var(--g-title-weight, 700);
 }
 
 :root {

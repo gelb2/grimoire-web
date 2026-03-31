@@ -28,7 +28,7 @@ interface WorkStatsData {
 
 const quickActions = [
   { href: '/dashboard/upload', title: '원고 업로드', desc: 'MD, TXT, DOCX' },
-  { href: '/dashboard/theme', title: '테마 설정', desc: 'AI 공간 꾸미기' },
+  // 테마 에디터: 전수검사 후 재구현 예정 (미완성 상태로 제거됨, TODO.md 참조)
   { href: '/dashboard/analytics', title: '작품 분석', desc: '조회수·좋아요·구독' },
   { href: '/dashboard/credits', title: '크레딧 충전', desc: '크레딧 관리' },
   { href: '/dashboard/profile', title: '프로필 설정', desc: '작가 정보 수정' },
@@ -278,7 +278,6 @@ export default function DashboardPage() {
             </div>
             <div className="text-neutral-400 text-sm">
               <p>테마 AI 생성: 1 크레딧</p>
-              <p>수동 테마 수정: 무료</p>
             </div>
           </div>
         </section>
