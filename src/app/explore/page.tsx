@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, memo } from 'react'
+import { useState, useEffect, useCallback, useRef, memo } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
@@ -93,10 +93,21 @@ export default function ExplorePage() {
   }, [recentLoading, recentHasMore, recentPage,
       appendRecentWorks, setRecentPage, setRecentHasMore, setRecentLoading])
 
-  const handleScroll = useCallback(() => { setScrollY(window.scrollY) }, [setScrollY])
+  // 스크롤 위치 저장 — 페이지 복귀 시 복원용. RAF로 throttle하여 모바일 jank 방지.
+  const rafRef = useRef(0)
+  const handleScroll = useCallback(() => {
+    if (rafRef.current) return
+    rafRef.current = requestAnimationFrame(() => {
+      setScrollY(window.scrollY)
+      rafRef.current = 0
+    })
+  }, [setScrollY])
   useEffect(() => {
     window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    }
   }, [handleScroll])
 
   return (

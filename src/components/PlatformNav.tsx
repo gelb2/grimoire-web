@@ -16,8 +16,8 @@ interface PlatformNavProps {
 // 스타일 세트 — variant별 분기
 const styles = {
   platform: {
-    header: 'border-b border-neutral-200 px-6 py-4 bg-white',
-    logo: 'text-2xl font-light uppercase text-black hover:text-platform-accent transition font-ci tracking-[0.2em]',
+    header: 'border-b border-neutral-200 px-4 md:px-6 py-3 md:py-4 bg-white',
+    logo: 'text-lg md:text-2xl font-light uppercase text-black hover:text-platform-accent transition font-ci tracking-[0.15em] md:tracking-[0.2em]',
     divider: 'text-neutral-300',
     link: (active: boolean) => active
       ? 'text-xs uppercase tracking-widest text-black border-b-2 border-platform-accent pb-0.5'
@@ -87,13 +87,13 @@ export function PlatformNav({ variant = 'platform' }: PlatformNavProps) {
             탐색
           </Link>
 
-          {/* 로그인 상태에서만 추가 메뉴 */}
+          {/* 로그인 상태에서만 추가 메뉴 (모바일에서는 드롭다운으로 이동) */}
           {!loading && user && (
             <>
-              <Link href="/library" className={s.link(isActive('/library'))}>
+              <Link href="/library" className={`hidden md:inline ${s.link(isActive('/library'))}`}>
                 서재
               </Link>
-              <Link href="/dashboard" className={s.link(isActive('/dashboard'))}>
+              <Link href="/dashboard" className={`hidden md:inline ${s.link(isActive('/dashboard'))}`}>
                 대시보드
               </Link>
             </>
@@ -106,8 +106,8 @@ export function PlatformNav({ variant = 'platform' }: PlatformNavProps) {
             <span className={s.loading}>...</span>
           ) : user ? (
             <>
-              {/* 크레딧 */}
-              <Link href="/dashboard/credits" className={s.credits}>
+              {/* 크레딧 (모바일에서는 드롭다운으로 이동) */}
+              <Link href="/dashboard/credits" className={`hidden md:inline ${s.credits}`}>
                 {user.credits} 크레딧
               </Link>
 
@@ -130,6 +130,11 @@ export function PlatformNav({ variant = 'platform' }: PlatformNavProps) {
 
                 {dropdownOpen && (
                   <div className={s.dropdown}>
+                    {/* 모바일에서만 보이는 메뉴 */}
+                    <Link href="/dashboard/credits" onClick={() => setDropdownOpen(false)} className={`md:hidden ${s.dropdownItem}`}>{user.credits} 크레딧</Link>
+                    <Link href="/library" onClick={() => setDropdownOpen(false)} className={`md:hidden ${s.dropdownItem}`}>서재</Link>
+                    <Link href="/dashboard" onClick={() => setDropdownOpen(false)} className={`md:hidden ${s.dropdownItem}`}>대시보드</Link>
+                    <div className={`md:hidden ${s.dropdownDivider}`} />
                     <Link
                       href="/dashboard/profile"
                       onClick={() => setDropdownOpen(false)}
