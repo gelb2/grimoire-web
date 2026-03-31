@@ -12,19 +12,23 @@ export interface ContentMeta {
   description?: string
 }
 
+/**
+ * 블록 타입 — 정본: grimoire-server/src/domain/model/block.ts (BLOCK_TYPES)
+ * 서버에서 타입을 추가/변경하면 이 목록도 동기화해야 한다.
+ */
 export type BlockType =
-  | "paragraph"
-  | "chapter"
-  | "divider"
-  | "refrain"
-  | "italic"
-  | "bold"
-  | "epilogue"
-  | "review"
-  | "reviews-wrap"
   | "heading-1"
   | "heading-2"
+  | "chapter"
+  | "paragraph"
   | "separator"
+  | "divider"
+  | "italic"
+  | "bold"
+  | "refrain"
+  | "epilogue"
+  | "reviews-wrap"
+  | "review"
 
 export interface Block {
   type: BlockType
