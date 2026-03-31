@@ -40,10 +40,10 @@ body {
   --spacing-g-block: 1.8rem;
   --spacing-g-paragraph: 1.3rem;
 
-  /* ── 읽기 폭 토큰 ── */
-  --max-w-g-landing: 900px;
-  --max-w-g-reader: var(--g-content-width, 700px);
-  --max-w-g-reader-narrow: 640px;
+  /* ── 읽기 폭 토큰 (Tailwind v4: --max-width-* → max-w-* 유틸리티) ── */
+  --max-width-g-landing: 900px;
+  --max-width-g-reader: var(--g-content-width, 700px);
+  --max-width-g-reader-narrow: 640px;
 
   /* ── 자간 토큰 (흔들리던 값 통일) ── */
   --tracking-g-wide: var(--g-label-letter-spacing, 0.25em);
@@ -58,6 +58,11 @@ body {
   --radius-g-card: var(--g-card-radius, 8px);
   --radius-g-pill: var(--g-tab-pill-radius, 20px);
 
+  /* ── 폰트 크기 토큰 (Tailwind v4: --text-* → text-* 유틸리티) ── */
+  --text-g-label: 10px;
+  --text-g-caption: 11px;
+  --text-g-body-sm: 14px;
+
   /* ── 플랫폼 색상 (에디토리얼 라이트 테마) ── */
   --color-platform-bg: #ffffff;
   --color-platform-bg2: #f5f5f5;
@@ -67,16 +72,12 @@ body {
   --color-platform-border: #e5e5e5;
 }
 
-/* font 토큰: turbopack 호환을 위해 @theme inline 밖에서 선언 */
-:root {
-  --font-g-serif: var(--g-serif);
-  --font-g-sans: var(--g-sans);
-  --font-ci: var(--font-logo);
-  --font-size-g-label: 10px;
-  --font-size-g-caption: 11px;
-  --font-size-g-body-sm: 14px;
-  --font-size-g-title: var(--g-title-size, 4rem);
-  --font-weight-g-title: var(--g-title-weight, 700);
+/* 폰트 패밀리 유틸리티 클래스 — turbopack 호환을 위해 @theme inline 대신 @layer utilities 사용
+   (Tailwind v4 @theme inline에서 var() 참조를 font-family에 쓰면 turbopack 파서 에러 발생) */
+@layer utilities {
+  .font-g-serif { font-family: var(--g-serif, Georgia, 'Batang', serif); }
+  .font-g-sans  { font-family: var(--g-sans, system-ui, -apple-system, sans-serif); }
+  .font-ci      { font-family: var(--font-logo), 'EB Garamond', Georgia, serif; }
 }
 
 :root {
