@@ -1,6 +1,7 @@
 import type { Block } from "@/features/reader/data"
 import type { ReactNode } from "react"
 import { SectionLabel } from "./SectionLabel"
+import { useTheme } from "@/features/theme"
 
 // 인라인 마크다운 서식 → React 렌더링
 // ***볼드이탤릭***, **볼드**, *이탤릭* 순서로 처리 (greedy 방지)
@@ -25,14 +26,18 @@ function parseInlineText(text: string): ReactNode {
   })
 }
 
-// 구분선 (점 세 개)
+// 구분선 (점 세 개) — 테마 dividerColor 적용
 function Divider() {
+  let color: string | undefined
+  try { color = useTheme().decorations?.dividerColor } catch { /* ThemeProvider 밖에서도 동작 */ }
+
   return (
     <div className="flex items-center justify-center gap-4 my-g-section opacity-30">
       {[0, 1, 2].map((i) => (
         <span
           key={i}
-          className="block size-1 rounded-full bg-g-accent"
+          className="block size-1 rounded-full"
+          style={{ backgroundColor: color || 'var(--g-accent)' }}
         />
       ))}
     </div>
