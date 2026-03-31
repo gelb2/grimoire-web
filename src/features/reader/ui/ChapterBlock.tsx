@@ -2,13 +2,24 @@ import type { Block } from "@/features/reader/data"
 import type { ReactNode } from "react"
 import { SectionLabel } from "./SectionLabel"
 
-// **볼드** 마크다운을 <strong>으로 변환
+// 인라인 마크다운 서식 → React 렌더링
+// ***볼드이탤릭***, **볼드**, *이탤릭* 순서로 처리 (greedy 방지)
 function parseInlineText(text: string): ReactNode {
-  const parts = text.split(/(\*\*[^*]+\*\*)/)
+  // 서식이 없으면 그대로 반환 (성능)
+  if (!text.includes('*')) return text
+
+  const parts = text.split(/(\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|\*[^*]+\*)/)
   if (parts.length === 1) return text
+
   return parts.map((part, i) => {
+    if (part.startsWith("***") && part.endsWith("***")) {
+      return <strong key={i} className="font-semibold italic text-g-text-bright">{part.slice(3, -3)}</strong>
+    }
     if (part.startsWith("**") && part.endsWith("**")) {
       return <strong key={i} className="font-semibold text-g-text-bright">{part.slice(2, -2)}</strong>
+    }
+    if (part.startsWith("*") && part.endsWith("*")) {
+      return <em key={i} className="italic text-g-text-warm">{part.slice(1, -1)}</em>
     }
     return part
   })
