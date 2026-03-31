@@ -104,7 +104,7 @@ export default function ExplorePage() {
   }, [setScrollY])
 
   return (
-    <div className="min-h-screen bg-platform-bg">
+    <div className="min-h-screen bg-white">
       <PlatformNav />
 
       <main className="max-w-5xl mx-auto px-6 py-12">
@@ -177,11 +177,11 @@ export default function ExplorePage() {
                   href={`/${author.slug}`}
                   className="group grid grid-cols-[50px_1fr_auto] items-baseline gap-4 py-5 border-b border-neutral-200 hover:border-black transition-colors"
                 >
-                  <span className="text-sm font-mono text-neutral-300 group-hover:text-platform-accent transition-colors">
+                  <span className="text-sm font-mono text-neutral-300 group-hover:text-[#e53e3e] transition-colors">
                     {String(i + 1).padStart(2, '0')}
                   </span>
                   <div>
-                    <h3 className="text-lg font-bold text-black group-hover:text-platform-accent transition-colors">
+                    <h3 className="text-lg font-bold text-black group-hover:text-[#e53e3e] transition-colors">
                       {author.name}
                     </h3>
                     {author.bio && (
@@ -266,7 +266,7 @@ function SearchSection() {
               href={`/${author.slug}`}
               className="group flex items-baseline gap-3 py-3 border-b border-neutral-200 hover:border-black transition-colors"
             >
-              <span className="text-lg font-bold text-black group-hover:text-platform-accent transition">{author.name}</span>
+              <span className="text-lg font-bold text-black group-hover:text-[#e53e3e] transition">{author.name}</span>
               <span className="text-sm text-neutral-400">/{author.slug}</span>
             </Link>
           ))}

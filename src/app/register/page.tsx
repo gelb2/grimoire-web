@@ -33,16 +33,16 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-platform-bg px-4">
+    <div className="min-h-screen flex items-center justify-center bg-white px-4">
       <div className="w-full max-w-md">
         <p className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 text-center mb-4">CREATE YOUR SPACE</p>
         <h1 className="text-5xl font-light uppercase text-black text-center mb-10 font-ci tracking-[0.2em]">
-          <Link href="/" className="hover:text-platform-accent transition">Grimoire</Link>
+          <Link href="/" className="hover:text-[#e53e3e] transition">Grimoire</Link>
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
-            <div className="border-l-2 border-platform-accent pl-4 text-platform-accent text-sm py-2">{error}</div>
+            <div className="border-l-2 border-[#e53e3e] pl-4 text-[#e53e3e] text-sm py-2">{error}</div>
           )}
 
           <div>
@@ -93,7 +93,7 @@ export default function RegisterPage() {
 
         <p className="text-neutral-500 text-sm text-center mt-8">
           이미 계정이 있으신가요?{' '}
-          <Link href="/login" className="text-platform-accent hover:underline">로그인</Link>
+          <Link href="/login" className="text-[#e53e3e] hover:underline">로그인</Link>
         </p>
       </div>
     </div>

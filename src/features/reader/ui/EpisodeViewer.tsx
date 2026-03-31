@@ -215,10 +215,10 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
   }, [data.blocks.length, data.slug, lastTypingIdx, safeInterval, safeTimeout])
 
   return (
-    <div className="max-w-g-reader mx-auto px-4 md:px-8 pb-16 md:pb-32" style={{ lineHeight: 'var(--g-line-height, 1.9)' }}>
+    <div className="mx-auto px-4 md:px-8 pb-16 md:pb-32" style={{ lineHeight: 'var(--g-line-height, 1.9)' }}>
       {/* 히어로 */}
       <header className={`${spacing.pt} ${spacing.pb} border-b border-g-border`}>
-        <div className="font-g-sans text-g-caption tracking-g-wide text-g-text-muted uppercase mb-3 md:mb-5 min-h-[1em]">
+        <div className="font-g-sans text-[19px] tracking-[0.25em] text-g-text-muted uppercase mb-3 md:mb-5 min-h-[1em]">
           {showImmediately || animationType !== "typing" ? labelText : stage >= 1 && (
             <TypeWriter
               text={labelText}
@@ -243,7 +243,7 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
           <motion.div
             className={meta.description
               ? "text-sm text-g-text-muted leading-relaxed mt-2 max-w-prose"
-              : "font-g-sans text-g-caption text-g-text-muted tracking-g-normal"
+              : "font-g-sans text-[19px] text-g-text-muted tracking-[0.1em]"
             }
             initial={showImmediately ? false : { opacity: 0 }}
             animate={{ opacity: stage >= 3 ? 1 : 0 }}
@@ -286,7 +286,7 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
 
               // 현재 타이핑 중인 블록
               return (
-                <div key={idx} className="mb-g-paragraph text-g-text">
+                <div key={idx} className="mb-5 text-g-text">
                   <TypeWriter
                     text={block.text ?? ""}
                     speed={typingSpeed}
@@ -339,7 +339,7 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
             {tagline}
           </p>
         )}
-        <p className="text-[0.8rem] text-g-text-dim mt-4 not-italic font-g-sans tracking-g-normal">
+        <p className="text-[0.8rem] text-g-text-dim mt-4 not-italic font-g-sans tracking-[0.1em]">
           {authorName}
         </p>
       </motion.footer>

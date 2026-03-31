@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next"
 import type { ReactNode } from "react"
 import { EB_Garamond } from "next/font/google"
 import { Toaster } from "sonner"
-import "./globals.css"
+import "./theme.css"
 
 // CI 로고 폰트 — 클래식 세리프 (EB Garamond)
 const garamondLogo = EB_Garamond({

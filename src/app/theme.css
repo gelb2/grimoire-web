@@ -1,0 +1,75 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* 시스템 다크 모드 무시 — 플랫폼은 항상 라이트, 작가 테마는 CSS Variables로 제어 */
+@custom-variant dark (&:is(.dark *));
+
+/* 텍스트 선택/복사/시스템 컨텍스트 메뉴 전역 차단 (모바일 앱 UX) */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/*
+ * Tailwind 색상 설정 — ThemeProvider가 주입하는 --g-* 변수를 참조만 함
+ * 값 정의는 ThemeProvider 한 곳에서만. 여기는 Tailwind 유틸리티 생성용.
+ * opacity modifier(bg-g-bg/95 등) 필수이므로 @theme inline 유지.
+ */
+@theme inline {
+  --color-g-bg: var(--g-bg);
+  --color-g-bg2: var(--g-bg2);
+  --color-g-text: var(--g-text);
+  --color-g-text-muted: var(--g-text-muted);
+  --color-g-text-dim: var(--g-text-dim);
+  --color-g-text-bright: var(--g-text-bright);
+  --color-g-text-warm: var(--g-text-warm, var(--g-text-muted));
+  --color-g-text-soft: var(--g-text-muted);
+  --color-g-accent: var(--g-accent);
+  --color-g-accent2: var(--g-accent2);
+  --color-g-border: var(--g-border);
+}
+
+/* 폰트 패밀리 — turbopack 호환을 위해 @layer utilities 사용 */
+@layer utilities {
+  .font-g-serif { font-family: var(--g-serif, Georgia, 'Batang', serif); }
+  .font-g-sans  { font-family: var(--g-sans, system-ui, -apple-system, sans-serif); }
+  .font-ci      { font-family: var(--font-logo), 'EB Garamond', Georgia, serif; }
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #111111;
+  color-scheme: light;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 스크롤바 스타일 */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f5f5f5; }
+::-webkit-scrollbar-thumb { background: #d0d0d0; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #b0b0b0; }
+
+/* 링크 기본 스타일 리셋 — @layer base로 Tailwind 유틸리티가 우선하도록 */
+@layer base {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+/* 가로 스크롤 탭 — 스크롤바 숨기기 */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

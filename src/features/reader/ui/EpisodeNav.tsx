@@ -15,7 +15,7 @@ interface EpisodeNavProps {
 export function EpisodeNav({ authorSlug, workSlug, authorName, workTitle }: EpisodeNavProps) {
   return (
     <nav className="sticky top-0 z-50 border-b border-g-border bg-g-bg/95 backdrop-blur-sm">
-      <div className="max-w-g-reader mx-auto px-4 md:px-8 flex items-center justify-between h-12">
+      <div className="mx-auto px-4 md:px-8 flex items-center justify-between h-12">
         {/* 왼쪽: 뒤로가기 */}
         <Link
           href={`/${authorSlug}/${workSlug}`}

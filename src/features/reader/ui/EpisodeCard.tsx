@@ -36,7 +36,7 @@ export function EpisodeCard({ content, workSlug }: { content: ContentMeta; workS
     <div
       ref={cardRef}
       onClick={handleClick}
-      className="group relative h-full overflow-hidden rounded-g-card border border-g-border bg-g-bg2 p-5 md:p-8 cursor-pointer transition-all duration-300 hover:border-g-accent"
+      className="group relative h-full overflow-hidden rounded-lg border border-g-border bg-g-bg2 p-5 md:p-8 cursor-pointer transition-all duration-300 hover:border-g-accent"
       style={{ '--hover-lift': `var(--g-card-hover-lift, 0.125rem)` } as React.CSSProperties}
       onMouseEnter={e => (e.currentTarget.style.transform = `translateY(calc(-1 * var(--g-card-hover-lift, 0.125rem)))`)}
       onMouseLeave={e => (e.currentTarget.style.transform = '')}
@@ -51,7 +51,7 @@ export function EpisodeCard({ content, workSlug }: { content: ContentMeta; workS
 
       {/* 번호 레이블 — num/orderNum 모두 없으면 제목만 표시 */}
       {displayNum && (
-        <SectionLabel className="text-g-label text-g-text-dim mb-3">
+        <SectionLabel className="text-[19px] text-g-text-dim mb-3">
           {isBonus ? displayNum : `Episode ${displayNum}`}
         </SectionLabel>
       )}
@@ -63,7 +63,7 @@ export function EpisodeCard({ content, workSlug }: { content: ContentMeta; workS
 
       {/* 영문 부제 */}
       {content.subtitle && (
-        <div className="font-g-sans text-g-caption text-g-text-muted mb-4 md:mb-6">
+        <div className="font-g-sans text-[19px] text-g-text-muted mb-4 md:mb-6">
           {content.subtitle}
         </div>
       )}
@@ -76,7 +76,7 @@ export function EpisodeCard({ content, workSlug }: { content: ContentMeta; workS
       )}
 
       {/* CTA — 테마에서 텍스트 결정 */}
-      <div className="font-g-sans text-g-caption tracking-g-normal text-g-accent2 uppercase">
+      <div className="font-g-sans text-[19px] tracking-[0.1em] text-g-accent2 uppercase">
         {ctaText}
       </div>
 

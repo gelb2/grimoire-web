@@ -27,7 +27,7 @@ export function SpecialCard({ content, workSlug }: { content: ContentMeta; workS
     <div
       ref={cardRef}
       onClick={handleClick}
-      className="group relative overflow-hidden rounded-g-card border border-g-border/60 bg-g-bg2/60 px-5 py-5 md:px-8 md:py-7 cursor-pointer transition-all duration-300 hover:border-g-accent/40 hover:bg-g-bg2/80"
+      className="group relative overflow-hidden rounded-lg border border-g-border/60 bg-g-bg2/60 px-5 py-5 md:px-8 md:py-7 cursor-pointer transition-all duration-300 hover:border-g-accent/40 hover:bg-g-bg2/80"
     >
       {/* 후기 카드 배경 깨진 문자 */}
       {isAfterword && (
@@ -42,7 +42,7 @@ export function SpecialCard({ content, workSlug }: { content: ContentMeta; workS
 
       <div className="relative z-10">
         {/* 레이블 */}
-        <SectionLabel className="text-g-label text-g-text-dim mb-3">
+        <SectionLabel className="text-[19px] text-g-text-dim mb-3">
           {isAfterword ? "Afterword" : "Preface"}
         </SectionLabel>
 
@@ -52,7 +52,7 @@ export function SpecialCard({ content, workSlug }: { content: ContentMeta; workS
         </div>
 
         {/* 부제 */}
-        <div className="font-g-sans text-g-caption text-g-text-dim tracking-g-tight">
+        <div className="font-g-sans text-[19px] text-g-text-dim tracking-[0.05em]">
           {isAfterword
             ? "국립민속박물관 관리번호 2019-UNK-047"
             : "편집자 서문 · 박물관 필사본"}

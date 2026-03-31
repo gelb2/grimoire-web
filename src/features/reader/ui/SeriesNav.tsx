@@ -86,14 +86,14 @@ export function SeriesNav({ authorName = "Grimoire", workSlug, apiEpisodes, apiW
         <Link
           href={`${base}/profile`}
           className={cn(
-            "font-g-sans text-[13px] font-medium tracking-g-tight transition-colors duration-200 hover:text-g-accent2 shrink-0",
+            "font-g-sans text-[13px] font-medium tracking-[0.05em] transition-colors duration-200 hover:text-g-accent2 shrink-0",
             isProfile ? "text-g-accent2" : "text-g-text"
           )}
         >
           {authorName}
         </Link>
       ) : (
-        <span className="font-g-sans text-[13px] font-medium tracking-g-tight text-g-text shrink-0">
+        <span className="font-g-sans text-[13px] font-medium tracking-[0.05em] text-g-text shrink-0">
           {authorName}
         </span>
       )}
@@ -144,7 +144,7 @@ function NavTab({
     <button
       onClick={onClick}
       className={cn(
-        "font-g-sans text-g-caption tracking-g-normal px-3 py-1 md:px-3.5 md:py-1.5 rounded-g-pill cursor-pointer transition-all duration-200 whitespace-nowrap border shrink-0",
+        "font-g-sans text-[19px] tracking-[0.1em] px-3 py-1 md:px-3.5 md:py-1.5 rounded-[20px] cursor-pointer transition-all duration-200 whitespace-nowrap border shrink-0",
         active
           ? "text-g-accent2 border-g-accent bg-g-accent/10"
           : "text-g-text-muted border-g-border bg-transparent hover:text-g-accent2 hover:border-g-accent"
