@@ -69,6 +69,9 @@
 | raw_md | text | - | 원본 마크다운 |
 | view_count | integer | default(0) | 조회수 |
 | source_format | text | default("markdown") | 원고 포맷 (markdown/txt/docx) |
+| status | text | default("upload") | 상태 (upload/public/nonPublic/shared) |
+| shared_token | text (nullable) | unique | 공유 링크 토큰 |
+| shared_expire_at | timestamptz (nullable) | - | 공유 링크 만료 시각 |
 | created_at | timestamptz | default(now()) | 생성일 |
 
 ### credit_logs
