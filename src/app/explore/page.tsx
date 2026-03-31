@@ -251,9 +251,9 @@ function SearchSection() {
         <button
           onClick={() => handleSearch(query)}
           disabled={searching}
-          className="text-sm font-medium text-neutral-500 hover:text-black transition disabled:opacity-50 uppercase tracking-widest"
+          className="text-sm font-medium text-neutral-500 hover:text-black transition disabled:opacity-30 uppercase tracking-widest"
         >
-          {searching ? '...' : 'Search'}
+          Search
         </button>
       </div>
 

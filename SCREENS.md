@@ -26,6 +26,7 @@
 | `/dashboard` | `app/dashboard/page.tsx` | 작가 대시보드 (작품 목록, 크레딧, 빠른 액션) | `GET /api/auth/profile` |
 | `/dashboard/upload` | `app/dashboard/upload/page.tsx` | 원고 업로드 (드래그앤드롭, 포맷 감지, 미리보기) | `POST /api/manuscripts/parse` |
 | `/dashboard/theme` | `app/dashboard/theme/page.tsx` | 테마 에디터 | `POST /api/themes/generate` |
+| `/dashboard/analytics` | `app/dashboard/analytics/page.tsx` | 작품 분석 (요약 카드 + 조회수 차트 + 에피소드 순위) | `GET /api/authors/:slug/profile`, `GET /api/works/:id/stats` |
 | `/dashboard/credits` | `app/dashboard/credits/page.tsx` | 크레딧 충전 | `GET /api/payments/products`, `GET /api/payments/credits` |
 | `/dashboard/profile` | `app/dashboard/profile/page.tsx` | 프로필 설정 | `GET /api/auth/profile` |
 
