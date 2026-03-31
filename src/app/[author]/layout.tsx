@@ -168,7 +168,10 @@ export default async function AuthorLayout({ params, children }: Props) {
   ])
 
   return (
-    <div className={`${garamond.variable} ${notoSerifKR.variable}`}>
+    <>
+      {/* 모바일 status bar 배경색을 테마 배경색과 통일 */}
+      <meta name="theme-color" content={theme.bgPrimary} />
+      <div className={`${garamond.variable} ${notoSerifKR.variable}`}>
       <AuthProvider>
         <ThemeProvider theme={theme}>
           <CardTransitionProvider>
@@ -184,5 +187,6 @@ export default async function AuthorLayout({ params, children }: Props) {
         </ThemeProvider>
       </AuthProvider>
     </div>
+    </>
   )
 }
