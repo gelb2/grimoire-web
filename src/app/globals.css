@@ -41,9 +41,9 @@ body {
   --spacing-g-paragraph: 1.3rem;
 
   /* ── 읽기 폭 토큰 (Tailwind v4: --max-width-* → max-w-* 유틸리티) ── */
-  --max-width-g-landing: 900px;
-  --max-width-g-reader: var(--g-content-width, 700px);
-  --max-width-g-reader-narrow: 640px;
+  --max-width-g-landing: 1280px;
+  --max-width-g-reader: none;
+  --max-width-g-reader-narrow: none;
 
   /* ── 자간 토큰 (흔들리던 값 통일) ── */
   --tracking-g-wide: var(--g-label-letter-spacing, 0.25em);
