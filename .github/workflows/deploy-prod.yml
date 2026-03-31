@@ -59,3 +59,14 @@ jobs:
             --resource-group zenith-rg \
             --image grimoireacr.azurecr.io/grimoire-web:prod-${{ github.sha }} \
             -o none
+
+      - name: Purge old images
+        run: |
+          TAGS=$(az acr repository show-tags --name grimoireacr --repository grimoire-web --orderby time_asc --query "[?starts_with(@, 'prod-')]" -o tsv)
+          TOTAL=$(echo "$TAGS" | wc -l)
+          DELETE=$((TOTAL - 5))
+          if [ "$DELETE" -gt 0 ]; then
+            echo "$TAGS" | head -n $DELETE | while read TAG; do
+              az acr repository delete --name grimoireacr --image "grimoire-web:$TAG" --yes 2>/dev/null || true
+            done
+          fi
