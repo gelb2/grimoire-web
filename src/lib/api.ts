@@ -173,7 +173,7 @@ class ApiClient {
   async parseManuscript(rawText: string) {
     return this.fetch<{ frontmatter: Record<string, string>; blocks: Record<string, unknown>[] }>('/manuscripts/parse', {
       method: 'POST',
-      body: JSON.stringify({ rawText }),
+      body: JSON.stringify({ mdText: rawText }),
     })
   }
 
