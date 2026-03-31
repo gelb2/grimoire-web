@@ -39,7 +39,7 @@ const DEFAULT_THEME: AuthorTheme = {
   fontHeading: "serif",
   animation: "typing",
   tone: "dark",
-  layout: "grid",
+  episodeListLayout: "grid",
   decorations: {
     dividerIcon: "dot",
     dividerColor: "",
@@ -67,7 +67,7 @@ async function loadTheme(authorSlug: string): Promise<AuthorTheme> {
         return {
           ...DEFAULT_THEME,
           ...overrides,
-          layout: overrides.layout ?? DEFAULT_THEME.layout,
+          episodeListLayout: overrides.episodeListLayout ?? (overrides as any).layout ?? DEFAULT_THEME.episodeListLayout,
           decorations: {
             ...DEFAULT_THEME.decorations,
             ...(overrides.decorations ?? {}),

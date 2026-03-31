@@ -1,7 +1,7 @@
 "use client"
 
 // AuthorSpace — 모든 작가의 통합 공간 컴포넌트
-// theme.layout에 따라 다른 레이아웃 컴포넌트를 렌더링한다.
+// theme.episodeListLayout에 따라 다른 레이아웃 컴포넌트를 렌더링한다.
 // 각 레이아웃은 layouts/ 디렉토리에 독립 컴포넌트로 분리되어 있다.
 
 import { useState, useEffect } from 'react'
@@ -105,7 +105,7 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
   // 레이아웃 선택 — 각 레이아웃은 독립 컴포넌트
   const layoutProps = { author, authorSlug, theme }
 
-  switch (theme.layout) {
+  switch (theme.episodeListLayout) {
     case 'series':   return <SeriesLayout {...layoutProps} />
     case 'gallery':  return <GalleryLayout {...layoutProps} />
     case 'magazine': return <MagazineLayout {...layoutProps} />

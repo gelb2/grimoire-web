@@ -3,6 +3,7 @@ import { EpisodeCard } from "./EpisodeCard"
 import { SpecialCard } from "./SpecialCard"
 import { SectionLabel } from "./SectionLabel"
 import { ThemeHeaderIcon, ThemeDivider } from "./ThemeDecorations"
+import { useTheme } from "@/features/theme"
 import type { ThemeDecorations as DecorationConfig } from "@/features/theme"
 
 // 기본 장식 — ThemeProvider에서 받지 못했을 때 폴백
@@ -35,6 +36,10 @@ export function SeriesLanding({
   decorations = DEFAULT_DECORATIONS,
   heroStyle = "minimal",
 }: SeriesLandingProps) {
+  const theme = useTheme()
+  const showPreface = theme.showPreface ?? true
+  const showAfterword = theme.showAfterword ?? true
+
   const preface = contents.find((c) => c.type === "preface")
   const episodes = contents.filter((c) => c.type === "episode")
   const bonuses = contents.filter((c) => c.type === "bonus")
@@ -102,8 +107,8 @@ export function SeriesLanding({
 
       {/* heroStyle === "none" → 히어로 없음 */}
 
-      {/* 일러두기 */}
-      {preface && (
+      {/* 일러두기 — showPreface 테마값으로 제어 */}
+      {showPreface && preface && (
         <section className="mb-8 md:mb-12">
           <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4 md:gap-6">
             <SpecialCard content={preface} workSlug={workSlug} />
@@ -136,8 +141,8 @@ export function SeriesLanding({
       {/* 구분선 — 테마 장식 시스템 사용 */}
       <ThemeDivider decorations={decorations} className="mb-8 md:mb-12" />
 
-      {/* 후기 */}
-      {afterword && (
+      {/* 후기 — showAfterword 테마값으로 제어 */}
+      {showAfterword && afterword && (
         <section>
           <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4 md:gap-6">
             <SpecialCard content={afterword} workSlug={workSlug} />
