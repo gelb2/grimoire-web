@@ -1,5 +1,33 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.13.0] - 2026-03-31
+
+### Explore 버그 수정 + Analytics 대시보드 + 테스트 보강 + 배포 복구
+
+#### Added
+- `/dashboard/analytics` — 작품 분석 페이지 (요약 카드 + 조회수 차트 + 에피소드 순위)
+- 대시보드 quickActions에 "작품 분석" 링크 추가
+- Explore 스켈레톤 UI (로딩 중 animate-pulse 카드)
+- 유닛테스트 26건 추가: EpisodeViewer(episodeLabel/description/animation), SeriesNav(multi-work/click), SeriesLanding(heroStyle)
+- DESIGN_REFERENCE_READYMAG.md → `docs/`로 이동
+- CLAUDE.md에 연구문서 참조 추가
+- `public/.gitkeep` (Docker COPY 빌드 실패 수정)
+- dev.grimoire-book.com / dev-api.grimoire-book.com Cloudflare CNAME + Azure SSL 바인딩
+
+#### Fixed
+- Explore: Promise.all 에러 격리 (개별 .catch), toast 제거 → 인라인 메시지
+- api.ts: 클라이언트 타임아웃 5초→10초 (prod Cold Start 대응)
+- ESLint flat config: FlatCompat 제거, Next.js 16 네이티브 설정
+- ChapterBlock: children prop → JSX children (lint error)
+- GitHub Actions 리소스그룹 `grimoire-rg` → `zenith-rg` 복원 (전 환경 배포 실패 수정)
+- CI에서 E2E 테스트 제거 (백엔드 미실행 환경 타임아웃)
+
+#### Deployment
+- dev → inhouse → prod 순차 배포 완료 (각 단계 성공 확인 후 진행)
+- web CI: tsc ✅ lint ✅ test ✅ build ✅ (E2E 제외)
+
+---
+
 ## [0.12.0] - 2026-03-30
 
 ### 테마 시스템 v2 + 에러 핸들링 + OAuth + 배포
