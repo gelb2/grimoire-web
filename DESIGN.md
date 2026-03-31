@@ -173,7 +173,8 @@ hover:border-u-accent hover:text-u-accent2 transition-all duration-200
 ### 뷰포트 설정
 - `viewport-fit: cover` — iOS 노치 대응
 - `interactiveWidget: resizes-content` — 가상 키보드 대응
-- `env(safe-area-inset-*)` — `globals.css`에서 html에 적용
+- safe-area: **html에 전역 padding 금지** (배경색 불일치). 개별 sticky nav에서 인라인 처리:
+  - `style={{ paddingTop: 'max(기본값, env(safe-area-inset-top))' }}`
 
 ### 브레이크포인트 전략
 - **모바일 퍼스트**: 기본 스타일이 모바일, `md:` 이상에서 데스크톱
@@ -190,10 +191,13 @@ hover:border-u-accent hover:text-u-accent2 transition-all duration-200
 - 패딩: `px-4 md:px-6 py-3 md:py-4`
 
 ### 스크롤 성능
-- scroll 이벤트: 반드시 `{ passive: true }` + `requestAnimationFrame` throttle
+- **scroll 이벤트 리스너는 가능한 사용하지 않는다** — 브라우저 네이티브 스크롤과 충돌하여 jank 발생
+- 스크롤 위치 저장이 필요하면: 페이지 떠날 때(cleanup) 1번만 저장, 진입 시 1번만 복원
+- `scrollY`를 useEffect 의존성에 넣지 않는다 (매 프레임 effect 재실행 → scrollTo 충돌)
 - sticky nav: `will-change: transform` 고려 (성능 이슈 시)
 
 ### 풀스크린 (작가공간/에피소드)
 - ThemeProvider: `min-h-dvh` + `backgroundColor` 인라인
+- `[author]/layout.tsx`에서 `html, body { background-color: 테마색 }` 동적 적용 (safe-area 틈 방지)
 - `<meta name="theme-color">` 동적 설정 — 작가 테마 배경색과 status bar 통일
 - 에피소드 뷰어 본문: `max-w-g-reader` (700px) + `px-4 md:px-8`
