@@ -4,13 +4,9 @@
 /* 시스템 다크 모드 무시 — 플랫폼은 항상 라이트, 작가 테마는 CSS Variables로 제어 */
 @custom-variant dark (&:is(.dark *));
 
-/* iOS safe-area 대응 (viewport-fit: cover) */
-html {
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
-}
+/* iOS safe-area 대응 (viewport-fit: cover)
+   html에 padding을 주면 배경색이 안 맞는 문제 발생.
+   safe-area는 개별 sticky nav에서 처리한다. */
 
 /*
  * Grimoire 디자인 토큰
