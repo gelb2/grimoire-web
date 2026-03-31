@@ -83,7 +83,13 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
     }
   })()
   const numLabel = meta.num?.replace(/\D/g, '') ?? ''
-  const labelText = episodeLabelFormat
+  // episode 타입인데 num이 비어있으면 "{type} {num}" 부분 통째 제거 (e.g. "Grimoire · Episode " → "Grimoire")
+  // preface/afterword/bonus는 num 없이도 타입 라벨 유지 (e.g. "Grimoire · Afterword")
+  const stripTypeNum = meta.type === 'episode' && !numLabel
+  const formatTemplate = stripTypeNum
+    ? episodeLabelFormat.replace(/[·\-]\s*\{type\}\s*\{num\}/, '').replace(/\{type\}\s*\{num\}/, '')
+    : episodeLabelFormat
+  const labelText = formatTemplate
     .replace('{author}', authorName)
     .replace('{type}', typeLabel)
     .replace('{num}', numLabel)
