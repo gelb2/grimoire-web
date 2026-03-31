@@ -169,12 +169,28 @@ class ApiClient {
     return this.fetch<void>(`/episodes/${id}`, { method: 'DELETE' })
   }
 
-  // 원고 파싱
+  // 원고 파싱 (텍스트)
   async parseManuscript(rawText: string) {
     return this.fetch<{ frontmatter: Record<string, string>; blocks: Record<string, unknown>[] }>('/manuscripts/parse', {
       method: 'POST',
       body: JSON.stringify({ rawText }),
     })
+  }
+
+  // 원고 파일 업로드 (DOCX/HWP 등 바이너리 파일 서버사이드 파싱)
+  async uploadManuscriptFile(file: File) {
+    const formData = new FormData()
+    formData.append('file', file)
+    const res = await fetch(`${getApiBase()}/manuscripts/upload`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    })
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}))
+      throw new Error(body.message || `업로드 오류: ${res.status}`)
+    }
+    return res.json() as Promise<{ frontmatter: Record<string, string>; blocks: Record<string, unknown>[] }>
   }
 
   // 북마크
