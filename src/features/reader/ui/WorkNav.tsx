@@ -75,7 +75,7 @@ export function WorkNav({
               key={ep.slug}
               href={episodeUrl(ep.slug)}
               className={cn(
-                "font-g-sans text-caption tracking-normal-g px-3 py-1 md:px-3.5 md:py-1.5 pill-radius cursor-pointer transition-all duration-200 whitespace-nowrap border shrink-0 inline-block text-center",
+                "font-g-sans fs-caption tracking-normal-g px-3 py-1 md:px-3.5 md:py-1.5 pill-radius cursor-pointer transition-all duration-200 whitespace-nowrap border shrink-0 inline-block text-center",
                 active
                   ? "text-g-accent2 border-g-accent bg-g-accent/10"
                   : "text-g-text-muted border-g-border bg-transparent hover:text-g-accent2 hover:border-g-accent"

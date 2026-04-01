@@ -42,9 +42,9 @@ body {
   .font-g-sans  { font-family: var(--g-sans, system-ui, -apple-system, sans-serif); }
   .font-ci      { font-family: var(--font-logo), 'EB Garamond', Georgia, serif; }
 
-  /* 텍스트 크기 */
-  .text-caption { font-size: var(--g-caption-size, 19px); }
-  .text-label   { font-size: var(--g-label-size, 19px); }
+  /* 텍스트 크기 — fs- 접두사 (text-와 twMerge 충돌 방지) */
+  .fs-caption { font-size: var(--g-caption-size, 19px); }
+  .fs-label   { font-size: var(--g-label-size, 19px); }
 
   /* 자간 */
   .tracking-wide-g   { letter-spacing: var(--g-label-letter-spacing, 0.25em); }

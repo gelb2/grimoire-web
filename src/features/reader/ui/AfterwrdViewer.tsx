@@ -11,7 +11,7 @@ export function AfterwrdViewer({ glitchText, footnote }: AfterwrdViewerProps) {
     <div className="mx-auto px-4 md:px-8 pt-10 md:pt-16 pb-16 md:pb-32">
       {/* 페이지 타이틀 */}
       <header className="mb-8 md:mb-12">
-        <SectionLabel className="text-label text-g-text-dim">후기</SectionLabel>
+        <SectionLabel className="fs-label text-g-text-dim">후기</SectionLabel>
       </header>
 
       {/* 깨진 문자 덩어리 */}

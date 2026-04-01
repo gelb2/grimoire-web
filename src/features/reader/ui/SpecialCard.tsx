@@ -42,7 +42,7 @@ export function SpecialCard({ content, workSlug }: { content: ContentMeta; workS
 
       <div className="relative z-10">
         {/* 레이블 */}
-        <SectionLabel className="text-label text-g-text-dim mb-3">
+        <SectionLabel className="fs-label text-g-text-dim mb-3">
           {isAfterword ? "Afterword" : "Preface"}
         </SectionLabel>
 
@@ -52,7 +52,7 @@ export function SpecialCard({ content, workSlug }: { content: ContentMeta; workS
         </div>
 
         {/* 부제 */}
-        <div className="font-g-sans text-caption text-g-text-dim tracking-tight-g">
+        <div className="font-g-sans fs-caption text-g-text-dim tracking-tight-g">
           {isAfterword
             ? "국립민속박물관 관리번호 2019-UNK-047"
             : "편집자 서문 · 박물관 필사본"}
