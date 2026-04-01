@@ -37,12 +37,26 @@ const TYPING_BLOCKS = 3
 // 뭉텅이 페이드인이 적용되는 뷰포트 블록 수
 const VIEWPORT_BLOCKS = 10
 
-export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations: decorationsProp, tagline: taglineProp }: EpisodeViewerProps) {
+export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", decorations: decorationsProp, tagline: taglineProp }: EpisodeViewerProps) {
+  // blocks 방어: 중첩 객체({title, blocks:[...]}) → 배열 추출
+  const data = {
+    ...rawData,
+    blocks: Array.isArray(rawData.blocks) ? rawData.blocks : (rawData.blocks as unknown as { blocks: Block[] })?.blocks ?? [],
+  }
   // 테마 컨텍스트에서 장식/태그라인/애니메이션 가져오기 (props 우선)
   const themeCtx = useTheme()
   const decorations = decorationsProp ?? themeCtx.decorations ?? DEFAULT_DECORATIONS
   const tagline = taglineProp ?? themeCtx.tagline
   const animationType = themeCtx.animation ?? "none"
+  const typingSpeed = themeCtx.typingSpeed ?? 30
+  const subtitleStyle = themeCtx.subtitleStyle ?? "italic"
+  const sectionSpacing = themeCtx.sectionSpacing ?? "md"
+  const episodeLabelFormat = themeCtx.episodeLabelFormat ?? "{author} · {type} {num}"
+
+  // 섹션 여백 매핑
+  // main 원본: pt-12 md:pt-20 pb-8 md:pb-14 → md 기본값을 이에 맞춤
+  const spacingMap = { sm: { pt: "pt-6 md:pt-10", pb: "pb-4 md:pb-8" }, md: { pt: "pt-12 md:pt-20", pb: "pb-8 md:pb-14" }, lg: { pt: "pt-16 md:pt-28", pb: "pb-12 md:pb-20" } }
+  const spacing = spacingMap[sectionSpacing]
 
   // 애니메이션 없음(none) → 모든 콘텐츠 즉시 표시
   const skipAnimation = animationType === "none"
@@ -65,16 +79,28 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
   // 활성 타이머 추적 — 언마운트 시 일괄 정리
   const timersRef = useRef<Set<ReturnType<typeof setTimeout | typeof setInterval>>>(new Set())
 
-  // type별 라벨: preface→PREFACE, episode→EPISODE 01, bonus→BONUS 1, afterword→AFTERWORD
-  const episodeLabel = (() => {
+  // type별 라벨 — episodeLabelFormat 템플릿에서 {author}, {type}, {num} 치환
+  const typeLabel = (() => {
     switch (meta.type) {
       case 'preface': return 'Preface'
       case 'afterword': return 'Afterword'
-      case 'bonus': return meta.num ? `Bonus ${meta.num.replace(/\D/g, '')}` : 'Bonus'
-      default: return meta.num ? `Episode ${meta.num}` : null
+      case 'bonus': return 'Bonus'
+      default: return 'Episode'
     }
   })()
-  const labelText = episodeLabel ? `${authorName} · ${episodeLabel}` : authorName
+  const numLabel = meta.num?.replace(/\D/g, '') ?? ''
+  // episode 타입인데 num이 비어있으면 "{type} {num}" 부분 통째 제거 (e.g. "Grimoire · Episode " → "Grimoire")
+  // preface/afterword/bonus는 num 없이도 타입 라벨 유지 (e.g. "Grimoire · Afterword")
+  const stripTypeNum = meta.type === 'episode' && !numLabel
+  const formatTemplate = stripTypeNum
+    ? episodeLabelFormat.replace(/[·\-]\s*\{type\}\s*\{num\}/, '').replace(/\{type\}\s*\{num\}/, '')
+    : episodeLabelFormat
+  const labelText = formatTemplate
+    .replace('{author}', authorName)
+    .replace('{type}', typeLabel)
+    .replace('{num}', numLabel)
+    .replace(/\s+/g, ' ')
+    .trim()
 
   // 타이핑 대상 블록 찾기 (paragraph 타입만, 최대 TYPING_BLOCKS개)
   const typingTargets: number[] = []
@@ -194,24 +220,24 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
   }, [data.blocks.length, data.slug, lastTypingIdx, safeInterval, safeTimeout])
 
   return (
-    <div className="max-w-g-reader mx-auto px-4 md:px-8 pb-16 md:pb-32" style={{ lineHeight: 'var(--g-line-height, 1.9)' }}>
+    <div className="mx-auto px-4 md:px-8 pb-16 md:pb-32" style={{ lineHeight: 'var(--g-line-height, 1.9)' }}>
       {/* 히어로 */}
-      <header className="pt-12 md:pt-20 pb-8 md:pb-14 border-b border-g-border">
-        <div className="font-g-sans text-g-caption tracking-g-wide text-g-text-muted uppercase mb-3 md:mb-5 min-h-[1em]">
+      <header className={`${spacing.pt} ${spacing.pb} border-b border-g-border`}>
+        <div className="font-g-sans fs-caption tracking-wide-g text-g-text-muted uppercase mb-3 md:mb-5 min-h-[1em]">
           {showImmediately || animationType !== "typing" ? labelText : stage >= 1 && (
             <TypeWriter
               text={labelText}
-              speed={25}
+              speed={typingSpeed}
               onComplete={() => { if (!cancelledRef.current) setStage(2) }}
             />
           )}
         </div>
 
-        <h1 className="text-2xl md:text-4xl font-normal leading-[1.3] text-g-text-bright mb-2.5 italic min-h-[1.3em]" style={{ fontWeight: 'var(--g-title-weight, 400)', letterSpacing: 'var(--g-letter-spacing, 0)' }}>
+        <h1 className={`text-2xl md:text-4xl font-normal leading-[1.3] text-g-text-bright mb-2.5 min-h-[1.3em] ${subtitleStyle === 'italic' ? 'italic' : ''}`} style={{ fontWeight: 'var(--g-title-weight, 400)', letterSpacing: 'var(--g-letter-spacing, 0)' }}>
           {showImmediately || animationType !== "typing" ? meta.title : stage >= 2 && (
             <TypeWriter
               text={meta.title}
-              speed={35}
+              speed={typingSpeed}
               onComplete={() => safeTimeout(startBodyTyping, 400)}
             />
           )}
@@ -222,7 +248,7 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
           <motion.div
             className={meta.description
               ? "text-sm text-g-text-muted leading-relaxed mt-2 max-w-prose"
-              : "font-g-sans text-g-caption text-g-text-muted tracking-g-normal"
+              : "font-g-sans fs-caption text-g-text-muted tracking-normal-g"
             }
             initial={showImmediately ? false : { opacity: 0 }}
             animate={{ opacity: stage >= 3 ? 1 : 0 }}
@@ -265,10 +291,10 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
 
               // 현재 타이핑 중인 블록
               return (
-                <div key={idx} className="mb-g-paragraph text-g-text">
+                <div key={idx} className="mb-5 text-g-text">
                   <TypeWriter
                     text={block.text ?? ""}
-                    speed={15}
+                    speed={typingSpeed}
                     onComplete={handleTypingBlockComplete}
                   />
                 </div>
@@ -318,7 +344,7 @@ export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations
             {tagline}
           </p>
         )}
-        <p className="text-[0.8rem] text-g-text-dim mt-4 not-italic font-g-sans tracking-g-normal">
+        <p className="text-[0.8rem] text-g-text-dim mt-4 not-italic font-g-sans tracking-normal-g">
           {authorName}
         </p>
       </motion.footer>

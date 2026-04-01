@@ -3,6 +3,7 @@ import { EpisodeCard } from "./EpisodeCard"
 import { SpecialCard } from "./SpecialCard"
 import { SectionLabel } from "./SectionLabel"
 import { ThemeHeaderIcon, ThemeDivider } from "./ThemeDecorations"
+import { useTheme } from "@/features/theme"
 import type { ThemeDecorations as DecorationConfig } from "@/features/theme"
 
 // 기본 장식 — ThemeProvider에서 받지 못했을 때 폴백
@@ -35,13 +36,17 @@ export function SeriesLanding({
   decorations = DEFAULT_DECORATIONS,
   heroStyle = "minimal",
 }: SeriesLandingProps) {
+  const theme = useTheme()
+  const showPreface = theme.showPreface ?? true
+  const showAfterword = theme.showAfterword ?? true
+
   const preface = contents.find((c) => c.type === "preface")
   const episodes = contents.filter((c) => c.type === "episode")
   const bonuses = contents.filter((c) => c.type === "bonus")
   const afterword = contents.find((c) => c.type === "afterword")
 
   return (
-    <div className="max-w-g-landing mx-auto px-4 md:px-8 pt-12 md:pt-20 pb-16 md:pb-32">
+    <div className="mx-auto px-4 md:px-8 pt-12 md:pt-20 pb-16 md:pb-32">
       {/* 히어로 — heroStyle에 따라 분기 */}
       {heroStyle === "fullname" && (
         <header className="mb-12 md:mb-20 pb-10 md:pb-16 border-b border-g-border">
@@ -79,7 +84,7 @@ export function SeriesLanding({
       {heroStyle === "minimal" && (
         <header className="text-center mb-12 md:mb-20 pb-10 md:pb-16 border-b border-g-border">
           {decorations.headerSubtitle && (
-            <SectionLabel className="text-g-caption text-g-text-muted mb-4 md:mb-6">
+            <SectionLabel className="fs-label text-g-text-muted mb-4 md:mb-6">
               {decorations.headerSubtitle}
             </SectionLabel>
           )}
@@ -93,7 +98,7 @@ export function SeriesLanding({
           </h1>
 
           {decorations.footerText && (
-            <div className="font-g-sans text-[12px] text-g-text-dim tracking-g-normal">
+            <div className="font-g-sans text-[12px] text-g-text-dim tracking-normal-g">
               {decorations.footerText}
             </div>
           )}
@@ -102,8 +107,8 @@ export function SeriesLanding({
 
       {/* heroStyle === "none" → 히어로 없음 */}
 
-      {/* 일러두기 */}
-      {preface && (
+      {/* 일러두기 — showPreface 테마값으로 제어 */}
+      {showPreface && preface && (
         <section className="mb-8 md:mb-12">
           <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4 md:gap-6">
             <SpecialCard content={preface} workSlug={workSlug} />
@@ -113,7 +118,7 @@ export function SeriesLanding({
 
       {/* 에피소드 그리드 */}
       <section className="mb-12 md:mb-16">
-        <SectionLabel className="text-g-label text-g-text-dim mb-4 md:mb-6">에피소드</SectionLabel>
+        <SectionLabel className="fs-label text-g-text-dim mb-4 md:mb-6">에피소드</SectionLabel>
         <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4 md:gap-6">
           {episodes.map((ep) => (
             <EpisodeCard key={ep.slug} content={ep} workSlug={workSlug} />
@@ -124,7 +129,7 @@ export function SeriesLanding({
       {/* 번외 섹션 */}
       {bonuses.length > 0 && (
         <section className="mb-12 md:mb-16">
-          <SectionLabel className="text-g-label text-g-text-dim mb-4 md:mb-6">번외 에피소드</SectionLabel>
+          <SectionLabel className="fs-label text-g-text-dim mb-4 md:mb-6">번외 에피소드</SectionLabel>
           <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4 md:gap-6">
             {bonuses.map((b) => (
               <EpisodeCard key={b.slug} content={b} workSlug={workSlug} />
@@ -136,8 +141,8 @@ export function SeriesLanding({
       {/* 구분선 — 테마 장식 시스템 사용 */}
       <ThemeDivider decorations={decorations} className="mb-8 md:mb-12" />
 
-      {/* 후기 */}
-      {afterword && (
+      {/* 후기 — showAfterword 테마값으로 제어 */}
+      {showAfterword && afterword && (
         <section>
           <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4 md:gap-6">
             <SpecialCard content={afterword} workSlug={workSlug} />

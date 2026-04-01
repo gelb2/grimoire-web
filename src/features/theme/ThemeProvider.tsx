@@ -17,7 +17,7 @@ interface ThemeProviderProps {
   children: ReactNode
 }
 
-const fontFamilyMap = {
+const fontFamilyMap: Record<string, string> = {
   serif: "var(--font-garamond), var(--font-noto-serif-kr), Georgia, 'Batang', serif",
   "sans-serif": "system-ui, -apple-system, sans-serif",
   monospace: "'JetBrains Mono', 'Fira Code', monospace",
@@ -58,6 +58,17 @@ export function ThemeProvider({ theme, children }: ThemeProviderProps) {
             "--g-letter-spacing": letterSpacingMap[theme.letterSpacing ?? "normal"],
             "--g-line-height": lineHeightMap[theme.bodyLineHeight ?? "relaxed"],
             "--g-content-width": contentWidthMap[theme.contentWidth ?? "normal"],
+            // fontHeading — 제목용 폰트 (fontBody와 독립)
+            "--g-heading-font": fontFamilyMap[theme.fontHeading ?? "serif"],
+            // 카드/네비
+            "--g-card-radius": theme.cardRadius ?? "8px",
+            "--g-nav-opacity": String(theme.navOpacity ?? 0.95),
+            "--g-tab-pill-radius": theme.tabPillRadius ?? "20px",
+            "--g-label-letter-spacing": theme.labelLetterSpacing ?? "0.25em",
+            "--g-card-watermark-opacity": String(theme.cardWatermarkOpacity ?? 0.15),
+            "--g-card-hover-lift": theme.cardHoverLift ?? "0.125rem",
+            // tone
+            colorScheme: theme.tone === "light" ? "light" : "dark",
             backgroundColor: theme.bgPrimary,
             color: theme.textPrimary,
           } as React.CSSProperties

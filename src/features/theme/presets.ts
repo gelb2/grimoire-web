@@ -28,8 +28,8 @@ export interface AuthorTheme {
   animation: "typing" | "fade" | "slide" | "none"
   tone: "dark" | "light" | "sepia"
 
-  // 레이아웃 — "series" = 시리즈 소설 (탭 네비게이션), "grid" = 일반 그리드
-  layout: "series" | "grid" | "classic" | "magazine" | "gallery" | "minimal"
+  // 에피소드 목록 표시 방식 — "series" = 시리즈 소설 (카드 그리드 + 히어로), "grid" = 작품 카드 나열
+  episodeListLayout: "series" | "grid" | "classic" | "magazine" | "gallery" | "minimal"
 
   // 장식 요소
   decorations: ThemeDecorations
@@ -51,10 +51,35 @@ export interface AuthorTheme {
 
   // ── Phase 2: 레이아웃 프리셋 (레디맥 리서치 기반) ──
   heroStyle?: "fullname" | "cover" | "minimal" | "none"  // 작가 랜딩 히어로 (default: "minimal")
-  navStyle?: "sidebar" | "top" | "hidden"         // 작가 공간 네비 (default: "top")
+
+  // ── 네비/탭 ──
+  tabPillRadius?: string              // 탭 pill 둥글기 (default: "20px")
+
+  // ── 레이블/텍스트 ──
+  labelLetterSpacing?: string         // EPISODE 01 등 레이블 자간 (default: "0.25em")
+
+  // ── 에피소드 카드 ──
+  cardWatermarkOpacity?: number       // 카드 하단 아이콘 워터마크 투명도 (default: 0.15)
+  cardHoverLift?: string              // 카드 hover 시 올라가는 정도 (default: "0.125rem")
+  cardCtaText?: string                // 카드 CTA 텍스트 (default: "읽기 →")
+
+  // ── 에피소드 뷰어 ──
+  subtitleStyle?: "italic" | "normal" // 소제목 스타일 (default: "italic")
+  episodeLabelFormat?: string         // 라벨 형식 — {author}, {type}, {num} 치환 (default: "{author} · {type} {num}")
+
+  // ── 여백 ──
+  sectionSpacing?: "sm" | "md" | "lg" // 섹션 간 여백 (default: "md")
+
+  // ── 섹션 표시 ──
+  showPreface?: boolean               // PREFACE 섹션 표시 여부 (default: true)
+  showAfterword?: boolean             // AFTERWORD 섹션 표시 여부 (default: true)
+
+  // ── 프로필/구독 ──
+  showProfileTab?: boolean            // 네비에 프로필 탭 표시 (default: true)
+  subscribeButtonStyle?: "outlined" | "filled"  // 구독 버튼 스타일 (default: "outlined")
 }
 
-// 기본 장식 설정 — layout: "grid" 전용
+// 기본 장식 설정 — episodeListLayout: "grid" 전용
 const defaultDecorations: ThemeDecorations = {
   dividerIcon: "dot",
   dividerColor: "",
@@ -64,7 +89,7 @@ const defaultDecorations: ThemeDecorations = {
   footerText: "",
 }
 
-// 타이포/레이아웃 기본값 — 기존 프리셋과 하위 호환
+// 기본값 — 기존 프리셋과 하위 호환
 const defaultTypography = {
   titleSize: "lg" as const,
   titleWeight: "bold" as const,
@@ -72,7 +97,21 @@ const defaultTypography = {
   bodyLineHeight: "relaxed" as const,
   contentWidth: "normal" as const,
   heroStyle: "minimal" as const,
-  navStyle: "top" as const,
+}
+
+const defaultUI = {
+  tabPillRadius: "20px",
+  labelLetterSpacing: "0.25em",
+  cardWatermarkOpacity: 0.15,
+  cardHoverLift: "0.125rem",
+  cardCtaText: "읽기 →",
+  subtitleStyle: "italic" as const,
+  episodeLabelFormat: "{author} · {type} {num}",
+  sectionSpacing: "md" as const,
+  showPreface: true,
+  showAfterword: true,
+  showProfileTab: true,
+  subscribeButtonStyle: "outlined" as const,
 }
 
 // Midnight — 사슴악마 기본 테마 (DeerDevil 원본 값 그대로)
@@ -90,7 +129,7 @@ const midnight: AuthorTheme = {
   fontHeading: "serif",
   animation: "typing",
   tone: "dark",
-  layout: "series",
+  episodeListLayout: "series",
   decorations: {
     dividerIcon: "antler",
     dividerColor: "#9a8060",
@@ -100,6 +139,7 @@ const midnight: AuthorTheme = {
     footerText: "Inspired by the sensibility of A24",
   },
   ...defaultTypography,
+  ...defaultUI,
 }
 
 // Parchment — 역사/고전 느낌
@@ -117,9 +157,10 @@ const parchment: AuthorTheme = {
   fontHeading: "serif",
   animation: "fade",
   tone: "sepia",
-  layout: "grid",
+  episodeListLayout: "grid",
   decorations: defaultDecorations,
   ...defaultTypography,
+  ...defaultUI,
 }
 
 // Morning — 로맨스/일상 밝은 톤
@@ -137,9 +178,10 @@ const morning: AuthorTheme = {
   fontHeading: "sans-serif",
   animation: "slide",
   tone: "light",
-  layout: "grid",
+  episodeListLayout: "grid",
   decorations: defaultDecorations,
   ...defaultTypography,
+  ...defaultUI,
 }
 
 // Neon — SF/사이버펑크
@@ -157,9 +199,10 @@ const neon: AuthorTheme = {
   fontHeading: "monospace",
   animation: "none",
   tone: "dark",
-  layout: "grid",
+  episodeListLayout: "grid",
   decorations: defaultDecorations,
   ...defaultTypography,
+  ...defaultUI,
   titleWeight: "light",
   letterSpacing: "wide",
 }
@@ -179,9 +222,10 @@ const cream: AuthorTheme = {
   fontHeading: "sans-serif",
   animation: "none",
   tone: "light",
-  layout: "grid",
+  episodeListLayout: "grid",
   decorations: defaultDecorations,
   ...defaultTypography,
+  ...defaultUI,
   bodyLineHeight: "relaxed",
   contentWidth: "narrow",
 }
@@ -203,7 +247,7 @@ const magazine: AuthorTheme = {
   fontHeading: "sans-serif",
   animation: "fade",
   tone: "light",
-  layout: "magazine",
+  episodeListLayout: "magazine",
   decorations: {
     ...defaultDecorations,
     cardAccentPosition: "none",
@@ -214,7 +258,7 @@ const magazine: AuthorTheme = {
   bodyLineHeight: "relaxed",
   contentWidth: "wide",
   heroStyle: "fullname",
-  navStyle: "sidebar",
+  ...defaultUI,
 }
 
 // Gallery — 갤러리/포트폴리오 스타일 (AHYEON RYU 참고)
@@ -232,7 +276,7 @@ const gallery: AuthorTheme = {
   fontHeading: "sans-serif",
   animation: "fade",
   tone: "dark",
-  layout: "gallery",
+  episodeListLayout: "gallery",
   decorations: {
     ...defaultDecorations,
     headerSubtitle: "",
@@ -244,7 +288,7 @@ const gallery: AuthorTheme = {
   bodyLineHeight: "normal",
   contentWidth: "wide",
   heroStyle: "fullname",
-  navStyle: "hidden",
+  ...defaultUI,
 }
 
 // Minimal — 극단적 미니멀 (Frame 템플릿 참고)
@@ -262,7 +306,7 @@ const minimal: AuthorTheme = {
   fontHeading: "serif",
   animation: "none",
   tone: "dark",
-  layout: "minimal",
+  episodeListLayout: "minimal",
   decorations: {
     ...defaultDecorations,
     dividerIcon: "none",
@@ -275,11 +319,17 @@ const minimal: AuthorTheme = {
   bodyLineHeight: "relaxed",
   contentWidth: "narrow",
   heroStyle: "cover",
-  navStyle: "hidden",
+  ...defaultUI,
 }
+
+// DeerDevil — midnight 값을 그대로 복사한 사슴악마 전용 테마
+// midnight과 동일한 값이므로, 두 테마를 쓰는 작가 화면이 똑같이 보여야 함
+// 다르게 보이면 테마 바인딩이 안 된 하드코딩이 있다는 뜻
+const deerDevil: AuthorTheme = { ...midnight }
 
 export const themePresets: Record<string, AuthorTheme> = {
   midnight,
+  deerDevil,
   parchment,
   morning,
   neon,

@@ -106,7 +106,7 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-platform-bg flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <p className="text-neutral-400">...</p>
       </div>
     )
@@ -114,7 +114,7 @@ export default function AnalyticsPage() {
   if (!user) return null
 
   return (
-    <div className="min-h-screen bg-platform-bg">
+    <div className="min-h-screen bg-white">
       <PlatformNav />
 
       <main className="max-w-5xl mx-auto px-6 py-12">
@@ -227,7 +227,7 @@ export default function AnalyticsPage() {
         {!profileLoading && (profile?.works.length ?? 0) === 0 && (
           <div className="text-center py-16">
             <p className="text-neutral-500 mb-4">아직 작품이 없습니다</p>
-            <Link href="/dashboard" className="text-sm text-platform-accent hover:underline">
+            <Link href="/dashboard" className="text-sm text-[#e53e3e] hover:underline">
               대시보드에서 작품 만들기 &rarr;
             </Link>
           </div>

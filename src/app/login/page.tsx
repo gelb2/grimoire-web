@@ -32,16 +32,16 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-platform-bg px-4">
+    <div className="min-h-screen flex items-center justify-center bg-white px-4">
       <div className="w-full max-w-md">
         <p className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 text-center mb-4">RETURN TO YOUR SPACE</p>
         <h1 className="text-5xl font-light uppercase text-black text-center mb-10 font-ci tracking-[0.2em]">
-          <Link href="/" className="hover:text-platform-accent transition">Grimoire</Link>
+          <Link href="/" className="hover:text-[#e53e3e] transition">Grimoire</Link>
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
-            <div className="border-l-2 border-platform-accent pl-4 text-platform-accent text-sm py-2">
+            <div className="border-l-2 border-[#e53e3e] pl-4 text-[#e53e3e] text-sm py-2">
               {error}
             </div>
           )}
@@ -82,7 +82,7 @@ export default function LoginPage() {
         <div className="mt-8">
           <div className="relative">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-neutral-200"></div></div>
-            <div className="relative flex justify-center text-sm"><span className="px-3 bg-platform-bg text-neutral-400 uppercase text-xs tracking-widest">또는</span></div>
+            <div className="relative flex justify-center text-sm"><span className="px-3 bg-white text-neutral-400 uppercase text-xs tracking-widest">또는</span></div>
           </div>
           <div className="mt-4 flex justify-center">
             {GOOGLE_CLIENT_ID ? (
@@ -126,7 +126,7 @@ export default function LoginPage() {
 
         <p className="text-neutral-500 text-sm text-center mt-8">
           아직 계정이 없으신가요?{' '}
-          <Link href="/register" className="text-platform-accent hover:underline">
+          <Link href="/register" className="text-[#e53e3e] hover:underline">
             회원가입
           </Link>
         </p>

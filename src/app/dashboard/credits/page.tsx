@@ -40,14 +40,14 @@ export default function CreditsPage() {
   if (loading || !user) return null
 
   return (
-    <div className="min-h-screen bg-platform-bg">
+    <div className="min-h-screen bg-white">
       <PlatformNav />
 
       <main className="max-w-3xl mx-auto px-6 py-8">
         <Link href="/dashboard" className="text-sm text-neutral-400 hover:text-neutral-800 transition mb-6 inline-block">&larr; 대시보드</Link>
         <div className="text-center mb-8">
           <p className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-2">현재 잔액</p>
-          <p className="text-5xl font-bold text-platform-accent">{user.credits}</p>
+          <p className="text-5xl font-bold text-[#e53e3e]">{user.credits}</p>
           <p className="text-neutral-400 text-sm mt-1">크레딧</p>
         </div>
 
@@ -60,11 +60,11 @@ export default function CreditsPage() {
               className={`p-6 rounded-xl border text-left transition ${
                 selectedProduct === product.id
                   ? 'border-black bg-neutral-50'
-                  : 'border-neutral-200 bg-platform-bg2 hover:border-neutral-300'
+                  : 'border-neutral-200 bg-[#f5f5f5] hover:border-neutral-300'
               }`}
             >
               <p className="text-2xl font-bold text-black">{product.credits} 크레딧</p>
-              <p className="text-platform-accent text-lg mt-1">₩{product.price.toLocaleString()}</p>
+              <p className="text-[#e53e3e] text-lg mt-1">₩{product.price.toLocaleString()}</p>
               <p className="text-neutral-400 text-sm mt-2">개당 ₩{product.pricePerCredit}</p>
               {product.id === 'credit-100' && (
                 <span className="inline-block mt-2 px-2 py-0.5 bg-black text-white text-xs rounded">베스트</span>
@@ -87,10 +87,10 @@ export default function CreditsPage() {
           {purchaseAction.pending ? '처리 중...' : selectedProduct ? '결제하기 (PAYAPP 연동 예정)' : '패키지를 선택하세요'}
         </button>
 
-        <div className="mt-8 bg-platform-bg2 border border-neutral-200 rounded-xl p-6">
+        <div className="mt-8 bg-[#f5f5f5] border border-neutral-200 rounded-xl p-6">
           <h3 className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-3">크레딧 사용 안내</h3>
           <div className="space-y-2 text-sm text-neutral-500">
-            <p>· 테마 AI 생성: <span className="text-platform-accent">1 크레딧</span></p>
+            <p>· 테마 AI 생성: <span className="text-[#e53e3e]">1 크레딧</span></p>
             <p>· 수동 테마 수정 (Color Picker): <span className="text-green-500">무료</span></p>
             <p>· 에피소드 퍼블리시: <span className="text-green-500">무료</span></p>
             <p>· 공간 유지: <span className="text-green-500">무료</span></p>

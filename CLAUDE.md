@@ -12,6 +12,11 @@ ProjectGrimoire의 프론트엔드. DeerDevil(사슴악마 단편소설 웹 뷰�
 
 백엔드: grimoire-server (NestJS + Prisma + PostgreSQL)
 
+### 시각적 정본: 사슴악마 (deerdevil)
+
+운영 사슴악마의 작가공간·에피소드 뷰어·에피소드 목록이 **모든 시각적 렌더링의 정본**이다.
+루트 `CLAUDE.md` §1 "시각적 정본" 참조. 이 기준과 불일치하는 렌더링은 **버그**다.
+
 ---
 
 ## 2. 핵심 규칙

@@ -23,7 +23,7 @@ async function getThemeLayout(authorSlug: string): Promise<string> {
     })
     if (res.ok) {
       const data = await res.json()
-      return data.overrides?.layout ?? 'grid'
+      return data.overrides?.episodeListLayout ?? data.overrides?.layout ?? 'grid'
     }
   } catch {
     // 테마 로드 실패 — 기본 grid
@@ -107,7 +107,7 @@ export default async function EpisodePage({ params }: Props) {
     return (
       <>
         {/* 네비게이션: SeriesNav가 [author]/layout.tsx에서 항상 렌더링됨 */}
-        <EpisodeViewer key={`${author}-${slug}-${episode}`} meta={meta} data={{ slug: episodeData.slug, title: episodeData.title, subtitle: episodeData.subtitle ?? undefined, blocks: episodeData.blocks as never[] }} authorName={authorName} />
+        <EpisodeViewer key={`${author}-${slug}-${episode}`} meta={meta} data={{ slug: episodeData.slug, title: episodeData.title, subtitle: episodeData.subtitle ?? undefined, blocks: (Array.isArray(episodeData.blocks) ? episodeData.blocks : episodeData.blocks?.blocks ?? []) as never[] }} authorName={authorName} />
         <EpisodeFooter
           episodeId={episodeData.id || episode}
           authorSlug={author}

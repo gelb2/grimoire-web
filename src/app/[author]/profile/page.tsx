@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { api } from '@/lib/api'
+import { useTheme } from '@/features/theme'
 import { WorkCard } from '@/components/WorkCard'
 import { useThrottledAction } from '@/hooks/useThrottle'
 
@@ -37,6 +38,7 @@ interface AuthorProfile {
 export default function AuthorProfilePage() {
   const params = useParams()
   const authorSlug = params.author as string
+  const theme = useTheme()
 
   const [profile, setProfile] = useState<AuthorProfile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -167,7 +169,9 @@ export default function AuthorProfilePage() {
             className={`px-8 py-2.5 rounded-full text-sm font-medium transition disabled:opacity-50 ${
               subscribed
                 ? 'border border-g-accent text-g-accent bg-transparent'
-                : 'bg-g-accent text-g-bg'
+                : theme.subscribeButtonStyle === 'filled'
+                  ? 'bg-g-accent text-g-bg'
+                  : 'border border-g-accent text-g-accent bg-transparent'
             }`}
           >
             {subscribed ? '구독 중' : '구독하기'}

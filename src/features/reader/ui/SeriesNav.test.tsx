@@ -19,6 +19,13 @@ vi.mock("@/features/reader/data", () => ({
   contents: [],
 }))
 
+// useTheme mock — ThemeProvider 없이 테스트 가능하도록
+vi.mock("@/features/theme", () => ({
+  useTheme: () => ({
+    showProfileTab: true,
+  }),
+}))
+
 const mockEpisodes = [
   { slug: "ep1", num: "01", type: "episode" },
   { slug: "ep2", num: "02", type: "episode" },

@@ -39,7 +39,7 @@ const DEFAULT_THEME: AuthorTheme = {
   fontHeading: "serif",
   animation: "typing",
   tone: "dark",
-  layout: "grid",
+  episodeListLayout: "grid",
   decorations: {
     dividerIcon: "dot",
     dividerColor: "",
@@ -50,10 +50,9 @@ const DEFAULT_THEME: AuthorTheme = {
   },
 }
 
-// API에서 테마를 로드한다. API가 단일 진실 공급원.
+// API에서 테마를 로드한다. 백엔드가 preset + overrides를 merge한 완전한 테마를 반환.
 async function loadTheme(authorSlug: string): Promise<AuthorTheme> {
   try {
-    // 서버 컴포넌트: 백엔드 직접 호출 (BFF 프록시 루프백 방지)
     const apiUrl = process.env.API_URL || 'http://localhost:3000/api'
     const res = await fetch(`${apiUrl}/themes/${authorSlug}`, {
       next: { revalidate: 60 },
@@ -61,19 +60,10 @@ async function loadTheme(authorSlug: string): Promise<AuthorTheme> {
     })
     if (res.ok) {
       const data = await res.json()
-      // API에서 받은 overrides를 사용, 누락 필드는 기본값으로 보완
-      if (data.overrides) {
-        const overrides = data.overrides as Partial<AuthorTheme>
-        return {
-          ...DEFAULT_THEME,
-          ...overrides,
-          layout: overrides.layout ?? DEFAULT_THEME.layout,
-          decorations: {
-            ...DEFAULT_THEME.decorations,
-            ...(overrides.decorations ?? {}),
-          },
-        }
-      }
+      // 백엔드가 merge한 완전한 테마 사용 (data.theme)
+      // 하위 호환: data.theme 없으면 기존 overrides 방식 폴백
+      if (data.theme) return data.theme as AuthorTheme
+      if (data.overrides) return { ...DEFAULT_THEME, ...data.overrides } as AuthorTheme
     }
   } catch {
     // API 연결 실패 — 기본 다크 테마 사용
