@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { useTheme } from "@/features/theme"
 
 interface NavEpisode {
   slug: string
@@ -30,6 +31,8 @@ interface SeriesNavProps {
 export function SeriesNav({ authorName = "Grimoire", workSlug, apiEpisodes, apiWorks }: SeriesNavProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const theme = useTheme()
+  const showProfileTab = theme.showProfileTab ?? true
 
   // URL에서 작가 slug 추출
   const segments = pathname.split("/").filter(Boolean)
@@ -69,7 +72,7 @@ export function SeriesNav({ authorName = "Grimoire", workSlug, apiEpisodes, apiW
   }
 
   return (
-    <nav className="sticky top-0 z-50 bg-g-bg/95 backdrop-blur-sm border-b border-g-border px-4 md:px-8 py-2.5 md:py-3 flex items-center gap-4" style={{ paddingTop: 'max(0.625rem, env(safe-area-inset-top))' }}>
+    <nav className="sticky top-0 z-50 backdrop-blur-sm border-b border-g-border px-4 md:px-8 py-2.5 md:py-3 flex items-center gap-4" style={{ paddingTop: 'max(0.625rem, env(safe-area-inset-top))', backgroundColor: `color-mix(in srgb, var(--g-bg) calc(var(--g-nav-opacity, 0.95) * 100%), transparent)` }}>
       {/* CI 로고 — 플랫폼 홈으로 이동 (대조색: g-text-bright로 어두운 배경에서 가독성 확보) */}
       <Link
         href="/explore"
@@ -78,16 +81,22 @@ export function SeriesNav({ authorName = "Grimoire", workSlug, apiEpisodes, apiW
         Grimoire
       </Link>
       <span className="text-g-border">|</span>
-      {/* 작가명 — 클릭 시 프로필 페이지 */}
-      <Link
-        href={`${base}/profile`}
-        className={cn(
-          "font-g-sans text-[13px] font-medium tracking-g-tight transition-colors duration-200 hover:text-g-accent2 shrink-0",
-          isProfile ? "text-g-accent2" : "text-g-text"
-        )}
-      >
-        {authorName}
-      </Link>
+      {/* 작가명 — showProfileTab이면 프로필 링크, 아니면 텍스트만 */}
+      {showProfileTab ? (
+        <Link
+          href={`${base}/profile`}
+          className={cn(
+            "font-g-sans text-[13px] font-medium tracking-tight-g transition-colors duration-200 hover:text-g-accent2 shrink-0",
+            isProfile ? "text-g-accent2" : "text-g-text"
+          )}
+        >
+          {authorName}
+        </Link>
+      ) : (
+        <span className="font-g-sans text-[13px] font-medium tracking-tight-g text-g-text shrink-0">
+          {authorName}
+        </span>
+      )}
 
       {/* 탭 목록 — 다중 작품이면 작품 탭, 단일 작품이면 에피소드 탭 */}
       <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
@@ -135,7 +144,7 @@ function NavTab({
     <button
       onClick={onClick}
       className={cn(
-        "font-g-sans text-g-caption tracking-g-normal px-3 py-1 md:px-3.5 md:py-1.5 rounded-g-pill cursor-pointer transition-all duration-200 whitespace-nowrap border shrink-0",
+        "font-g-sans fs-caption tracking-normal-g px-3 py-1 md:px-3.5 md:py-1.5 pill-radius cursor-pointer transition-all duration-200 whitespace-nowrap border shrink-0",
         active
           ? "text-g-accent2 border-g-accent bg-g-accent/10"
           : "text-g-text-muted border-g-border bg-transparent hover:text-g-accent2 hover:border-g-accent"

@@ -29,7 +29,7 @@ export default function ProfilePage() {
   if (loading || !user) return null
 
   return (
-    <div className="min-h-screen bg-platform-bg">
+    <div className="min-h-screen bg-white">
       <PlatformNav />
 
       <main className="max-w-2xl mx-auto px-6 py-8">
@@ -37,26 +37,26 @@ export default function ProfilePage() {
         <h1 className="text-3xl font-black text-black mb-6">프로필 설정</h1>
 
         {message && (
-          <div className="border-l-2 border-platform-accent text-platform-accent px-4 py-3 text-sm mb-6">{message}</div>
+          <div className="border-l-2 border-[#e53e3e] text-[#e53e3e] px-4 py-3 text-sm mb-6">{message}</div>
         )}
 
         <div className="space-y-6">
           <div>
             <label className="block text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-1">이메일</label>
-            <input type="email" value={user.email} disabled className="w-full px-4 py-3 bg-platform-bg2 border border-neutral-300 rounded-lg text-neutral-500 cursor-not-allowed" />
+            <input type="email" value={user.email} disabled className="w-full px-4 py-3 bg-[#f5f5f5] border border-neutral-300 rounded-lg text-neutral-500 cursor-not-allowed" />
             <p className="text-neutral-600 text-xs mt-1">이메일은 변경할 수 없습니다</p>
           </div>
 
           <div>
             <label className="block text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-1">작가명</label>
-            <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-4 py-3 bg-platform-bg2 border border-neutral-300 rounded-lg text-black focus:outline-none focus:border-black transition" />
+            <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-4 py-3 bg-[#f5f5f5] border border-neutral-300 rounded-lg text-black focus:outline-none focus:border-black transition" />
           </div>
 
           <div>
             <label className="block text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-1">내 공간 주소</label>
             <div className="flex items-center">
               <span className="text-neutral-400 text-sm mr-2">grimoire-book.com/</span>
-              <input type="text" value={user.slug} disabled className="flex-1 px-4 py-3 bg-platform-bg2 border border-neutral-300 rounded-lg text-neutral-500 cursor-not-allowed" />
+              <input type="text" value={user.slug} disabled className="flex-1 px-4 py-3 bg-[#f5f5f5] border border-neutral-300 rounded-lg text-neutral-500 cursor-not-allowed" />
             </div>
             <p className="text-neutral-600 text-xs mt-1">공간 주소 변경은 추후 지원 예정</p>
           </div>
@@ -64,13 +64,13 @@ export default function ProfilePage() {
           <div>
             <label className="block text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-2">연동된 소셜 계정</label>
             <div className="space-y-2">
-              <div className="flex items-center justify-between p-3 bg-platform-bg2 border border-neutral-200 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-[#f5f5f5] border border-neutral-200 rounded-lg">
                 <div className="flex items-center gap-2">
                   <span className="text-black text-sm">Google</span>
                 </div>
-                <button className="text-sm text-platform-accent hover:text-platform-accent">연동하기</button>
+                <button className="text-sm text-[#e53e3e] hover:text-[#e53e3e]">연동하기</button>
               </div>
-              <div className="flex items-center justify-between p-3 bg-platform-bg2 border border-neutral-200 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-[#f5f5f5] border border-neutral-200 rounded-lg">
                 <div className="flex items-center gap-2">
                   <span className="text-black text-sm">Kakao</span>
                 </div>

@@ -162,7 +162,7 @@ export default function UploadPage() {
   if (loading || !user) return null
 
   return (
-    <div className="min-h-screen bg-platform-bg">
+    <div className="min-h-screen bg-white">
       <PlatformNav />
 
       <main className="max-w-4xl mx-auto px-6 py-8">
@@ -171,8 +171,8 @@ export default function UploadPage() {
           MD, TXT, DOCX, HWP 파일을 업로드하거나 텍스트를 직접 붙여넣으세요.
         </p>
 
-        <div className="border-l-2 border-platform-accent px-4 py-3 mb-6">
-          <p className="text-platform-accent text-sm font-medium mb-1">권장 업로드 포맷</p>
+        <div className="border-l-2 border-[#e53e3e] px-4 py-3 mb-6">
+          <p className="text-[#e53e3e] text-sm font-medium mb-1">권장 업로드 포맷</p>
           <p className="text-neutral-500 text-xs">
             .md (Markdown), .txt (텍스트), .docx (Word), .hwp (한글) 지원.
             Bear, Obsidian, Notion, VS Code 등 대부분의 글쓰기 앱에서 내보내기 가능.
@@ -180,7 +180,7 @@ export default function UploadPage() {
         </div>
 
         {error && (
-          <div className="border-l-2 border-platform-accent text-platform-accent px-4 py-3 text-sm mb-4">
+          <div className="border-l-2 border-[#e53e3e] text-[#e53e3e] px-4 py-3 text-sm mb-4">
             {error}
           </div>
         )}
@@ -194,7 +194,7 @@ export default function UploadPage() {
                 type="text"
                 value={newWorkTitle}
                 onChange={e => setNewWorkTitle(e.target.value)}
-                className="flex-1 px-4 py-2 bg-platform-bg2 border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black transition text-sm"
+                className="flex-1 px-4 py-2 bg-[#f5f5f5] border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black transition text-sm"
                 placeholder="새 작품 제목"
               />
               <button onClick={() => setCreateMode(false)} className="text-sm text-neutral-400 hover:text-black transition">취소</button>
@@ -204,7 +204,7 @@ export default function UploadPage() {
               <select
                 value={selectedWorkId}
                 onChange={e => setSelectedWorkId(e.target.value)}
-                className="flex-1 px-4 py-2 bg-platform-bg2 border border-neutral-300 rounded-lg text-black text-sm focus:outline-none focus:border-black transition"
+                className="flex-1 px-4 py-2 bg-[#f5f5f5] border border-neutral-300 rounded-lg text-black text-sm focus:outline-none focus:border-black transition"
               >
                 {works.length === 0 && <option value="">작품 없음</option>}
                 {works.map(w => <option key={w.id} value={w.id}>{w.title}</option>)}
@@ -228,7 +228,7 @@ export default function UploadPage() {
                 type="text"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
-                className="w-full px-4 py-3 bg-platform-bg2 border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black transition"
+                className="w-full px-4 py-3 bg-[#f5f5f5] border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black transition"
                 placeholder="제 1화. 시작"
               />
             </div>
@@ -271,14 +271,14 @@ export default function UploadPage() {
                 onChange={e => setContent(e.target.value)}
                 onBlur={handlePaste}
                 rows={10}
-                className="w-full px-4 py-3 bg-platform-bg2 border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black transition font-mono text-sm resize-y"
+                className="w-full px-4 py-3 bg-[#f5f5f5] border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black transition font-mono text-sm resize-y"
                 placeholder="마크다운 또는 텍스트를 붙여넣으세요..."
               />
             </div>
 
             {format && (
               <p className="text-sm text-neutral-400">
-                감지된 포맷: <span className="text-platform-accent">{format}</span>
+                감지된 포맷: <span className="text-[#e53e3e]">{format}</span>
               </p>
             )}
 
@@ -301,7 +301,7 @@ export default function UploadPage() {
           </div>
 
           {/* 오른쪽: 미리보기 */}
-          <div className="bg-platform-bg2 border border-neutral-200 rounded-xl p-6 min-h-[400px]">
+          <div className="bg-[#f5f5f5] border border-neutral-200 rounded-xl p-6 min-h-[400px]">
             <h3 className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-4">미리보기</h3>
             {preview.length === 0 ? (
               <p className="text-neutral-400 text-center mt-20 text-sm">
@@ -312,7 +312,7 @@ export default function UploadPage() {
                 {title && <h2 className="text-xl font-bold text-black">{title}</h2>}
                 {preview.map((block: any, i: number) => {
                   if (block.type === 'paragraph') return <p key={i} className="leading-relaxed">{block.text}</p>
-                  if (block.type === 'chapter') return <h3 key={i} className="text-lg font-bold text-platform-accent mt-6">{block.title ?? block.text}</h3>
+                  if (block.type === 'chapter') return <h3 key={i} className="text-lg font-bold text-[#e53e3e] mt-6">{block.title ?? block.text}</h3>
                   if (block.type === 'divider') return <hr key={i} className="border-neutral-300 my-6" />
                   if (block.type === 'italic') return <p key={i} className="italic text-neutral-500">{block.text}</p>
                   if (block.type === 'heading-1') return <h2 key={i} className="text-xl font-bold mt-6">{block.title ?? block.text}</h2>

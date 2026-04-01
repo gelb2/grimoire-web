@@ -32,7 +32,7 @@ function Divider() {
   try { color = useTheme().decorations?.dividerColor } catch { /* ThemeProvider 밖에서도 동작 */ }
 
   return (
-    <div className="flex items-center justify-center gap-4 my-g-section opacity-30">
+    <div className="flex items-center justify-center gap-4 my-14 opacity-30">
       {[0, 1, 2].map((i) => (
         <span
           key={i}
@@ -47,7 +47,7 @@ function Divider() {
 // 후렴구 (레프레인)
 function Refrain({ text }: { text: string }) {
   return (
-    <div className="italic text-g-accent2 border-l-2 border-g-accent pl-6 my-g-block text-[1.05rem]">
+    <div className="italic text-g-accent2 border-l-2 border-g-accent pl-6 my-7 text-[1.05rem]">
       {parseInlineText(text)}
     </div>
   )
@@ -57,7 +57,7 @@ function Refrain({ text }: { text: string }) {
 function ReviewsWrap({ children }: { children?: Block[] }) {
   if (!children?.length) return null
   return (
-    <div className="bg-g-bg2 border border-g-border rounded-g-card p-5 md:p-8 my-8">
+    <div className="bg-g-bg2 border border-g-border rounded-lg p-5 md:p-8 my-8">
       {children.map((review, idx) => (
         <ReviewItem key={idx} block={review} isLast={idx === children.length - 1} />
       ))}
@@ -78,7 +78,7 @@ function ReviewItem({
       className={`pt-5 ${isLast ? "pb-0" : "pb-5 border-b border-g-border"}`}
     >
       <div
-        className={`text-[12px] tracking-g-normal mb-2 font-g-sans ${
+        className={`text-[12px] tracking-normal-g mb-2 font-g-sans ${
           isProfessor ? "text-g-text-dim" : "text-g-accent2"
         }`}
       >
@@ -100,9 +100,9 @@ function SingleBlock({ block }: { block: Block }) {
   switch (block.type) {
     case "chapter":
       return (
-        <section className="mt-g-section">
-          <SectionLabel className="text-g-label text-g-text-dim mb-1">{block.num}</SectionLabel>
-          <div className="text-[1.1rem] font-medium text-g-accent2 mb-g-block italic">
+        <section className="mt-14">
+          <SectionLabel className="fs-label text-g-text-dim mb-1">{block.num}</SectionLabel>
+          <div className="text-[1.1rem] font-medium text-g-accent2 mb-7 italic">
             {block.title}
           </div>
         </section>
@@ -110,14 +110,14 @@ function SingleBlock({ block }: { block: Block }) {
 
     case "paragraph":
       return (
-        <p className="mb-g-paragraph text-g-text">
+        <p className="mb-5 text-g-text">
           {parseInlineText(block.text ?? "")}
         </p>
       )
 
     case "italic":
       return (
-        <p className="mb-g-paragraph italic text-g-text-warm">
+        <p className="mb-5 italic text-g-text-warm">
           {parseInlineText(block.text ?? "")}
         </p>
       )
@@ -130,24 +130,24 @@ function SingleBlock({ block }: { block: Block }) {
 
     case "heading-2":
       return (
-        <h2 className="text-lg font-medium text-g-text-muted italic mb-g-block mt-g-section">
+        <h2 className="text-lg font-medium text-g-text-muted italic mb-7 mt-14">
           {block.title}
         </h2>
       )
 
     case "separator":
-      return <hr className="border-t border-g-border my-g-section" />
+      return <hr className="border-t border-g-border my-14" />
 
     case "bold":
       return (
-        <p className="mb-g-paragraph font-semibold text-g-text-bright">
+        <p className="mb-5 font-semibold text-g-text-bright">
           {block.text}
         </p>
       )
 
     case "epilogue":
       return (
-        <SectionLabel className="text-g-label text-g-text-dim mb-g-block mt-g-section">에필로그</SectionLabel>
+        <SectionLabel className="fs-label text-g-text-dim mb-7 mt-14">에필로그</SectionLabel>
       )
 
     case "reviews-wrap":

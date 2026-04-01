@@ -17,6 +17,14 @@ vi.mock("./CardTransition", () => ({
   useCardTransition: () => ({ navigate: vi.fn() }),
 }))
 
+// useTheme mock — ThemeProvider 없이 테스트 가능하도록
+vi.mock("@/features/theme", () => ({
+  useTheme: () => ({
+    showPreface: true,
+    showAfterword: true,
+  }),
+}))
+
 const mockContents: ContentMeta[] = [
   { slug: "preface", type: "preface", title: "일러두기", description: "서문입니다" },
   { slug: "ep1", type: "episode", num: "01", title: "첫 화", description: "설명1" },

@@ -29,7 +29,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-platform-bg">
+    <div className="min-h-screen bg-white">
       <PlatformNav />
 
       <main className="max-w-4xl mx-auto px-6 py-12">
@@ -53,7 +53,7 @@ export default function AdminPage() {
           <h2 className="text-2xl font-black text-black">크레딧 수동 부여</h2>
           <div className="flex-1 h-px bg-black" />
         </div>
-        {message && <div className="border-l-2 border-platform-accent pl-4 text-platform-accent text-sm py-2 mb-4">{message}</div>}
+        {message && <div className="border-l-2 border-[#e53e3e] pl-4 text-[#e53e3e] text-sm py-2 mb-4">{message}</div>}
         <div className="border border-neutral-200 rounded-lg p-6 space-y-3">
           <input type="text" placeholder="작가 ID (UUID)" value={grantForm.authorId}
             onChange={e => setGrantForm(prev => ({ ...prev, authorId: e.target.value }))}

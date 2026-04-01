@@ -63,7 +63,7 @@ export function ViewChart({ dates, counts, totalViews }: ViewChartProps) {
         </div>
         <div className="border border-neutral-200 rounded-lg p-3">
           <p className="text-[10px] uppercase tracking-widest text-neutral-400">주간 추세</p>
-          <p className={`text-lg font-black ${trend > 0 ? 'text-green-600' : trend < 0 ? 'text-platform-accent' : 'text-neutral-400'}`}>
+          <p className={`text-lg font-black ${trend > 0 ? 'text-green-600' : trend < 0 ? 'text-[#e53e3e]' : 'text-neutral-400'}`}>
             {trend > 0 ? '+' : ''}{trend}%
           </p>
         </div>

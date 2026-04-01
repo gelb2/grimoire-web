@@ -17,17 +17,17 @@ interface PlatformNavProps {
 const styles = {
   platform: {
     header: 'border-b border-neutral-200 px-4 md:px-6 py-3 md:py-4 bg-white',
-    logo: 'text-lg md:text-2xl font-light uppercase text-black hover:text-platform-accent transition font-ci tracking-[0.15em] md:tracking-[0.2em]',
+    logo: 'text-lg md:text-2xl font-light uppercase text-black hover:text-[#e53e3e] transition font-ci tracking-[0.15em] md:tracking-[0.2em]',
     divider: 'text-neutral-300',
     link: (active: boolean) => active
-      ? 'text-xs uppercase tracking-widest text-black border-b-2 border-platform-accent pb-0.5'
+      ? 'text-xs uppercase tracking-widest text-black border-b-2 border-[#e53e3e] pb-0.5'
       : 'text-xs uppercase tracking-widest text-neutral-400 hover:text-black transition',
     loading: 'text-neutral-400 text-sm',
-    credits: 'text-platform-accent text-sm hover:opacity-80 transition',
+    credits: 'text-[#e53e3e] text-sm hover:opacity-80 transition',
     userName: 'flex items-center gap-1 text-neutral-700 hover:text-black text-sm transition',
     dropdown: 'absolute right-0 mt-2 w-48 bg-white border border-neutral-200 rounded-lg shadow-lg z-50 py-1',
     dropdownItem: 'block px-4 py-2 text-sm text-neutral-600 hover:bg-neutral-50 hover:text-black transition',
-    dropdownAdmin: 'block px-4 py-2 text-sm text-platform-accent hover:bg-neutral-50 transition',
+    dropdownAdmin: 'block px-4 py-2 text-sm text-[#e53e3e] hover:bg-neutral-50 transition',
     dropdownDivider: 'border-t border-neutral-200 my-1',
     dropdownLogout: 'block w-full text-left px-4 py-2 text-sm text-neutral-400 hover:bg-neutral-50 hover:text-neutral-600 disabled:cursor-not-allowed transition',
     loginLink: 'text-neutral-500 hover:text-black text-sm transition',

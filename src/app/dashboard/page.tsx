@@ -153,11 +153,11 @@ export default function DashboardPage() {
     } catch (err: any) { toast.error(err.message || '공유 링크 생성 실패') }
   }
 
-  if (loading) return <div className="min-h-screen bg-platform-bg flex items-center justify-center"><p className="text-neutral-400">로딩 중...</p></div>
+  if (loading) return <div className="min-h-screen bg-white flex items-center justify-center"><p className="text-neutral-400">로딩 중...</p></div>
   if (!user) return null
 
   return (
-    <div className="min-h-screen bg-platform-bg">
+    <div className="min-h-screen bg-white">
       <PlatformNav />
 
       <main className="max-w-5xl mx-auto px-6 py-12">
@@ -167,7 +167,7 @@ export default function DashboardPage() {
           <h1 className="text-4xl md:text-5xl font-black text-black leading-tight mb-3">
             {user.name}
           </h1>
-          <Link href={`/${user.slug}`} className="text-sm text-platform-accent hover:underline" target="_blank">
+          <Link href={`/${user.slug}`} className="text-sm text-[#e53e3e] hover:underline" target="_blank">
             grimoire-book.com/{user.slug}
           </Link>
         </div>
@@ -184,11 +184,11 @@ export default function DashboardPage() {
               href={action.href}
               className="group grid grid-cols-[50px_1fr_auto] items-baseline gap-4 py-4 border-b border-neutral-200 hover:border-black transition-colors"
             >
-              <span className="text-sm font-mono text-neutral-300 group-hover:text-platform-accent transition-colors">
+              <span className="text-sm font-mono text-neutral-300 group-hover:text-[#e53e3e] transition-colors">
                 {String(i + 1).padStart(2, '0')}
               </span>
               <div>
-                <h3 className="text-base font-bold text-black group-hover:text-platform-accent transition-colors">{action.title}</h3>
+                <h3 className="text-base font-bold text-black group-hover:text-[#e53e3e] transition-colors">{action.title}</h3>
                 <p className="text-xs text-neutral-500">{action.desc}</p>
               </div>
               <span className="text-xs text-neutral-400 group-hover:text-black transition-colors">&rarr;</span>
@@ -203,16 +203,16 @@ export default function DashboardPage() {
               <h2 className="text-2xl font-black text-black">내 작품</h2>
               <div className="flex-1 h-px bg-black" />
             </div>
-            <button onClick={() => setShowNewWork(true)} className="text-sm text-platform-accent hover:underline ml-4">+ 새 작품</button>
+            <button onClick={() => setShowNewWork(true)} className="text-sm text-[#e53e3e] hover:underline ml-4">+ 새 작품</button>
           </div>
 
           {error && (
-            <div className="border-l-2 border-platform-accent pl-4 text-platform-accent text-sm py-2 mb-4">{error}</div>
+            <div className="border-l-2 border-[#e53e3e] pl-4 text-[#e53e3e] text-sm py-2 mb-4">{error}</div>
           )}
 
           {/* 새 작품 폼 */}
           {showNewWork && (
-            <div className="border border-neutral-200 rounded-lg p-5 mb-4 space-y-3 bg-platform-bg2">
+            <div className="border border-neutral-200 rounded-lg p-5 mb-4 space-y-3 bg-white2">
               <input type="text" placeholder="작품 제목" value={newWork.title}
                 onChange={e => {
                   setNewWork(prev => ({ ...prev, title: e.target.value }))
@@ -250,7 +250,7 @@ export default function DashboardPage() {
                   <div className="grid grid-cols-[50px_1fr_auto] items-center gap-4 py-4">
                     <span className="text-sm font-mono text-neutral-300">{String(i + 1).padStart(2, '0')}</span>
                     <div>
-                      <button onClick={() => loadEpisodes(work.id, work.slug)} className="text-base font-bold text-black hover:text-platform-accent transition text-left">
+                      <button onClick={() => loadEpisodes(work.id, work.slug)} className="text-base font-bold text-black hover:text-[#e53e3e] transition text-left">
                         {work.title} <span className="text-xs font-normal text-neutral-400">{expandedWork === work.id ? '▲' : '▼'}</span>
                       </button>
                       <p className="text-xs text-neutral-500 mt-0.5">
@@ -281,7 +281,7 @@ export default function DashboardPage() {
                         />
                       </label>
                       <button onClick={() => handleDeleteWork(work.id, work.title)} disabled={deletingWorks.has(work.id)}
-                        className="text-xs text-platform-accent hover:underline disabled:text-neutral-400 disabled:cursor-not-allowed transition">
+                        className="text-xs text-[#e53e3e] hover:underline disabled:text-neutral-400 disabled:cursor-not-allowed transition">
                         {deletingWorks.has(work.id) ? '삭제 중...' : '삭제'}
                       </button>
                     </div>
@@ -366,7 +366,7 @@ export default function DashboardPage() {
               <h2 className="text-2xl font-black text-black">크레딧</h2>
               <div className="flex-1 h-px bg-black" />
             </div>
-            <Link href="/dashboard/credits" className="text-sm text-platform-accent hover:underline ml-4">충전하기 &rarr;</Link>
+            <Link href="/dashboard/credits" className="text-sm text-[#e53e3e] hover:underline ml-4">충전하기 &rarr;</Link>
           </div>
           <div className="flex items-center gap-8">
             <div>
