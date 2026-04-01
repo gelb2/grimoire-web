@@ -111,34 +111,34 @@ export function WorkCard({
     )
   }
 
-  // ── author-space variant: 기존 다크 카드 ──
+  // ── author-space variant: 테마 CSS 변수 사용 ──
   return (
     <Link
       href={href}
-      className="group relative block overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900/80 p-5 transition-all duration-300 hover:border-amber-600/60 hover:shadow-[0_0_24px_rgba(217,119,6,0.08)] hover:-translate-y-0.5"
+      className="group relative block overflow-hidden rounded-xl border border-g-border bg-g-bg2/80 p-5 transition-all duration-300 hover:border-g-accent/60 hover:-translate-y-0.5"
     >
       {/* 좌측 accent 라인 */}
-      <div className="absolute top-0 left-0 w-[3px] h-full bg-neutral-800 transition-colors duration-300 group-hover:bg-amber-600" />
+      <div className="absolute top-0 left-0 w-[3px] h-full bg-g-border transition-colors duration-300 group-hover:bg-g-accent" />
 
       {/* 장르 태그 */}
       {genre && (
-        <span className="inline-block mb-3 px-2 py-0.5 text-[11px] font-medium tracking-wide uppercase text-amber-500/80 bg-amber-500/10 rounded">
+        <span className="inline-block mb-3 px-2 py-0.5 text-[11px] font-medium tracking-wide uppercase text-g-accent/80 bg-g-accent/10 rounded">
           {genre}
         </span>
       )}
 
       {/* 작품 제목 */}
-      <h3 className="text-lg font-semibold text-white leading-snug mb-1.5 group-hover:text-amber-50 transition-colors truncate">
+      <h3 className="text-lg font-semibold text-g-text-bright leading-snug mb-1.5 group-hover:text-g-accent2 transition-colors truncate">
         {title}
       </h3>
 
       {/* 작가 이름 */}
-      <p className="text-sm text-neutral-400 mb-4">
+      <p className="text-sm text-g-text-muted mb-4">
         {authorName}
       </p>
 
       {/* 통계 */}
-      <div className="flex items-center gap-3 text-xs text-neutral-500">
+      <div className="flex items-center gap-3 text-xs text-g-text-dim">
         <span className="flex items-center gap-1">
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -157,7 +157,7 @@ export function WorkCard({
       </div>
 
       {/* CTA 화살표 */}
-      <div className="absolute bottom-4 right-4 text-neutral-700 transition-colors duration-300 group-hover:text-amber-600">
+      <div className="absolute bottom-4 right-4 text-g-text-dim transition-colors duration-300 group-hover:text-g-accent">
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
