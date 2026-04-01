@@ -38,10 +38,11 @@ interface AuthorTheme {
   tone: "dark" | "light" | "sepia"
 
   // 레이아웃
-  layout: "series" | "grid" | "classic"
+  episodeListLayout: "series" | "grid" | "classic"
   // - "series": 시리즈 소설 — 에피소드 네비게이션 탭 + 카드 그리드 + 타이핑 애니메이션
   // - "grid": 기본 그리드 레이아웃 — 작품 카드 목록
   // - "classic": 전통적 웹소설 목록형
+  // ※ v0.15.0에서 layout → episodeListLayout으로 리네이밍
 
   // 장식 요소
   decorations: ThemeDecorations
@@ -49,7 +50,20 @@ interface AuthorTheme {
   // 추가 시각 요소 (optional)
   typingSpeed?: number     // ms per character (default: 50)
   cardRadius?: string      // border radius (default: "12px")
-  navOpacity?: number      // nav bar opacity 0-1 (default: 0.95)
+
+  // UI 세부 조정 (v0.15.0 추가)
+  tabPillRadius?: string          // 탭 필 버튼 라운딩 (예: "9999px")
+  labelLetterSpacing?: string     // 라벨 자간 (예: "0.05em")
+  cardWatermarkOpacity?: number   // 카드 워터마크 불투명도 0-1 (default: 0.03)
+  cardHoverLift?: string          // 카드 호버 시 상승 거리 (예: "-4px")
+  cardCtaText?: string            // 카드 CTA 텍스트 (예: "읽기", "Read")
+  subtitleStyle?: "italic" | "normal"  // 부제 스타일
+  episodeLabelFormat?: string     // 에피소드 라벨 포맷 (예: "EP.{n}", "제{n}화")
+  sectionSpacing?: string         // 섹션 간 간격 (예: "4rem")
+  showPreface?: boolean           // 서문 섹션 표시 여부 (default: true)
+  showAfterword?: boolean         // 후기 섹션 표시 여부 (default: true)
+  showProfileTab?: boolean        // 프로필 탭 표시 여부 (default: true)
+  subscribeButtonStyle?: "filled" | "outlined" | "ghost"  // 구독 버튼 스타일
 }
 ```
 
@@ -71,7 +85,7 @@ interface AuthorTheme {
 
 ## 프리셋
 
-| 이름 | tone | layout | bgPrimary | textPrimary | fontBody | animation |
+| 이름 | tone | episodeListLayout | bgPrimary | textPrimary | fontBody | animation |
 |------|------|--------|-----------|-------------|----------|-----------|
 | Midnight | dark | series | #07070a | #cdc8bc | serif | typing |
 | Parchment | sepia | grid | #f5f0e8 | #3d3529 | serif | fade |
@@ -112,7 +126,7 @@ interface AuthorTheme {
   "fontHeading": "serif",
   "animation": "typing",
   "tone": "dark",
-  "layout": "series",
+  "episodeListLayout": "series",
   "decorations": {
     "dividerIcon": "antler",
     "dividerColor": "#9a8060",
@@ -123,7 +137,6 @@ interface AuthorTheme {
   },
   "typingSpeed": 15,
   "cardRadius": "8px",
-  "navOpacity": 0.95
 }
 ```
 
