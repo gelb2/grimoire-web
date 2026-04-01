@@ -202,6 +202,7 @@ const neon: AuthorTheme = {
   episodeListLayout: "grid",
   decorations: defaultDecorations,
   ...defaultTypography,
+  ...defaultUI,
   titleWeight: "light",
   letterSpacing: "wide",
 }
@@ -224,6 +225,7 @@ const cream: AuthorTheme = {
   episodeListLayout: "grid",
   decorations: defaultDecorations,
   ...defaultTypography,
+  ...defaultUI,
   bodyLineHeight: "relaxed",
   contentWidth: "narrow",
 }
@@ -256,6 +258,7 @@ const magazine: AuthorTheme = {
   bodyLineHeight: "relaxed",
   contentWidth: "wide",
   heroStyle: "fullname",
+  ...defaultUI,
 }
 
 // Gallery — 갤러리/포트폴리오 스타일 (AHYEON RYU 참고)
@@ -285,6 +288,7 @@ const gallery: AuthorTheme = {
   bodyLineHeight: "normal",
   contentWidth: "wide",
   heroStyle: "fullname",
+  ...defaultUI,
 }
 
 // Minimal — 극단적 미니멀 (Frame 템플릿 참고)
@@ -315,6 +319,7 @@ const minimal: AuthorTheme = {
   bodyLineHeight: "relaxed",
   contentWidth: "narrow",
   heroStyle: "cover",
+  ...defaultUI,
 }
 
 // DeerDevil — midnight 값을 그대로 복사한 사슴악마 전용 테마
