@@ -47,7 +47,7 @@ function Divider() {
 // 후렴구 (레프레인)
 function Refrain({ text }: { text: string }) {
   return (
-    <div className="italic text-g-accent2 border-l-2 border-g-accent pl-6 my-g-block text-[1.05rem]">
+    <div className="italic text-g-accent2 border-l-2 border-g-accent pl-6 my-7 text-[1.05rem]">
       {parseInlineText(text)}
     </div>
   )
