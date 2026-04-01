@@ -37,7 +37,12 @@ const TYPING_BLOCKS = 3
 // 뭉텅이 페이드인이 적용되는 뷰포트 블록 수
 const VIEWPORT_BLOCKS = 10
 
-export function EpisodeViewer({ meta, data, authorName = "Grimoire", decorations: decorationsProp, tagline: taglineProp }: EpisodeViewerProps) {
+export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", decorations: decorationsProp, tagline: taglineProp }: EpisodeViewerProps) {
+  // blocks 방어: 중첩 객체({title, blocks:[...]}) → 배열 추출
+  const data = {
+    ...rawData,
+    blocks: Array.isArray(rawData.blocks) ? rawData.blocks : (rawData.blocks as unknown as { blocks: Block[] })?.blocks ?? [],
+  }
   // 테마 컨텍스트에서 장식/태그라인/애니메이션 가져오기 (props 우선)
   const themeCtx = useTheme()
   const decorations = decorationsProp ?? themeCtx.decorations ?? DEFAULT_DECORATIONS
