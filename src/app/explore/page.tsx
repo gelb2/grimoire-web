@@ -107,16 +107,15 @@ export default function ExplorePage() {
     <div className="min-h-screen bg-white">
       <PlatformNav />
 
-      <main className="max-w-6xl mx-auto px-6 md:px-12 py-16 md:py-24">
+      <main className="max-w-5xl mx-auto px-6 py-12">
         {/* 히어로 + 검색 — 별도 컴포넌트로 리렌더링 격리 */}
         <SearchSection />
 
         {/* 인기 작품 — 매거진 비대칭 그리드 */}
-        <section className="mb-24">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-400 mb-2">Popular</p>
-          <div className="flex items-baseline gap-4 mb-8">
-            <h2 className="text-2xl font-bold text-black">인기 작품</h2>
-            <div className="flex-1 h-px bg-neutral-200" />
+        <section className="mb-16">
+          <div className="flex items-baseline gap-4 mb-6">
+            <h2 className="text-3xl font-black text-black">인기 작품</h2>
+            <div className="flex-1 h-px bg-black" />
           </div>
           {initialLoading ? (
             <SkeletonGrid />
@@ -139,11 +138,10 @@ export default function ExplorePage() {
         </section>
 
         {/* 최신 작품 — 매거진 비대칭 그리드 */}
-        <section className="mb-24">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-400 mb-2">Recent</p>
-          <div className="flex items-baseline gap-4 mb-8">
-            <h2 className="text-2xl font-bold text-black">최신 작품</h2>
-            <div className="flex-1 h-px bg-neutral-200" />
+        <section className="mb-16">
+          <div className="flex items-baseline gap-4 mb-6">
+            <h2 className="text-3xl font-black text-black">최신 작품</h2>
+            <div className="flex-1 h-px bg-black" />
           </div>
           {initialLoading ? (
             <SkeletonGrid />
@@ -167,11 +165,10 @@ export default function ExplorePage() {
 
         {/* 응원받는 작가 — 에디토리얼 리스트 */}
         {giftedAuthors.length > 0 && (
-          <section className="mb-24">
-            <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-400 mb-2">Authors</p>
-            <div className="flex items-baseline gap-4 mb-8">
-              <h2 className="text-2xl font-bold text-black">응원받는 작가</h2>
-              <div className="flex-1 h-px bg-neutral-200" />
+          <section className="mb-16">
+            <div className="flex items-baseline gap-4 mb-2">
+              <h2 className="text-3xl font-black text-black">응원받는 작가</h2>
+              <div className="flex-1 h-px bg-black" />
             </div>
             <div>
               {giftedAuthors.map((author, i) => (
@@ -199,11 +196,6 @@ export default function ExplorePage() {
             </div>
           </section>
         )}
-        {/* 푸터 — 브랜드 마감 */}
-        <footer className="border-t border-neutral-200 pt-12 pb-8 text-center">
-          <p className="font-ci text-sm tracking-[0.15em] text-neutral-300 uppercase">Grimoire</p>
-          <p className="text-[10px] text-neutral-400 mt-2">작가별 맞춤 소설 퍼블리싱 플랫폼</p>
-        </footer>
       </main>
     </div>
   )
@@ -236,20 +228,14 @@ function SearchSection() {
   }, [])
 
   return (
-    <div className="mb-24">
-      {/* 브랜드 히어로 */}
-      <div className="mb-12">
-        <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-400 mb-6">Discover Stories</p>
-        <h1 className="text-5xl md:text-8xl font-light text-black leading-[0.95] mb-4 font-ci tracking-[0.02em]">
-          Grimoire
-        </h1>
-        <p className="text-lg md:text-xl text-neutral-500 font-light max-w-lg leading-relaxed">
-          작가별 맞춤 공간에서<br className="md:hidden" /> 이야기를 만나보세요
-        </p>
-      </div>
+    <div className="mb-16">
+      <p className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-4">DISCOVER STORIES</p>
+      <h1 className="text-5xl md:text-7xl font-black text-black leading-none mb-6">
+        작가와 작품을<br />탐색하세요
+      </h1>
 
       {/* 검색 — 밑줄 인풋 */}
-      <div className="flex items-center gap-4 border-b border-neutral-300 pb-2">
+      <div className="flex items-center gap-4 border-b-2 border-black pb-2 mt-8">
         <input
           type="text"
           value={query}

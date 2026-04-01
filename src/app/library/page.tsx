@@ -60,11 +60,11 @@ export default function LibraryPage() {
     <div className="min-h-screen bg-white">
       <PlatformNav />
 
-      <main className="max-w-6xl mx-auto px-6 md:px-12 py-16 md:py-24">
+      <main className="max-w-5xl mx-auto px-6 py-12">
         {/* 헤더 — 에디토리얼 */}
-        <div className="mb-12">
-          <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-400 mb-4">Your Library</p>
-          <h1 className="text-4xl md:text-6xl font-light text-black leading-tight font-ci tracking-[0.02em]">내 서재</h1>
+        <div className="mb-8">
+          <p className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-3">YOUR LIBRARY</p>
+          <h1 className="text-4xl md:text-5xl font-black text-black leading-tight">내 서재</h1>
         </div>
 
         {/* 탭 */}

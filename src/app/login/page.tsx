@@ -34,8 +34,8 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
       <div className="w-full max-w-md">
-        <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-400 text-center mb-6">Return to Your Space</p>
-        <h1 className="text-6xl md:text-7xl font-light text-black text-center mb-12 font-ci tracking-[0.05em]">
+        <p className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 text-center mb-4">RETURN TO YOUR SPACE</p>
+        <h1 className="text-5xl font-light uppercase text-black text-center mb-10 font-ci tracking-[0.2em]">
           <Link href="/" className="hover:text-[#e53e3e] transition">Grimoire</Link>
         </h1>
 
