@@ -106,11 +106,11 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-white">
       <PlatformNav />
 
-      <main className="max-w-5xl mx-auto px-6 py-12">
+      <main className="max-w-6xl mx-auto px-6 md:px-12 py-16 md:py-24">
         {/* 환영 — 에디토리얼 */}
-        <div className="mb-12">
-          <p className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-3">YOUR SPACE</p>
-          <h1 className="text-4xl md:text-5xl font-black text-black leading-tight mb-3">
+        <div className="mb-16">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-400 mb-4">Your Space</p>
+          <h1 className="text-4xl md:text-6xl font-light text-black leading-tight mb-3 font-ci tracking-[0.02em]">
             {user.name}
           </h1>
           <Link href={`/${user.slug}`} className="text-sm text-[#e53e3e] hover:underline" target="_blank">
@@ -119,10 +119,11 @@ export default function DashboardPage() {
         </div>
 
         {/* 빠른 액션 — 넘버링 리스트 */}
-        <section className="mb-12">
-          <div className="flex items-baseline gap-4 mb-2">
-            <h2 className="text-2xl font-black text-black">빠른 액션</h2>
-            <div className="flex-1 h-px bg-black" />
+        <section className="mb-16">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-neutral-400 mb-2">Quick Actions</p>
+          <div className="flex items-baseline gap-4 mb-6">
+            <h2 className="text-2xl font-bold text-black">빠른 액션</h2>
+            <div className="flex-1 h-px bg-neutral-200" />
           </div>
           {quickActions.map((action, i) => (
             <Link
