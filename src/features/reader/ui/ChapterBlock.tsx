@@ -78,7 +78,7 @@ function ReviewItem({
       className={`pt-5 ${isLast ? "pb-0" : "pb-5 border-b border-g-border"}`}
     >
       <div
-        className={`text-[12px] tracking-[0.1em] mb-2 font-g-sans ${
+        className={`text-[12px] tracking-normal-g mb-2 font-g-sans ${
           isProfessor ? "text-g-text-dim" : "text-g-accent2"
         }`}
       >
@@ -101,7 +101,7 @@ function SingleBlock({ block }: { block: Block }) {
     case "chapter":
       return (
         <section className="mt-14">
-          <SectionLabel className="text-[19px] text-g-text-dim mb-1">{block.num}</SectionLabel>
+          <SectionLabel className="text-label text-g-text-dim mb-1">{block.num}</SectionLabel>
           <div className="text-[1.1rem] font-medium text-g-accent2 mb-7 italic">
             {block.title}
           </div>
@@ -147,7 +147,7 @@ function SingleBlock({ block }: { block: Block }) {
 
     case "epilogue":
       return (
-        <SectionLabel className="text-[19px] text-g-text-dim mb-7 mt-14">에필로그</SectionLabel>
+        <SectionLabel className="text-label text-g-text-dim mb-7 mt-14">에필로그</SectionLabel>
       )
 
     case "reviews-wrap":

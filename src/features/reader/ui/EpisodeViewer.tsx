@@ -223,7 +223,7 @@ export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", de
     <div className="mx-auto px-4 md:px-8 pb-16 md:pb-32" style={{ lineHeight: 'var(--g-line-height, 1.9)' }}>
       {/* 히어로 */}
       <header className={`${spacing.pt} ${spacing.pb} border-b border-g-border`}>
-        <div className="font-g-sans text-[19px] tracking-[0.25em] text-g-text-muted uppercase mb-3 md:mb-5 min-h-[1em]">
+        <div className="font-g-sans text-caption tracking-wide-g text-g-text-muted uppercase mb-3 md:mb-5 min-h-[1em]">
           {showImmediately || animationType !== "typing" ? labelText : stage >= 1 && (
             <TypeWriter
               text={labelText}
@@ -248,7 +248,7 @@ export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", de
           <motion.div
             className={meta.description
               ? "text-sm text-g-text-muted leading-relaxed mt-2 max-w-prose"
-              : "font-g-sans text-[19px] text-g-text-muted tracking-[0.1em]"
+              : "font-g-sans text-caption text-g-text-muted tracking-normal-g"
             }
             initial={showImmediately ? false : { opacity: 0 }}
             animate={{ opacity: stage >= 3 ? 1 : 0 }}
@@ -344,7 +344,7 @@ export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", de
             {tagline}
           </p>
         )}
-        <p className="text-[0.8rem] text-g-text-dim mt-4 not-italic font-g-sans tracking-[0.1em]">
+        <p className="text-[0.8rem] text-g-text-dim mt-4 not-italic font-g-sans tracking-normal-g">
           {authorName}
         </p>
       </motion.footer>

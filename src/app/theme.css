@@ -30,11 +30,29 @@ body {
   --color-g-border: var(--g-border);
 }
 
-/* 폰트 패밀리 — turbopack 호환을 위해 @layer utilities 사용 */
+/*
+ * 비색상 유틸리티 — @layer utilities (캐스케이드 = Tailwind 유틸리티와 동일)
+ * 값은 ThemeProvider CSS 변수 참조 + fallback. 매직넘버 없음.
+ * 색상: @theme inline (opacity modifier 필수)
+ * 비색상: @layer utilities (네임스페이스 함정 없음)
+ */
 @layer utilities {
+  /* 폰트 패밀리 — turbopack 호환 */
   .font-g-serif { font-family: var(--g-serif, Georgia, 'Batang', serif); }
   .font-g-sans  { font-family: var(--g-sans, system-ui, -apple-system, sans-serif); }
   .font-ci      { font-family: var(--font-logo), 'EB Garamond', Georgia, serif; }
+
+  /* 텍스트 크기 */
+  .text-caption { font-size: var(--g-caption-size, 19px); }
+  .text-label   { font-size: var(--g-label-size, 19px); }
+
+  /* 자간 */
+  .tracking-wide-g   { letter-spacing: var(--g-label-letter-spacing, 0.25em); }
+  .tracking-normal-g { letter-spacing: var(--g-tracking-normal, 0.1em); }
+  .tracking-tight-g  { letter-spacing: var(--g-tracking-tight, 0.05em); }
+
+  /* 둥글기 */
+  .pill-radius { border-radius: var(--g-tab-pill-radius, 20px); }
 }
 
 :root {

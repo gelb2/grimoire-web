@@ -11,7 +11,7 @@ export function PrefaceViewer({ paragraphs, lastLine }: PrefaceViewerProps) {
     <div className="mx-auto px-4 md:px-8 pt-16 md:pt-24 pb-16 md:pb-32">
       {/* 헤더 */}
       <header className="mb-10 md:mb-16">
-        <SectionLabel className="text-[19px] text-g-text-dim mb-4">
+        <SectionLabel className="text-label text-g-text-dim mb-4">
           Preface · 일러두기
         </SectionLabel>
         <div className="w-10 h-px bg-g-accent opacity-50" />

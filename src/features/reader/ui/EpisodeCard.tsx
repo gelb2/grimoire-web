@@ -51,7 +51,7 @@ export function EpisodeCard({ content, workSlug }: { content: ContentMeta; workS
 
       {/* 번호 레이블 — num/orderNum 모두 없으면 제목만 표시 */}
       {displayNum && (
-        <SectionLabel className="text-[19px] text-g-text-dim mb-3">
+        <SectionLabel className="text-label text-g-text-dim mb-3">
           {isBonus ? displayNum : `Episode ${displayNum}`}
         </SectionLabel>
       )}
@@ -63,7 +63,7 @@ export function EpisodeCard({ content, workSlug }: { content: ContentMeta; workS
 
       {/* 영문 부제 */}
       {content.subtitle && (
-        <div className="font-g-sans text-[19px] text-g-text-muted mb-4 md:mb-6">
+        <div className="font-g-sans text-caption text-g-text-muted mb-4 md:mb-6">
           {content.subtitle}
         </div>
       )}
@@ -76,7 +76,7 @@ export function EpisodeCard({ content, workSlug }: { content: ContentMeta; workS
       )}
 
       {/* CTA — 테마에서 텍스트 결정 */}
-      <div className="font-g-sans text-[19px] tracking-[0.1em] text-g-accent2 uppercase">
+      <div className="font-g-sans text-caption tracking-normal-g text-g-accent2 uppercase">
         {ctaText}
       </div>
 

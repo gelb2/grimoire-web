@@ -84,7 +84,7 @@ export function SeriesLanding({
       {heroStyle === "minimal" && (
         <header className="text-center mb-12 md:mb-20 pb-10 md:pb-16 border-b border-g-border">
           {decorations.headerSubtitle && (
-            <SectionLabel className="text-[19px] text-g-text-muted mb-4 md:mb-6">
+            <SectionLabel className="text-label text-g-text-muted mb-4 md:mb-6">
               {decorations.headerSubtitle}
             </SectionLabel>
           )}
@@ -98,7 +98,7 @@ export function SeriesLanding({
           </h1>
 
           {decorations.footerText && (
-            <div className="font-g-sans text-[12px] text-g-text-dim tracking-[0.1em]">
+            <div className="font-g-sans text-[12px] text-g-text-dim tracking-normal-g">
               {decorations.footerText}
             </div>
           )}
@@ -118,7 +118,7 @@ export function SeriesLanding({
 
       {/* 에피소드 그리드 */}
       <section className="mb-12 md:mb-16">
-        <SectionLabel className="text-[19px] text-g-text-dim mb-4 md:mb-6">에피소드</SectionLabel>
+        <SectionLabel className="text-label text-g-text-dim mb-4 md:mb-6">에피소드</SectionLabel>
         <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4 md:gap-6">
           {episodes.map((ep) => (
             <EpisodeCard key={ep.slug} content={ep} workSlug={workSlug} />
@@ -129,7 +129,7 @@ export function SeriesLanding({
       {/* 번외 섹션 */}
       {bonuses.length > 0 && (
         <section className="mb-12 md:mb-16">
-          <SectionLabel className="text-[19px] text-g-text-dim mb-4 md:mb-6">번외 에피소드</SectionLabel>
+          <SectionLabel className="text-label text-g-text-dim mb-4 md:mb-6">번외 에피소드</SectionLabel>
           <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4 md:gap-6">
             {bonuses.map((b) => (
               <EpisodeCard key={b.slug} content={b} workSlug={workSlug} />
