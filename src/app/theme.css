@@ -43,6 +43,7 @@ body {
   .font-ci      { font-family: var(--font-logo), 'EB Garamond', Georgia, serif; }
 
   /* 텍스트 크기 — fs- 접두사 (text-와 twMerge 충돌 방지) */
+  .fs-body    { font-size: var(--g-body-size, 19px); }
   .fs-caption { font-size: var(--g-caption-size, 19px); }
   .fs-label   { font-size: var(--g-label-size, 19px); }
 
