@@ -1,5 +1,52 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.16.0] - 2026-04-02
+
+### 비로그인 좋아요/댓글 지원 (디시인사이드 스타일)
+
+#### Added
+- EpisodeFooter 비로그인 좋아요 지원 (쿠키 기반, 취소 불가)
+- 비로그인 댓글 작성 UI (닉네임 + 비밀번호 필드)
+- 익명 댓글 삭제 모달 (비밀번호 입력)
+- 닉네임 기억하기 (localStorage)
+- api.getLikeStatus() 메서드 추가
+
+#### Changed
+- api.createComment() — anonymous 파라미터 추가
+- api.deleteComment() — password 파라미터 추가
+- CommentData 타입: authorId nullable, nickname 필드 추가
+- 댓글 표시: 익명은 닉네임 + "(익명)" 라벨
+- docs/api-contract.md, docs/data-model.md 동기화 (server → web)
+
+---
+
+## [0.15.0] - 2026-04-01
+
+### 테마 CSS 리팩터링 + 프리셋 통일 + 런타임 에러 수정
+
+#### Changed
+- globals.css 제거 → theme.css 도입 (비색상 디자인토큰 21개 삭제)
+- `@layer utilities` 토큰 클래스 도입 (fs-caption, fs-label, tracking-*-g, pill-radius, font-g-* 등 매직넘버 제거)
+- 백엔드-프론트 테마 정책 통일 (resolveTheme 제거, data.theme 직접 사용)
+- WorkCard 하드코딩 색상 → 테마 변수로 교체
+- 프리셋 데이터 구조 통일 (9개 프리셋 전체에 `...defaultUI` 추가)
+- twMerge 충돌 해결 (`text-` 접두사 → `fs-` 접두사로 변경하여 Tailwind 색상 클래스와 분리)
+
+#### Fixed
+- 이광수 에피소드 blocks.map 런타임 에러 수정
+
+---
+
+## [0.14.0] - 2026-03-31
+
+### 에피소드 상태 관리 UI + 공유 링크
+
+#### Added
+- 대시보드: 작품별 에피소드 목록 펼침 (상태 배지 + 상태 변경 드롭다운)
+- 대시보드: 공유 링크 생성 모달 (12h/24h/48h/무한 만료 선택 → 링크 복사)
+- `/shared/[token]` — 공유 에피소드 뷰어 (비로그인 접근 가능, 만료 시 에러 표시)
+- api.ts: updateEpisodeStatus, createShareLink, getSharedEpisode 메서드
+
 ## [0.13.0] - 2026-03-31
 
 ### Explore 버그 수정 + Analytics 대시보드 + 테스트 보강 + 배포 복구

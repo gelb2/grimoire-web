@@ -69,6 +69,9 @@
 | raw_md | text | - | 원본 마크다운 |
 | view_count | integer | default(0) | 조회수 |
 | source_format | text | default("markdown") | 원고 포맷 (markdown/txt/docx) |
+| status | text | default("upload") | 상태 (upload/public/nonPublic/shared) |
+| shared_token | text (nullable) | unique | 공유 링크 토큰 |
+| shared_expire_at | timestamptz (nullable) | - | 공유 링크 만료 시각 |
 | created_at | timestamptz | default(now()) | 생성일 |
 
 ### credit_logs
@@ -124,8 +127,10 @@
 | 컬럼 | 타입 | 제약 | 설명 |
 |------|------|------|------|
 | id | uuid | PK | 식별자 |
-| author_id | text | unique(author_id, episode_id) | 독자(작가) ID |
-| episode_id | text | unique(author_id, episode_id) | 에피소드 ID |
+| author_id | text (nullable) | unique(author_id, episode_id) | 독자 ID (null=익명) |
+| episode_id | text | index | 에피소드 ID |
+| ip_address | text (nullable) | index(ip+cookie+episode) | 익명 좋아요 IP |
+| cookie_id | text (nullable) | index(ip+cookie+episode) | 익명 브라우저 식별 |
 | created_at | timestamptz | default(now()) | 좋아요 생성일 |
 
 ### subscriptions
@@ -142,10 +147,13 @@
 | 컬럼 | 타입 | 제약 | 설명 |
 |------|------|------|------|
 | id | uuid | PK | 식별자 |
-| author_id | text | - | 작성자 ID |
-| episode_id | text | - | 에피소드 ID |
+| author_id | text (nullable) | - | 작성자 ID (null=익명) |
+| episode_id | text | index(episode+created) | 에피소드 ID |
 | content | text | - | 댓글 내용 (1~500자) |
-| parent_id | uuid (nullable) | FK→comments | 부모 댓글 (대댓글용) |
+| nickname | text (nullable) | - | 익명 댓글 닉네임 |
+| password_hash | text (nullable) | - | 익명 댓글 비밀번호 (bcrypt) |
+| ip_address | text (nullable) | - | 익명 댓글 IP |
+| parent_id | uuid (nullable) | FK→comments, index | 부모 댓글 (대댓글용) |
 | created_at | timestamptz | default(now()) | 작성일 |
 
 ### payments
