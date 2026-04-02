@@ -1,5 +1,25 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.16.0] - 2026-04-02
+
+### 비로그인 좋아요/댓글 지원 (디시인사이드 스타일)
+
+#### Added
+- EpisodeFooter 비로그인 좋아요 지원 (쿠키 기반, 취소 불가)
+- 비로그인 댓글 작성 UI (닉네임 + 비밀번호 필드)
+- 익명 댓글 삭제 모달 (비밀번호 입력)
+- 닉네임 기억하기 (localStorage)
+- api.getLikeStatus() 메서드 추가
+
+#### Changed
+- api.createComment() — anonymous 파라미터 추가
+- api.deleteComment() — password 파라미터 추가
+- CommentData 타입: authorId nullable, nickname 필드 추가
+- 댓글 표시: 익명은 닉네임 + "(익명)" 라벨
+- docs/api-contract.md, docs/data-model.md 동기화 (server → web)
+
+---
+
 ## [0.15.0] - 2026-04-01
 
 ### 테마 CSS 리팩터링 + 프리셋 통일 + 런타임 에러 수정

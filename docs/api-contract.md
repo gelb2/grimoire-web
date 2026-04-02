@@ -82,6 +82,8 @@
 | POST | `/api/works/:workId/episodes` | 에피소드 생성 | JWT |
 | DELETE | `/api/episodes/:id` | 에피소드 삭제 | JWT |
 | PUT | `/api/works/:id/cover` | 커버 이미지 업로드 | JWT |
+| PATCH | `/api/works/:workId/episodes/:episodeId/status` | 에피소드 상태 변경 | JWT |
+| POST | `/api/works/:workId/episodes/:episodeId/share` | 공유 링크 생성 | JWT |
 
 ### Author (공개)
 
@@ -95,21 +97,23 @@
 
 | Method | Path | 용도 | 인증 |
 |--------|------|------|------|
-| GET | `/api/works/:authorSlug/:workSlug` | 작품 정보 + 에피소드 목록 | - |
-| GET | `/api/episodes/:authorSlug/:workSlug/:episodeSlug` | 에피소드 본문 (Block[] 포함) | - |
+| GET | `/api/works/:authorSlug/:workSlug` | 작품 정보 + 에피소드 목록 | 선택적 (JWT 시 upload 포함) |
+| GET | `/api/episodes/:authorSlug/:workSlug/:episodeSlug` | 에피소드 본문 (Block[] 포함) | 선택적 (status별 접근 제어) |
+| GET | `/api/shared/:token` | 공유 링크로 에피소드 접근 | - |
 
 ### Social
 
 | Method | Path | 용도 | 인증 |
 |--------|------|------|------|
-| POST | `/api/social/likes/:episodeId` | 좋아요 토글 | JWT |
+| POST | `/api/social/likes/:episodeId` | 좋아요 토글/생성 | Optional (비로그인 가능) |
+| GET | `/api/social/likes/:episodeId/status` | 좋아요 상태+수 조회 | Optional (비로그인 가능) |
 | GET | `/api/social/likes/:episodeId/count` | 좋아요 수 조회 | - |
 | POST | `/api/social/subscriptions/:authorId` | 구독 토글 | JWT |
 | GET | `/api/social/subscriptions` | 내 구독 목록 | JWT |
 | GET | `/api/social/subscriptions/:authorId/count` | 구독자 수 조회 | - |
-| POST | `/api/social/comments/:episodeId` | 댓글 작성 | JWT |
+| POST | `/api/social/comments/:episodeId` | 댓글 작성 | Optional (비로그인: 닉네임+비번) |
 | GET | `/api/social/comments/:episodeId` | 댓글 목록 조회 | - |
-| DELETE | `/api/social/comments/:commentId` | 댓글 삭제 (본인만) | JWT |
+| DELETE | `/api/social/comments/:commentId` | 댓글 삭제 | Optional (비로그인: 비번) |
 | POST | `/api/social/gift/:authorSlug` | 크레딧 선물 | JWT |
 
 ### Reader
@@ -348,6 +352,44 @@ Response 200: { "deleted": true }
 Error 403: 본인 에피소드 아님
 ```
 
+### PATCH /api/works/:workId/episodes/:episodeId/status
+
+에피소드 상태 변경 (작가 전용).
+
+```
+Headers: Authorization: Bearer <token>
+Body: { "status": "upload" | "public" | "nonPublic" }
+Response 200: Episode (status 반영)
+Error 400: shared 상태로 직접 변경 불가 (createShareLink 사용)
+Error 403: 본인 에피소드 아님
+```
+
+### POST /api/works/:workId/episodes/:episodeId/share
+
+공유 링크 생성 (작가 전용). 에피소드 상태가 shared로 변경됨.
+
+```
+Headers: Authorization: Bearer <token>
+Body: { "expireIn": "12h" | "24h" | "48h" | "never" }
+Response 200:
+{
+  "sharedToken": "hex-string",
+  "sharedUrl": "https://grimoire-book.com/shared/{token}",
+  "expireAt": "2026-04-01T00:00:00.000Z" | null
+}
+Error 403: 본인 에피소드 아님
+```
+
+### GET /api/shared/:token
+
+공유 링크로 에피소드 접근 (비로그인 가능).
+
+```
+Response 200: Episode (rawMd, workId, sharedToken, sharedExpireAt 제외)
+Error 403: 공유 링크 만료 — "이 공유 링크는 만료되었습니다. 로그인 하십시오."
+Error 404: 존재하지 않는 공유 토큰
+```
+
 ### GET /api/authors/:slug
 
 작가 공간 데이터 (테마 + 작품 목록).
@@ -384,9 +426,26 @@ Error 404: 에피소드 없음
 
 ### POST /api/social/likes/:episodeId
 
+좋아요 토글/생성. 인증 선택적 (OptionalAuthGuard).
+
 ```
+# 로그인 사용자: 토글 (있으면 취소, 없으면 생성)
 Headers: Authorization: Bearer <token>
-Response 200: { "liked": true } 또는 { "liked": false }
+Response 200: { "liked": true/false, "likeCount": 42 }
+
+# 비로그인 사용자: 생성만 (취소 불가, IP+쿠키로 중복 방지)
+Response 200: { "liked": true, "likeCount": 43 }
+Set-Cookie: grimoire_anon={uuid} (최초 1회)
+Error 409: 이미 좋아요를 눌렀습니다
+```
+
+### GET /api/social/likes/:episodeId/status
+
+좋아요 상태 + 수 조회. 인증 선택적.
+
+```
+# 로그인: authorId로 확인, 비로그인: IP+쿠키로 확인
+Response 200: { "liked": true/false, "likeCount": 42 }
 ```
 
 ### GET /api/social/likes/:episodeId/count
@@ -417,24 +476,40 @@ Response 200: { "count": 128 }
 
 ### POST /api/social/comments/:episodeId
 
+댓글 작성. 인증 선택적 (OptionalAuthGuard).
+
 ```
+# 로그인 사용자
 Headers: Authorization: Bearer <token>
-Request: { "content": "댓글 내용" }
+Request: { "content": "댓글 내용", "parentId?": "parent-id" }
 Response 201: Comment
+
+# 비로그인 사용자 (닉네임 + 비밀번호 필수)
+Request: { "content": "댓글 내용", "nickname": "익명이", "password": "1234", "parentId?": "parent-id" }
+Response 201: Comment (nickname 포함, authorId: null)
 ```
 
 ### GET /api/social/comments/:episodeId
 
 ```
 Response 200: [Comment]
+# Comment = { id, authorId (null=익명), episodeId, content, nickname?, parentId?, createdAt }
 ```
 
 ### DELETE /api/social/comments/:commentId
 
+댓글 삭제. 인증 선택적.
+
 ```
+# 로그인 사용자: authorId 확인
 Headers: Authorization: Bearer <token>
 Response 200: { "deleted": true }
 Error 403: 본인 댓글 아님
+
+# 비로그인 사용자: 비밀번호 확인
+Request: { "password": "1234" }
+Response 200: { "deleted": true }
+Error 403: 비밀번호 불일치
 ```
 
 ### POST /api/reader/bookmarks/:episodeId
