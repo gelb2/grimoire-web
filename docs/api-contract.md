@@ -105,14 +105,15 @@
 
 | Method | Path | 용도 | 인증 |
 |--------|------|------|------|
-| POST | `/api/social/likes/:episodeId` | 좋아요 토글 | JWT |
+| POST | `/api/social/likes/:episodeId` | 좋아요 토글/생성 | Optional (비로그인 가능) |
+| GET | `/api/social/likes/:episodeId/status` | 좋아요 상태+수 조회 | Optional (비로그인 가능) |
 | GET | `/api/social/likes/:episodeId/count` | 좋아요 수 조회 | - |
 | POST | `/api/social/subscriptions/:authorId` | 구독 토글 | JWT |
 | GET | `/api/social/subscriptions` | 내 구독 목록 | JWT |
 | GET | `/api/social/subscriptions/:authorId/count` | 구독자 수 조회 | - |
-| POST | `/api/social/comments/:episodeId` | 댓글 작성 | JWT |
+| POST | `/api/social/comments/:episodeId` | 댓글 작성 | Optional (비로그인: 닉네임+비번) |
 | GET | `/api/social/comments/:episodeId` | 댓글 목록 조회 | - |
-| DELETE | `/api/social/comments/:commentId` | 댓글 삭제 (본인만) | JWT |
+| DELETE | `/api/social/comments/:commentId` | 댓글 삭제 | Optional (비로그인: 비번) |
 | POST | `/api/social/gift/:authorSlug` | 크레딧 선물 | JWT |
 
 ### Reader
@@ -425,9 +426,26 @@ Error 404: 에피소드 없음
 
 ### POST /api/social/likes/:episodeId
 
+좋아요 토글/생성. 인증 선택적 (OptionalAuthGuard).
+
 ```
+# 로그인 사용자: 토글 (있으면 취소, 없으면 생성)
 Headers: Authorization: Bearer <token>
-Response 200: { "liked": true } 또는 { "liked": false }
+Response 200: { "liked": true/false, "likeCount": 42 }
+
+# 비로그인 사용자: 생성만 (취소 불가, IP+쿠키로 중복 방지)
+Response 200: { "liked": true, "likeCount": 43 }
+Set-Cookie: grimoire_anon={uuid} (최초 1회)
+Error 409: 이미 좋아요를 눌렀습니다
+```
+
+### GET /api/social/likes/:episodeId/status
+
+좋아요 상태 + 수 조회. 인증 선택적.
+
+```
+# 로그인: authorId로 확인, 비로그인: IP+쿠키로 확인
+Response 200: { "liked": true/false, "likeCount": 42 }
 ```
 
 ### GET /api/social/likes/:episodeId/count
@@ -458,24 +476,40 @@ Response 200: { "count": 128 }
 
 ### POST /api/social/comments/:episodeId
 
+댓글 작성. 인증 선택적 (OptionalAuthGuard).
+
 ```
+# 로그인 사용자
 Headers: Authorization: Bearer <token>
-Request: { "content": "댓글 내용" }
+Request: { "content": "댓글 내용", "parentId?": "parent-id" }
 Response 201: Comment
+
+# 비로그인 사용자 (닉네임 + 비밀번호 필수)
+Request: { "content": "댓글 내용", "nickname": "익명이", "password": "1234", "parentId?": "parent-id" }
+Response 201: Comment (nickname 포함, authorId: null)
 ```
 
 ### GET /api/social/comments/:episodeId
 
 ```
 Response 200: [Comment]
+# Comment = { id, authorId (null=익명), episodeId, content, nickname?, parentId?, createdAt }
 ```
 
 ### DELETE /api/social/comments/:commentId
 
+댓글 삭제. 인증 선택적.
+
 ```
+# 로그인 사용자: authorId 확인
 Headers: Authorization: Bearer <token>
 Response 200: { "deleted": true }
 Error 403: 본인 댓글 아님
+
+# 비로그인 사용자: 비밀번호 확인
+Request: { "password": "1234" }
+Response 200: { "deleted": true }
+Error 403: 비밀번호 불일치
 ```
 
 ### POST /api/reader/bookmarks/:episodeId

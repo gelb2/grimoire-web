@@ -259,6 +259,9 @@ class ApiClient {
   async toggleLike(episodeId: string) {
     return this.fetch<{ liked: boolean; likeCount: number }>(`/social/likes/${episodeId}`, { method: 'POST' })
   }
+  async getLikeStatus(episodeId: string) {
+    return this.fetch<{ liked: boolean; likeCount: number }>(`/social/likes/${episodeId}/status`)
+  }
   async getLikeCount(episodeId: string) {
     return this.fetch<{ count: number }>(`/social/likes/${episodeId}/count`)
   }
@@ -275,16 +278,25 @@ class ApiClient {
   }
 
   // 댓글
-  async createComment(episodeId: string, content: string, parentId?: string) {
-    const body: { content: string; parentId?: string } = { content }
+  async createComment(episodeId: string, content: string, parentId?: string, anonymous?: { nickname: string; password: string }, honeypot?: string) {
+    const body: { content: string; parentId?: string; nickname?: string; password?: string; website?: string } = { content }
     if (parentId) body.parentId = parentId
+    if (anonymous) {
+      body.nickname = anonymous.nickname
+      body.password = anonymous.password
+    }
+    if (honeypot) body.website = honeypot
     return this.fetch<any>(`/social/comments/${episodeId}`, { method: 'POST', body: JSON.stringify(body) })
   }
   async getComments(episodeId: string) {
     return this.fetch<any[]>(`/social/comments/${episodeId}`)
   }
-  async deleteComment(commentId: string) {
-    return this.fetch<void>(`/social/comments/${commentId}`, { method: 'DELETE' })
+  async deleteComment(commentId: string, password?: string) {
+    const options: RequestInit = { method: 'DELETE' }
+    if (password) {
+      options.body = JSON.stringify({ password })
+    }
+    return this.fetch<void>(`/social/comments/${commentId}`, options)
   }
 
   // 크레딧 선물
@@ -333,16 +345,6 @@ class ApiClient {
     return res.json() as Promise<{ coverImage: string }>
   }
 
-  // 관리자
-  async getAdminStats() {
-    return this.fetch<{ totalAuthors: number; totalWorks: number; totalEpisodes: number; totalCreditsConsumed: number }>('/admin/stats')
-  }
-  async adminGrantCredits(authorId: string, amount: number, reason: string) {
-    return this.fetch<{ credits: number }>('/admin/credits', {
-      method: 'POST',
-      body: JSON.stringify({ authorId, amount, reason }),
-    })
-  }
 }
 
 export const api = new ApiClient()

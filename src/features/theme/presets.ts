@@ -47,6 +47,7 @@ export interface AuthorTheme {
   titleWeight?: "light" | "normal" | "bold" | "black"  // 제목 두께 (default: "bold")
   letterSpacing?: "tight" | "normal" | "wide"     // 자간 (default: "normal")
   bodyLineHeight?: "compact" | "normal" | "relaxed"  // 본문 행간 (default: "relaxed")
+  bodySize?: "compact" | "normal" | "large"        // 본문 크기 (default: "normal" = 19px)
   contentWidth?: "narrow" | "normal" | "wide"     // 읽기 영역 폭 (default: "normal")
 
   // ── Phase 2: 레이아웃 프리셋 (레디맥 리서치 기반) ──
@@ -95,6 +96,7 @@ const defaultTypography = {
   titleWeight: "bold" as const,
   letterSpacing: "normal" as const,
   bodyLineHeight: "relaxed" as const,
+  bodySize: "normal" as const,
   contentWidth: "normal" as const,
   heroStyle: "minimal" as const,
 }
