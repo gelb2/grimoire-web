@@ -29,6 +29,7 @@ const titleWeightMap = { light: "300", normal: "400", bold: "700", black: "900" 
 const letterSpacingMap = { tight: "-0.02em", normal: "0", wide: "0.1em" }
 const lineHeightMap = { compact: "1.5", normal: "1.7", relaxed: "1.9" }
 const contentWidthMap = { narrow: "600px", normal: "700px", wide: "860px" }
+const bodySizeMap = { compact: "16px", normal: "19px", large: "21px" }
 
 export function ThemeProvider({ theme, children }: ThemeProviderProps) {
   const serifFont = fontFamilyMap[theme.fontBody]
@@ -58,6 +59,7 @@ export function ThemeProvider({ theme, children }: ThemeProviderProps) {
             "--g-letter-spacing": letterSpacingMap[theme.letterSpacing ?? "normal"],
             "--g-line-height": lineHeightMap[theme.bodyLineHeight ?? "relaxed"],
             "--g-content-width": contentWidthMap[theme.contentWidth ?? "normal"],
+            "--g-body-size": bodySizeMap[theme.bodySize ?? "normal"],
             // fontHeading — 제목용 폰트 (fontBody와 독립)
             "--g-heading-font": fontFamilyMap[theme.fontHeading ?? "serif"],
             // 카드/네비
