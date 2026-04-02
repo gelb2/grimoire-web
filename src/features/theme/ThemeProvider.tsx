@@ -37,7 +37,7 @@ export function ThemeProvider({ theme, children }: ThemeProviderProps) {
   return (
     <ThemeContext.Provider value={theme}>
       <div
-        className="min-h-dvh font-g-serif text-base md:text-[19px] leading-[1.75] md:leading-[1.85]"
+        className="min-h-dvh font-g-serif text-base fs-body-md leading-[1.75] md:leading-[1.85]"
         style={
           {
             "--g-bg": theme.bgPrimary,

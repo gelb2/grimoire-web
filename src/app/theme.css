@@ -55,6 +55,13 @@ body {
   .pill-radius { border-radius: var(--g-tab-pill-radius, 20px); }
 }
 
+/* 본문 크기 — md 반응형 미디어쿼리 직접 정의 (@layer utilities는 md: variant 미지원) */
+@media (min-width: 768px) {
+  @layer utilities {
+    .fs-body-md { font-size: var(--g-body-size, 19px); }
+  }
+}
+
 :root {
   --background: #ffffff;
   --foreground: #111111;
