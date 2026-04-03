@@ -44,6 +44,7 @@ jobs:
           IMAGE=grimoireacr.azurecr.io/grimoire-web
           docker build --platform linux/amd64 \
             --build-arg NEXT_PUBLIC_APP_ENV=development \
+            --build-arg NEXT_PUBLIC_RECAPTCHA_SITE_KEY=6Ldxb6QsAAAABTyABs61_Bzhi6iwrAQiqRbbXaJ \
             -t $IMAGE:dev-${{ github.sha }} \
             -t $IMAGE:dev-latest \
             .
