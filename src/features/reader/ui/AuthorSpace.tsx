@@ -19,15 +19,24 @@ import type { AuthorData, Work } from './layouts'
 
 interface AuthorSpaceProps {
   authorSlug: string
+  /** 테마 에디터 프리뷰용: 데이터를 직접 주입하면 API 호출을 건너뛴다 */
+  previewData?: AuthorData
 }
 
-export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
+export function AuthorSpace({ authorSlug, previewData }: AuthorSpaceProps) {
   const theme = useTheme()
-  const [author, setAuthor] = useState<AuthorData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [author, setAuthor] = useState<AuthorData | null>(previewData ?? null)
+  const [loading, setLoading] = useState(!previewData)
   const [error, setError] = useState(false)
 
   useEffect(() => {
+    // 프리뷰 모드: API 호출 건너뛰기
+    if (previewData) {
+      setAuthor(previewData)
+      setLoading(false)
+      return
+    }
+
     let mounted = true
     setLoading(true)
     setError(false)
@@ -69,7 +78,7 @@ export function AuthorSpace({ authorSlug }: AuthorSpaceProps) {
       })
 
     return () => { mounted = false }
-  }, [authorSlug])
+  }, [authorSlug, previewData])
 
   // 로딩 스켈레톤
   if (loading) {
