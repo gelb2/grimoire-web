@@ -126,13 +126,23 @@ async function loadAuthorInfo(authorSlug: string): Promise<AuthorInfo> {
           })
           if (workRes.ok) {
             const workData = await workRes.json()
-            const rawEpisodes = workData.episodes ?? workData.work?.episodes ?? []
-            episodes = rawEpisodes.map((ep: { slug: string; orderNum?: number; type?: string }) => {
+            const rawEpisodes: { slug: string; orderNum?: number; type?: string }[] =
+              workData.episodes ?? workData.work?.episodes ?? []
+            // orderNum 기준 정렬 후 탭 번호 생성
+            const sorted = [...rawEpisodes].sort(
+              (a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0),
+            )
+            episodes = sorted.map((ep, idx) => {
               const epType = ep.type ?? 'episode'
               let num: string | undefined
               if (epType === 'episode') {
-                const match = ep.slug.match(/\d+/)
-                num = match ? match[0].padStart(2, '0') : undefined
+                // orderNum 우선, 없으면 slug에서 추출, 최종 폴백은 인덱스
+                if (ep.orderNum != null) {
+                  num = String(ep.orderNum).padStart(2, '0')
+                } else {
+                  const match = ep.slug.match(/\d+/)
+                  num = match ? match[0].padStart(2, '0') : String(idx + 1).padStart(2, '0')
+                }
               }
               return { slug: ep.slug, num, type: ep.type }
             })
