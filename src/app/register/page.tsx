@@ -1,13 +1,17 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/features/auth'
+import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3'
 import Link from 'next/link'
 
-export default function RegisterPage() {
+const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ''
+
+function RegisterForm() {
   const router = useRouter()
   const { register } = useAuth()
+  const { executeRecaptcha } = useGoogleReCaptcha()
   const [form, setForm] = useState({ email: '', password: '', passwordConfirm: '', name: '', slug: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -20,17 +24,18 @@ export default function RegisterPage() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     if (form.password !== form.passwordConfirm) { setError('비밀번호가 일치하지 않습니다'); return }
     setLoading(true)
     try {
-      await register({ email: form.email, password: form.password, name: form.name, slug: form.slug })
+      const recaptchaToken = executeRecaptcha ? await executeRecaptcha('register') : undefined
+      await register({ email: form.email, password: form.password, name: form.name, slug: form.slug }, recaptchaToken)
       router.replace('/dashboard')
     } catch (err: any) { setError(err.message || '회원가입에 실패했습니다') }
     finally { setLoading(false) }
-  }
+  }, [form, executeRecaptcha, register, router])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
@@ -97,5 +102,16 @@ export default function RegisterPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function RegisterPage() {
+  if (!RECAPTCHA_SITE_KEY) {
+    return <RegisterForm />
+  }
+  return (
+    <GoogleReCaptchaProvider reCaptchaKey={RECAPTCHA_SITE_KEY}>
+      <RegisterForm />
+    </GoogleReCaptchaProvider>
   )
 }
