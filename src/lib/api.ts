@@ -51,14 +51,14 @@ class ApiClient {
   }
 
   // 인증
-  async register(data: { email: string; password: string; name: string; slug: string }) {
+  async register(data: { email: string; password: string; name: string; slug: string; recaptchaToken?: string }) {
     return this.fetch<AuthResponse>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
     })
   }
 
-  async login(data: { email: string; password: string }) {
+  async login(data: { email: string; password: string; recaptchaToken?: string }) {
     return this.fetch<AuthResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(data),

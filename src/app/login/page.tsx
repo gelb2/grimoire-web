@@ -1,35 +1,39 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/features/auth'
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google'
+import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3'
 import Link from 'next/link'
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''
+const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ''
 const IS_PRODUCTION = process.env.NEXT_PUBLIC_APP_ENV === 'production'
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
   const { login, googleLogin } = useAuth()
+  const { executeRecaptcha } = useGoogleReCaptcha()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
-      await login(email, password)
+      const recaptchaToken = executeRecaptcha ? await executeRecaptcha('login') : undefined
+      await login(email, password, recaptchaToken)
       router.replace('/dashboard')
     } catch (err: any) {
       setError(err.message || '로그인에 실패했습니다')
     } finally {
       setLoading(false)
     }
-  }
+  }, [email, password, executeRecaptcha, login, router])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
@@ -145,5 +149,16 @@ export default function LoginPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  if (!RECAPTCHA_SITE_KEY) {
+    return <LoginForm />
+  }
+  return (
+    <GoogleReCaptchaProvider reCaptchaKey={RECAPTCHA_SITE_KEY}>
+      <LoginForm />
+    </GoogleReCaptchaProvider>
   )
 }
