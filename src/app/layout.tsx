@@ -9,7 +9,7 @@ const garamondLogo = EB_Garamond({
   subsets: ["latin"],
   weight: ["400", "500"],
   style: ["normal"],
-  variable: "--font-logo",
+  variable: "--fn-logo",
   display: "swap",
 })
 
