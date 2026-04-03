@@ -13,14 +13,14 @@ const garamond = EB_Garamond({
   subsets: ["latin"],
   weight: ["400", "500"],
   style: ["normal", "italic"],
-  variable: "--font-garamond",
+  variable: "--fn-garamond",
   display: "swap",
 })
 
 const notoSerifKR = Noto_Serif_KR({
   subsets: ["latin"],
   weight: ["300", "400", "500"],
-  variable: "--font-noto-serif-kr",
+  variable: "--fn-noto-serif-kr",
   display: "swap",
 })
 
