@@ -1,4 +1,4 @@
-import { PlatformNav } from '@/components/PlatformNav'
+import Link from 'next/link'
 
 export const metadata = {
   title: '이용약관 | Grimoire',
@@ -8,7 +8,9 @@ export const metadata = {
 export default function TermsPage() {
   return (
     <div className="min-h-screen bg-white">
-      <PlatformNav />
+      <nav className="px-6 py-4 border-b border-neutral-200">
+        <Link href="/" className="text-sm uppercase tracking-[0.15em] text-neutral-500 hover:text-black transition">Grimoire</Link>
+      </nav>
       <main className="max-w-3xl mx-auto px-6 py-16">
         <h1 className="text-3xl font-bold text-black mb-8">이용약관</h1>
         <p className="text-sm text-neutral-400 mb-8">시행일: 2026년 4월 5일</p>
