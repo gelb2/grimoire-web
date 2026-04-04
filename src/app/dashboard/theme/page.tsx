@@ -32,29 +32,94 @@ function SelectField<T extends string>({ label, value, options, onChange }: { la
 }
 
 // ── 옵션 패널 (좌측) ──
-function OptionsPanel({ theme, onChange, onPresetChange, onSave, onPublish, saving }: {
+function OptionsPanel({ theme, onChange, onPresetChange, onSave, onPublish, onGenerate, saving, slotInfo, onSlotToggle }: {
   theme: AuthorTheme
   onChange: (partial: Partial<AuthorTheme>) => void
   onPresetChange: (preset: string) => void
   onSave: () => void
   onPublish: () => void
+  onGenerate: (description: string) => void
   saving: boolean
+  slotInfo: { plan: string; slotLimit: number; slottedCount: number; isExpired: boolean; themes: any[] } | null
+  onSlotToggle: (themeId: string, isSlotted: boolean) => void
 }) {
+  const [aiPrompt, setAiPrompt] = useState("")
+
   const updateDeco = (partial: Partial<ThemeDecorations>) => {
     onChange({ decorations: { ...theme.decorations, ...partial } })
   }
 
   return (
     <div className="w-80 shrink-0 bg-white border-r border-gray-200 overflow-y-auto h-screen p-4 space-y-6">
+      {/* 플랜 정보 */}
+      {slotInfo && (
+        <section className="bg-gray-50 rounded-lg p-3">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs font-bold text-gray-500 uppercase">{slotInfo.plan} 플랜</span>
+            {slotInfo.isExpired && <span className="text-xs text-red-500 font-bold">만료됨</span>}
+          </div>
+          <p className="text-sm text-gray-700">슬롯: {slotInfo.slottedCount} / {slotInfo.slotLimit === Infinity ? '∞' : slotInfo.slotLimit}</p>
+        </section>
+      )}
+
+      {/* 만기 경고 */}
+      {slotInfo?.isExpired && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+          구독이 만료되어 시스템 기본 테마가 적용됩니다. 플랜을 갱신하세요.
+        </div>
+      )}
+
       {/* 액션 버튼 */}
       <div className="flex gap-2">
-        <button onClick={onSave} disabled={saving} className="flex-1 px-3 py-2 bg-gray-900 text-white text-sm rounded hover:bg-gray-700 disabled:opacity-50">
+        <button onClick={onSave} disabled={saving || slotInfo?.isExpired} className="flex-1 px-3 py-2 bg-gray-900 text-white text-sm rounded hover:bg-gray-700 disabled:opacity-50">
           {saving ? "저장 중..." : "저장"}
         </button>
-        <button onClick={onPublish} disabled={saving} className="flex-1 px-3 py-2 bg-amber-600 text-white text-sm rounded hover:bg-amber-500 disabled:opacity-50">
+        <button onClick={onPublish} disabled={saving || slotInfo?.isExpired} className="flex-1 px-3 py-2 bg-amber-600 text-white text-sm rounded hover:bg-amber-500 disabled:opacity-50">
           퍼블리시
         </button>
       </div>
+
+      {/* AI 테마 생성 */}
+      <section>
+        <h3 className="text-sm font-bold text-gray-900 mb-2">AI로 테마 생성</h3>
+        <textarea
+          value={aiPrompt}
+          onChange={e => setAiPrompt(e.target.value)}
+          placeholder="원하는 분위기를 자유롭게 설명하세요..."
+          className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm h-24 resize-none"
+        />
+        <button
+          onClick={() => { if (aiPrompt.trim()) onGenerate(aiPrompt.trim()) }}
+          disabled={saving || !aiPrompt.trim() || slotInfo?.isExpired || (slotInfo && slotInfo.slottedCount >= slotInfo.slotLimit)}
+          className="mt-2 w-full px-3 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-500 disabled:opacity-50"
+        >
+          {saving ? "생성 중..." : "AI로 생성 (1 크레딧)"}
+        </button>
+        {slotInfo && slotInfo.slottedCount >= slotInfo.slotLimit && !slotInfo.isExpired && (
+          <p className="text-xs text-red-500 mt-1">슬롯이 가득 찼습니다. 기존 테마를 슬롯에서 제거하세요.</p>
+        )}
+      </section>
+
+      {/* 테마 슬롯 관리 */}
+      {slotInfo && slotInfo.themes.length > 0 && (
+        <section>
+          <h3 className="text-sm font-bold text-gray-900 mb-2">내 테마 ({slotInfo.themes.length}개)</h3>
+          <div className="space-y-1">
+            {slotInfo.themes.map((t: any) => (
+              <div key={t.id} className="flex items-center justify-between py-1.5 px-2 rounded bg-gray-50 text-sm">
+                <span className="truncate flex-1">{t.name}</span>
+                <button
+                  onClick={() => onSlotToggle(t.id, t.isSlotted)}
+                  disabled={slotInfo.isExpired}
+                  className={`ml-2 px-2 py-0.5 text-xs rounded ${t.isSlotted ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-500'}`}
+                >
+                  {t.isSlotted ? '활성' : '보관'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* 프리셋 선택 */}
       <section>
@@ -136,6 +201,15 @@ export default function ThemeEditorPage() {
   const [previewData, setPreviewData] = useState<AuthorData | null>(null)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState("")
+  const [slotInfo, setSlotInfo] = useState<{ plan: string; slotLimit: number; slottedCount: number; isExpired: boolean; themes: any[] } | null>(null)
+
+  // 슬롯 정보 로드
+  const loadSlotInfo = useCallback(async () => {
+    try {
+      const info = await api.getSlotInfo()
+      setSlotInfo(info)
+    } catch { /* 무시 */ }
+  }, [])
 
   // 작가 테마 + 작가 데이터 로드
   useEffect(() => {
@@ -180,7 +254,8 @@ export default function ThemeEditorPage() {
     }).catch(() => {
       setMessage("테마를 불러올 수 없습니다.")
     })
-  }, [authLoading, user])
+    loadSlotInfo()
+  }, [authLoading, user, loadSlotInfo])
 
   const handleChange = useCallback((partial: Partial<AuthorTheme>) => {
     setTheme(prev => prev ? { ...prev, ...partial } : prev)
@@ -203,6 +278,35 @@ export default function ThemeEditorPage() {
     }
     setSaving(false)
   }, [themeId, theme])
+
+  const handleGenerate = useCallback(async (description: string) => {
+    if (!user) return
+    setSaving(true)
+    setMessage("")
+    try {
+      const result = await api.generateTheme(user.id, description)
+      setTheme(result.preview as unknown as AuthorTheme)
+      setThemeId(result.themeId)
+      setMessage("AI 테마 생성 완료! (1 크레딧 사용)")
+      loadSlotInfo()
+    } catch (e: any) {
+      setMessage(e.message || "테마 생성 실패")
+    }
+    setSaving(false)
+  }, [user, loadSlotInfo])
+
+  const handleSlotToggle = useCallback(async (themeId: string, currentlySlotted: boolean) => {
+    try {
+      if (currentlySlotted) {
+        await api.removeThemeSlot(themeId)
+      } else {
+        await api.assignThemeSlot(themeId)
+      }
+      loadSlotInfo()
+    } catch (e: any) {
+      setMessage(e.message || "슬롯 변경 실패")
+    }
+  }, [loadSlotInfo])
 
   const handlePublish = useCallback(async () => {
     if (!user) return
@@ -230,7 +334,10 @@ export default function ThemeEditorPage() {
         onPresetChange={handlePresetChange}
         onSave={handleSave}
         onPublish={handlePublish}
+        onGenerate={handleGenerate}
         saving={saving}
+        slotInfo={slotInfo}
+        onSlotToggle={handleSlotToggle}
       />
 
       {/* 우측: 실제 컴포넌트 프리뷰 */}
