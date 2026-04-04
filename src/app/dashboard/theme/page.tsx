@@ -90,7 +90,7 @@ function OptionsPanel({ theme, onChange, onPresetChange, onSave, onPublish, onGe
         />
         <button
           onClick={() => { if (aiPrompt.trim()) onGenerate(aiPrompt.trim()) }}
-          disabled={saving || !aiPrompt.trim() || slotInfo?.isExpired || (slotInfo && slotInfo.slottedCount >= slotInfo.slotLimit)}
+          disabled={saving || !aiPrompt.trim() || !!slotInfo?.isExpired || !!(slotInfo && slotInfo.slottedCount >= slotInfo.slotLimit)}
           className="mt-2 w-full px-3 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-500 disabled:opacity-50"
         >
           {saving ? "생성 중..." : "AI로 생성 (1 크레딧)"}
