@@ -124,6 +124,31 @@ class ApiClient {
     }>('/plan')
   }
 
+  // AI 채팅
+  async createChatSession(workId: string, title?: string) {
+    return this.fetch<any>('/chat/sessions', { method: 'POST', body: JSON.stringify({ workId, title }) })
+  }
+
+  async listChatSessions(workId: string) {
+    return this.fetch<any[]>(`/chat/sessions?workId=${workId}`)
+  }
+
+  async sendChatMessage(sessionId: string, content: string) {
+    return this.fetch<{ userMsg: any; assistantMsg: any }>(`/chat/sessions/${sessionId}/messages`, {
+      method: 'POST', body: JSON.stringify({ content }),
+    })
+  }
+
+  async getChatMessages(sessionId: string, limit = 30, cursor?: string) {
+    const params = new URLSearchParams({ limit: String(limit) })
+    if (cursor) params.set('cursor', cursor)
+    return this.fetch<any[]>(`/chat/sessions/${sessionId}/messages?${params}`)
+  }
+
+  async deleteChatSession(sessionId: string) {
+    return this.fetch<void>(`/chat/sessions/${sessionId}`, { method: 'DELETE' })
+  }
+
   // 작가 공간 — 호출처에서 타입 지정 가능
   async getAuthorSpace<T = Record<string, unknown>>(slug: string) {
     return this.fetch<T>(`/authors/${slug}`)
