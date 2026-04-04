@@ -44,6 +44,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 const quickActions = [
   { href: '/dashboard/upload', title: '원고 업로드', desc: 'MD, TXT, DOCX' },
   { href: '/dashboard/theme', title: '테마 에디터', desc: '작가공간 디자인' },
+  { href: '/dashboard/chat', title: 'AI 어시스턴트', desc: '원고 분석·캐릭터·문체' },
   { href: '/dashboard/analytics', title: '작품 분석', desc: '조회수·좋아요·구독' },
   { href: '/dashboard/credits', title: '크레딧 충전', desc: '크레딧 관리' },
   { href: '/dashboard/profile', title: '프로필 설정', desc: '작가 정보 수정' },

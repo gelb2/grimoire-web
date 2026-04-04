@@ -1,0 +1,212 @@
+"use client"
+
+import { useState, useEffect, useRef, useCallback } from "react"
+import { api } from "@/lib/api"
+import { useAuth } from "@/features/auth"
+import Link from "next/link"
+
+interface Message {
+  id: string
+  role: "user" | "assistant"
+  content: string
+  createdAt: string
+}
+
+interface Session {
+  id: string
+  workId: string
+  title: string
+  updatedAt: string
+}
+
+interface Work {
+  id: string
+  slug: string
+  title: string
+}
+
+export default function ChatPage() {
+  const { user, loading: authLoading } = useAuth()
+  const [works, setWorks] = useState<Work[]>([])
+  const [selectedWorkId, setSelectedWorkId] = useState("")
+  const [sessions, setSessions] = useState<Session[]>([])
+  const [activeSession, setActiveSession] = useState<string | null>(null)
+  const [messages, setMessages] = useState<Message[]>([])
+  const [input, setInput] = useState("")
+  const [sending, setSending] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+
+  // 작품 목록 로드
+  useEffect(() => {
+    if (authLoading || !user) return
+    api.getAuthorSpace<any>(user.slug).then(data => {
+      const w = data.works || []
+      setWorks(w)
+      if (w.length > 0) setSelectedWorkId(w[0].id)
+    }).catch(() => {})
+  }, [authLoading, user])
+
+  // 작품 선택 시 세션 로드
+  useEffect(() => {
+    if (!selectedWorkId) return
+    api.listChatSessions(selectedWorkId).then(setSessions).catch(() => setSessions([]))
+  }, [selectedWorkId])
+
+  // 세션 선택 시 메시지 로드
+  useEffect(() => {
+    if (!activeSession) { setMessages([]); return }
+    setHasMore(true)
+    api.getChatMessages(activeSession, 30).then(msgs => {
+      setMessages(msgs)
+      setHasMore(msgs.length >= 30)
+      setTimeout(() => messagesEndRef.current?.scrollIntoView(), 100)
+    }).catch(() => setMessages([]))
+  }, [activeSession])
+
+  // 새 세션 생성
+  const handleNewSession = useCallback(async () => {
+    if (!selectedWorkId) return
+    const session = await api.createChatSession(selectedWorkId)
+    setSessions(prev => [session, ...prev])
+    setActiveSession(session.id)
+  }, [selectedWorkId])
+
+  // 메시지 전송
+  const handleSend = useCallback(async () => {
+    if (!activeSession || !input.trim() || sending) return
+    const text = input.trim()
+    setInput("")
+    setSending(true)
+
+    // 낙관적 UI: 사용자 메시지 즉시 표시
+    const tempUserMsg: Message = { id: "temp-" + Date.now(), role: "user", content: text, createdAt: new Date().toISOString() }
+    setMessages(prev => [...prev, tempUserMsg])
+    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50)
+
+    try {
+      const { userMsg, assistantMsg } = await api.sendChatMessage(activeSession, text)
+      setMessages(prev => [
+        ...prev.filter(m => m.id !== tempUserMsg.id),
+        userMsg,
+        assistantMsg,
+      ])
+      setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50)
+    } catch (e: any) {
+      setMessages(prev => [
+        ...prev.filter(m => m.id !== tempUserMsg.id),
+        { ...tempUserMsg, content: text + "\n\n⚠ 전송 실패: " + (e.message || "오류") },
+      ])
+    }
+    setSending(false)
+  }, [activeSession, input, sending])
+
+  // 무한 스크롤: 맨 위 도달 시 이전 메시지 로드
+  const handleScroll = useCallback(async () => {
+    const container = scrollContainerRef.current
+    if (!container || !activeSession || loadingMore || !hasMore) return
+    if (container.scrollTop < 50 && messages.length > 0) {
+      setLoadingMore(true)
+      const oldScrollHeight = container.scrollHeight
+      const cursor = messages[0]?.id
+      try {
+        const older = await api.getChatMessages(activeSession, 30, cursor)
+        if (older.length < 30) setHasMore(false)
+        if (older.length > 0) {
+          setMessages(prev => [...older, ...prev])
+          // 스크롤 위치 유지
+          requestAnimationFrame(() => {
+            container.scrollTop = container.scrollHeight - oldScrollHeight
+          })
+        }
+      } catch {}
+      setLoadingMore(false)
+    }
+  }, [activeSession, loadingMore, hasMore, messages])
+
+  if (authLoading) return <div className="flex items-center justify-center h-screen text-gray-500">로딩 중...</div>
+  if (!user) return <div className="flex items-center justify-center h-screen text-gray-500">로그인이 필요합니다.</div>
+
+  return (
+    <div className="flex h-screen bg-white">
+      {/* 좌측: 세션 목록 */}
+      <div className="w-64 shrink-0 border-r border-gray-200 flex flex-col">
+        <div className="p-4 border-b border-gray-200">
+          <Link href="/dashboard" className="text-xs text-gray-400 hover:text-black">← 대시보드</Link>
+          <h2 className="text-sm font-bold text-black mt-2">AI 어시스턴트</h2>
+          <select value={selectedWorkId} onChange={e => { setSelectedWorkId(e.target.value); setActiveSession(null) }}
+            className="mt-2 w-full text-xs rounded border border-gray-300 px-2 py-1.5">
+            {works.map(w => <option key={w.id} value={w.id}>{w.title}</option>)}
+          </select>
+          <button onClick={handleNewSession} className="mt-2 w-full px-2 py-1.5 bg-black text-white text-xs rounded hover:bg-gray-800">
+            + 새 대화
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          {sessions.map(s => (
+            <button key={s.id} onClick={() => setActiveSession(s.id)}
+              className={`w-full text-left px-4 py-3 text-sm border-b border-gray-100 hover:bg-gray-50 ${activeSession === s.id ? 'bg-gray-100 font-medium' : 'text-gray-600'}`}>
+              <div className="truncate">{s.title}</div>
+              <div className="text-[10px] text-gray-400 mt-0.5">{new Date(s.updatedAt).toLocaleDateString()}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 우측: 채팅 영역 */}
+      <div className="flex-1 flex flex-col">
+        {!activeSession ? (
+          <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
+            작품을 선택하고 대화를 시작하세요
+          </div>
+        ) : (
+          <>
+            {/* 메시지 영역 */}
+            <div ref={scrollContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+              {loadingMore && <div className="text-center text-xs text-gray-400 py-2">이전 메시지 로딩 중...</div>}
+              {messages.map(msg => (
+                <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                  <div className={`max-w-[70%] rounded-lg px-4 py-3 text-sm whitespace-pre-wrap ${
+                    msg.role === "user"
+                      ? "bg-black text-white"
+                      : "bg-gray-100 text-gray-800"
+                  }`}>
+                    {msg.content}
+                  </div>
+                </div>
+              ))}
+              {sending && (
+                <div className="flex justify-start">
+                  <div className="bg-gray-100 text-gray-400 rounded-lg px-4 py-3 text-sm">
+                    AI가 답변을 작성하고 있습니다...
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* 입력 영역 */}
+            <div className="border-t border-gray-200 p-4">
+              <div className="flex gap-2">
+                <input
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend() } }}
+                  placeholder="원고에 대해 질문하세요..."
+                  disabled={sending}
+                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-black disabled:opacity-50"
+                />
+                <button onClick={handleSend} disabled={sending || !input.trim()}
+                  className="px-4 py-2.5 bg-black text-white text-sm rounded-lg hover:bg-gray-800 disabled:opacity-50">
+                  전송
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
