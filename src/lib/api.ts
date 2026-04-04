@@ -78,10 +78,10 @@ class ApiClient {
     return this.fetch<Theme>(`/themes/${authorSlug}`)
   }
 
-  async generateTheme(description: string) {
+  async generateTheme(authorId: string, description: string) {
     return this.fetch<{ themeId: string; preview: Record<string, unknown> }>('/themes/generate', {
       method: 'POST',
-      body: JSON.stringify({ description }),
+      body: JSON.stringify({ authorId, description }),
     })
   }
 
@@ -100,6 +100,28 @@ class ApiClient {
 
   async getMyThemes() {
     return this.fetch<Theme[]>('/themes/mine')
+  }
+
+  async getSlotInfo() {
+    return this.fetch<{
+      plan: string; planExpireAt: string | null; isExpired: boolean
+      slotLimit: number; slottedCount: number; themes: any[]
+    }>('/themes/slots/info')
+  }
+
+  async assignThemeSlot(themeId: string) {
+    return this.fetch<{ themeId: string; isSlotted: boolean }>(`/themes/${themeId}/slot`, { method: 'POST' })
+  }
+
+  async removeThemeSlot(themeId: string) {
+    return this.fetch<{ themeId: string; isSlotted: boolean }>(`/themes/${themeId}/slot`, { method: 'DELETE' })
+  }
+
+  async getPlanInfo() {
+    return this.fetch<{
+      plan: string; planExpireAt: string | null; isExpired: boolean
+      slotLimit: number; slottedCount: number; totalThemes: number
+    }>('/plan')
   }
 
   // 작가 공간 — 호출처에서 타입 지정 가능
