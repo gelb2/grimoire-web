@@ -85,23 +85,23 @@ export function WorkCard({
     )
   }
 
-  // ── magazine variant: 라이트 매거진 카드 ──
+  // ── magazine variant: 매거진 카드 (테마 변수 사용) ──
   if (variant === 'magazine') {
     return (
       <Link
         href={href}
-        className="group block h-full border border-neutral-200 rounded-lg p-6 hover:border-black transition-colors"
+        className="group block h-full border border-g-border rounded-lg p-6 hover:border-g-accent transition-colors"
       >
         {genre && (
-          <span className="text-[10px] uppercase tracking-widest text-neutral-400 block mb-2">
+          <span className="text-[10px] uppercase tracking-widest text-g-text-dim block mb-2">
             {genre}
           </span>
         )}
-        <h3 className="text-xl font-bold text-black group-hover:text-[#e53e3e] transition-colors leading-snug mb-2">
+        <h3 className="text-xl font-bold text-g-text-bright group-hover:text-g-accent transition-colors leading-snug mb-2">
           {title}
         </h3>
-        <p className="text-sm text-neutral-500 mb-4">{authorName}</p>
-        <div className="flex items-center gap-3 text-xs text-neutral-400 mt-auto">
+        <p className="text-sm text-g-text-muted mb-4">{authorName}</p>
+        <div className="flex items-center gap-3 text-xs text-g-text-dim mt-auto">
           <span>{episodeCount}화</span>
           {viewCount != null && viewCount > 0 && (
             <span>{viewCount.toLocaleString()}뷰</span>
