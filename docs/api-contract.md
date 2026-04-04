@@ -64,6 +64,16 @@
 | PUT | `/api/themes/:themeId` | 테마 커스텀 수정 (overrides) | JWT |
 | DELETE | `/api/themes/:themeId` | 테마 삭제 (슬롯 반환) | JWT |
 | GET | `/api/themes/resolve/:authorSlug` | 작품별 테마 resolve (`?work=slug`) | - |
+| POST | `/api/themes/:themeId/slot` | 테마를 활성 슬롯에 배치 | JWT |
+| DELETE | `/api/themes/:themeId/slot` | 테마를 슬롯에서 제거 (보관) | JWT |
+| GET | `/api/themes/slots/info` | 슬롯 현황 (플랜/슬롯수/테마목록) | JWT |
+
+### Plan
+
+| Method | Path | 용도 | 인증 |
+|--------|------|------|------|
+| GET | `/api/plan` | 내 플랜 정보 조회 | JWT |
+| POST | `/api/admin/authors/:authorId/plan` | 작가 플랜 수동 설정 (관리자) | JWT, Admin |
 
 ### Manuscript
 

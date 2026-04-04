@@ -1,76 +1,84 @@
-"use client"
+import { api } from "@/lib/api"
+import { notFound } from "next/navigation"
 
-import { useParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { api } from '@/lib/api'
+export const dynamic = "force-dynamic"
 
-interface SharedEpisode {
-  id: string
-  slug: string
-  title: string
-  subtitle: string | null
-  description: string | null
-  type: string
-  orderNum: number
-  blocks: Array<{ type: string; text?: string; title?: string; children?: any[] }>
-  status: string
+interface Props {
+  params: Promise<{ token: string }>
 }
 
-export default function SharedEpisodePage() {
-  const params = useParams()
-  const token = params.token as string
-  const [episode, setEpisode] = useState<SharedEpisode | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    if (!token) return
-    api.getSharedEpisode<SharedEpisode>(token)
-      .then(setEpisode)
-      .catch(err => setError(err.message || '공유 링크에 접근할 수 없습니다'))
-      .finally(() => setLoading(false))
-  }, [token])
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <p className="text-neutral-400">로딩 중...</p>
-      </div>
-    )
+export async function generateMetadata({ params }: Props) {
+  const { token } = await params
+  try {
+    const apiUrl = process.env.API_URL || 'http://localhost:3000/api'
+    const res = await fetch(`${apiUrl}/episodes/shared/${token}`, {
+      signal: AbortSignal.timeout(5000),
+    })
+    if (!res.ok) return { title: '공유 링크 | Grimoire' }
+    const data = await res.json()
+    return {
+      title: `${data.title || '공유 에피소드'} | Grimoire`,
+      description: data.subtitle || '공유된 에피소드입니다.',
+    }
+  } catch {
+    return { title: '공유 링크 | Grimoire' }
   }
+}
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4">
-        <p className="text-neutral-600 text-lg">{error}</p>
-        <a href="/login" className="text-sm text-blue-600 hover:underline">로그인 하기</a>
-      </div>
-    )
-  }
+export default async function SharedEpisodePage({ params }: Props) {
+  const { token } = await params
 
-  if (!episode) return null
+  try {
+    const apiUrl = process.env.API_URL || 'http://localhost:3000/api'
+    const res = await fetch(`${apiUrl}/episodes/shared/${token}`, {
+      signal: AbortSignal.timeout(5000),
+    })
 
-  return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-2xl mx-auto px-6 py-12">
-        <div className="mb-8">
-          <p className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-2">SHARED EPISODE</p>
-          <h1 className="text-3xl font-black text-black mb-2">{episode.title}</h1>
-          {episode.subtitle && <p className="text-neutral-500">{episode.subtitle}</p>}
-        </div>
-
-        <div className="prose prose-neutral max-w-none">
-          {episode.blocks.map((block, i) => (
-            <div key={i} className="mb-4">
-              {block.type === 'heading-1' && <h2 className="text-2xl font-bold mt-8 mb-4">{block.title || block.text}</h2>}
-              {block.type === 'heading-2' && <h3 className="text-xl font-bold mt-6 mb-3">{block.title || block.text}</h3>}
-              {block.type === 'paragraph' && <p className="leading-relaxed text-neutral-800">{block.text}</p>}
-              {block.type === 'separator' && <hr className="my-8 border-neutral-200" />}
-              {block.type === 'divider' && <hr className="my-6 border-neutral-200" />}
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      if (res.status === 403) {
+        return (
+          <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="text-center p-8">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">공유 링크 만료</h1>
+              <p className="text-gray-500">이 공유 링크는 만료되었습니다. 로그인하여 확인하세요.</p>
             </div>
-          ))}
+          </div>
+        )
+      }
+      return notFound()
+    }
+
+    const episode = await res.json()
+
+    return (
+      <div className="min-h-screen bg-white">
+        <div className="max-w-3xl mx-auto px-6 py-16">
+          <div className="mb-8 pb-4 border-b border-gray-200">
+            <p className="text-sm text-gray-400 mb-1">공유된 에피소드</p>
+            <h1 className="text-3xl font-bold text-gray-900">{episode.title}</h1>
+            {episode.subtitle && (
+              <p className="text-lg text-gray-500 mt-1 italic">{episode.subtitle}</p>
+            )}
+          </div>
+          <div className="prose prose-lg max-w-none">
+            {(episode.blocks || []).map((block: any, idx: number) => {
+              if (block.type === 'paragraph') return <p key={idx}>{block.text}</p>
+              if (block.type === 'heading-1') return <h1 key={idx}>{block.title}</h1>
+              if (block.type === 'heading-2') return <h2 key={idx}>{block.title}</h2>
+              if (block.type === 'chapter') return <h3 key={idx}>{block.num ? `${block.num}. ` : ''}{block.title}</h3>
+              if (block.type === 'italic') return <p key={idx} className="italic">{block.text}</p>
+              if (block.type === 'bold') return <p key={idx} className="font-bold">{block.text}</p>
+              if (block.type === 'separator') return <hr key={idx} />
+              if (block.type === 'divider') return <div key={idx} className="text-center text-gray-300 my-8">· · ·</div>
+              if (block.type === 'refrain') return <blockquote key={idx}>{block.text}</blockquote>
+              return <p key={idx}>{block.text || ''}</p>
+            })}
+          </div>
         </div>
       </div>
-    </div>
-  )
+    )
+  } catch {
+    return notFound()
+  }
 }

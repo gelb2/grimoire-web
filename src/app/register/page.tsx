@@ -13,6 +13,7 @@ function RegisterForm() {
   const { register } = useAuth()
   const { executeRecaptcha } = useGoogleReCaptcha()
   const [form, setForm] = useState({ email: '', password: '', passwordConfirm: '', name: '', slug: '' })
+  const [agreed, setAgreed] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -27,6 +28,7 @@ function RegisterForm() {
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    if (!agreed) { setError('이용약관 및 개인정보보호방침에 동의해주세요'); return }
     if (form.password !== form.passwordConfirm) { setError('비밀번호가 일치하지 않습니다'); return }
     setLoading(true)
     try {
@@ -90,7 +92,19 @@ function RegisterForm() {
             </div>
           </div>
 
-          <button type="submit" disabled={loading}
+          {/* 이용약관 + 개인정보보호방침 동의 */}
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)}
+              className="mt-1 w-4 h-4 rounded border-neutral-300 text-black focus:ring-black" />
+            <span className="text-xs text-neutral-500 leading-relaxed">
+              <Link href="/terms" target="_blank" className="text-[#e53e3e] underline">이용약관</Link>
+              {' '}및{' '}
+              <Link href="/privacy" target="_blank" className="text-[#e53e3e] underline">개인정보보호방침</Link>
+              에 동의합니다.
+            </span>
+          </label>
+
+          <button type="submit" disabled={loading || !agreed}
             className="w-full py-3 bg-black hover:bg-neutral-800 disabled:bg-neutral-300 text-white font-medium rounded-lg transition">
             {loading ? '가입 중...' : '회원가입 (3 크레딧 보너스)'}
           </button>

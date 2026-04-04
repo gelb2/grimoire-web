@@ -58,7 +58,7 @@ function OptionsPanel({ theme, onChange, onPresetChange, onSave, onPublish, onGe
             <span className="text-xs font-bold text-gray-500 uppercase">{slotInfo.plan} 플랜</span>
             {slotInfo.isExpired && <span className="text-xs text-red-500 font-bold">만료됨</span>}
           </div>
-          <p className="text-sm text-gray-700">슬롯: {slotInfo.slottedCount} / {slotInfo.slotLimit === Infinity ? '∞' : slotInfo.slotLimit}</p>
+          <p className="text-sm text-gray-700">슬롯: {slotInfo.slottedCount} / {slotInfo.slotLimit == null || slotInfo.slotLimit === Infinity ? '∞' : slotInfo.slotLimit}</p>
         </section>
       )}
 
@@ -90,12 +90,12 @@ function OptionsPanel({ theme, onChange, onPresetChange, onSave, onPublish, onGe
         />
         <button
           onClick={() => { if (aiPrompt.trim()) onGenerate(aiPrompt.trim()) }}
-          disabled={saving || !aiPrompt.trim() || !!slotInfo?.isExpired || !!(slotInfo && slotInfo.slottedCount >= slotInfo.slotLimit)}
+          disabled={saving || !aiPrompt.trim() || !!slotInfo?.isExpired || !!(slotInfo && slotInfo.slotLimit != null && slotInfo.slottedCount >= slotInfo.slotLimit)}
           className="mt-2 w-full px-3 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-500 disabled:opacity-50"
         >
           {saving ? "생성 중..." : "AI로 생성 (1 크레딧)"}
         </button>
-        {slotInfo && slotInfo.slottedCount >= slotInfo.slotLimit && !slotInfo.isExpired && (
+        {slotInfo && slotInfo.slotLimit != null && slotInfo.slottedCount >= slotInfo.slotLimit && !slotInfo.isExpired && (
           <p className="text-xs text-red-500 mt-1">슬롯이 가득 찼습니다. 기존 테마를 슬롯에서 제거하세요.</p>
         )}
       </section>
