@@ -40,7 +40,7 @@ body {
   /* 폰트 패밀리 — turbopack 호환 */
   .font-g-serif { font-family: var(--g-serif, Georgia, 'Batang', serif); }
   .font-g-sans  { font-family: var(--g-sans, system-ui, -apple-system, sans-serif); }
-  .font-ci      { font-family: var(--font-logo), 'EB Garamond', Georgia, serif; }
+  .font-ci      { font-family: var(--fn-logo), 'EB Garamond', Georgia, serif; }
 
   /* 텍스트 크기 — fs- 접두사 (text-와 twMerge 충돌 방지) */
   .fs-caption { font-size: var(--g-caption-size, 19px); }

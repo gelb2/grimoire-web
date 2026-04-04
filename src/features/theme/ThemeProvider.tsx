@@ -18,7 +18,7 @@ interface ThemeProviderProps {
 }
 
 const fontFamilyMap: Record<string, string> = {
-  serif: "var(--font-garamond), var(--font-noto-serif-kr), Georgia, 'Batang', serif",
+  serif: "var(--fn-garamond), var(--fn-noto-serif-kr), Georgia, 'Batang', serif",
   "sans-serif": "system-ui, -apple-system, sans-serif",
   monospace: "'JetBrains Mono', 'Fira Code', monospace",
 }
