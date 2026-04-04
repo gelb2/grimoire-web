@@ -45,6 +45,7 @@ jobs:
           docker build --platform linux/amd64 \
             --build-arg NEXT_PUBLIC_APP_ENV=inhouse \
             --build-arg NEXT_PUBLIC_RECAPTCHA_SITE_KEY=6Ldxb6QsAAAAABTyABs61_Bzhi6iwrAQiqRbbXaJ \
+            --build-arg NEXT_PUBLIC_GOOGLE_CLIENT_ID=23295981916-30pl52bdf3k008k9gmsf9fpufinnpk4o.apps.googleusercontent.com \
             -t $IMAGE:inhouse-${{ github.sha }} \
             -t $IMAGE:inhouse-latest \
             .
