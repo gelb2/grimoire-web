@@ -191,6 +191,24 @@ class ApiClient {
     return this.fetch<void>(`/episodes/${id}`, { method: 'DELETE' })
   }
 
+  async updateEpisodeStatus(workId: string, episodeId: string, status: 'upload' | 'public' | 'nonPublic') {
+    return this.fetch<{ status: string }>(`/works/${workId}/episodes/${episodeId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    })
+  }
+
+  async createShareLink(workId: string, episodeId: string, expireIn: '12h' | '24h' | '48h' | 'never') {
+    return this.fetch<{ sharedUrl: string; expireAt: string | null }>(`/works/${workId}/episodes/${episodeId}/share`, {
+      method: 'POST',
+      body: JSON.stringify({ expireIn }),
+    })
+  }
+
+  async getSharedEpisode(token: string) {
+    return this.fetch<any>(`/episodes/shared/${token}`)
+  }
+
   // 원고 파싱 (텍스트)
   async parseManuscript(rawText: string) {
     return this.fetch<{ frontmatter: Record<string, string>; blocks: Record<string, unknown>[] }>('/manuscripts/parse', {
