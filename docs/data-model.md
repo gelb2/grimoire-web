@@ -19,6 +19,8 @@
 | bio | text (nullable) | - | 작가 소개 (최대 500자) |
 | role | text | default("user") | 역할 (user/admin) |
 | credits | integer | default(3) | 크레딧 잔액 |
+| plan | text | default("free") | 구독 플랜 (free/pro/premium) |
+| plan_expire_at | timestamptz (nullable) | - | 플랜 만료일 (free=null, pro/premium=날짜) |
 | default_theme_id | uuid (nullable) | - | 기본 테마 ID |
 | created_at | timestamptz | default(now()) | 가입일 |
 
@@ -35,6 +37,7 @@
 | overrides | jsonb (nullable) | - | AuthorTheme 커스텀 값 |
 | raw_description | text (nullable) | - | 작가 원본 구술 텍스트 |
 | baked_css_url | text (nullable) | - | Baking된 CSS 파일 URL |
+| is_slotted | boolean | default(true) | 활성 슬롯 배치 여부 (true=활성, false=보관) |
 | updated_at | timestamptz | auto-update | 수정일 |
 
 ### works
