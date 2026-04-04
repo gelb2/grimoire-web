@@ -5,6 +5,55 @@ import { api } from "@/lib/api"
 import { useAuth } from "@/features/auth"
 import Link from "next/link"
 
+// ── 로딩 애니메이션 (Claude 앱 스타일) ──
+const thinkingPhrases = ['원고를 살펴보는 중...', '맥락을 분석하는 중...', '답변을 구성하는 중...', '문장을 다듬는 중...']
+
+function ThinkingIndicator() {
+  const [phraseIdx, setPhraseIdx] = useState(0)
+  useEffect(() => {
+    const interval = setInterval(() => setPhraseIdx(i => (i + 1) % thinkingPhrases.length), 2500)
+    return () => clearInterval(interval)
+  }, [])
+  return (
+    <div className="flex justify-start">
+      <div className="bg-gray-100 rounded-lg px-4 py-3 text-sm flex items-center gap-2">
+        <span className="flex gap-0.5">
+          <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+          <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+          <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+        </span>
+        <span className="text-gray-500 italic transition-opacity duration-500">{thinkingPhrases[phraseIdx]}</span>
+      </div>
+    </div>
+  )
+}
+
+// ── AI 메시지 순차 표시 ──
+function StreamedMessage({ content }: { content: string }) {
+  const [visibleChunks, setVisibleChunks] = useState(0)
+  const chunks = content.split('\n\n').filter(Boolean)
+
+  useEffect(() => {
+    setVisibleChunks(0)
+    if (chunks.length === 0) return
+    let i = 0
+    const interval = setInterval(() => {
+      i++
+      setVisibleChunks(i)
+      if (i >= chunks.length) clearInterval(interval)
+    }, 200)
+    return () => clearInterval(interval)
+  }, [content, chunks.length])
+
+  return (
+    <div className="space-y-2">
+      {chunks.slice(0, visibleChunks || chunks.length).map((chunk, idx) => (
+        <p key={idx} className="animate-fadeIn">{chunk}</p>
+      ))}
+    </div>
+  )
+}
+
 interface Message {
   id: string
   role: "user" | "assistant"
@@ -173,17 +222,11 @@ export default function ChatPage() {
                       ? "bg-black text-white"
                       : "bg-gray-100 text-gray-800"
                   }`}>
-                    {msg.content}
+                    {msg.role === "assistant" ? <StreamedMessage content={msg.content} /> : msg.content}
                   </div>
                 </div>
               ))}
-              {sending && (
-                <div className="flex justify-start">
-                  <div className="bg-gray-100 text-gray-400 rounded-lg px-4 py-3 text-sm">
-                    AI가 답변을 작성하고 있습니다...
-                  </div>
-                </div>
-              )}
+              {sending && <ThinkingIndicator />}
               <div ref={messagesEndRef} />
             </div>
 
