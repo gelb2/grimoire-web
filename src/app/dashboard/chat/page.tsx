@@ -28,14 +28,14 @@ function ThinkingIndicator() {
   )
 }
 
-// ── AI 메시지 순차 표시 ──
-function StreamedMessage({ content }: { content: string }) {
-  const [visibleChunks, setVisibleChunks] = useState(0)
+// ── AI 메시지 순차 표시 (isNew=true일 때만 애니메이션) ──
+function StreamedMessage({ content, isNew }: { content: string; isNew?: boolean }) {
+  const [visibleChunks, setVisibleChunks] = useState(isNew ? 0 : Infinity)
   const chunks = content.split('\n\n').filter(Boolean)
 
   useEffect(() => {
+    if (!isNew || chunks.length === 0) { setVisibleChunks(Infinity); return }
     setVisibleChunks(0)
-    if (chunks.length === 0) return
     let i = 0
     const interval = setInterval(() => {
       i++
@@ -43,12 +43,13 @@ function StreamedMessage({ content }: { content: string }) {
       if (i >= chunks.length) clearInterval(interval)
     }, 200)
     return () => clearInterval(interval)
-  }, [content, chunks.length])
+  }, [content, chunks.length, isNew])
 
+  const shown = visibleChunks >= chunks.length ? chunks : chunks.slice(0, visibleChunks)
   return (
     <div className="space-y-2">
-      {chunks.slice(0, visibleChunks || chunks.length).map((chunk, idx) => (
-        <p key={idx} className="animate-fadeIn">{chunk}</p>
+      {shown.map((chunk, idx) => (
+        <p key={idx} className={isNew && idx >= (visibleChunks - 1) ? "animate-fadeIn" : ""}>{chunk}</p>
       ))}
     </div>
   )
@@ -59,6 +60,7 @@ interface Message {
   role: "user" | "assistant"
   content: string
   createdAt: string
+  isNew?: boolean // 방금 받은 메시지인지 (애니메이션 표시용)
 }
 
 interface Session {
@@ -140,7 +142,7 @@ export default function ChatPage() {
       setMessages(prev => [
         ...prev.filter(m => m.id !== tempUserMsg.id),
         userMsg,
-        assistantMsg,
+        { ...assistantMsg, isNew: true },
       ])
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50)
     } catch (e: any) {
@@ -222,7 +224,7 @@ export default function ChatPage() {
                       ? "bg-black text-white"
                       : "bg-gray-100 text-gray-800"
                   }`}>
-                    {msg.role === "assistant" ? <StreamedMessage content={msg.content} /> : msg.content}
+                    {msg.role === "assistant" ? <StreamedMessage content={msg.content} isNew={msg.isNew} /> : msg.content}
                   </div>
                 </div>
               ))}
