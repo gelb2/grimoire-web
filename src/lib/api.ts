@@ -136,6 +136,7 @@ class ApiClient {
   async sendChatMessage(sessionId: string, content: string) {
     return this.fetch<{ userMsg: any; assistantMsg: any }>(`/chat/sessions/${sessionId}/messages`, {
       method: 'POST', body: JSON.stringify({ content }),
+      signal: AbortSignal.timeout(60000), // 채팅은 60초 타임아웃 (Claude 응답 대기)
     })
   }
 
