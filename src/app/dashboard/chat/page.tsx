@@ -85,6 +85,10 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [sending, setSending] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [workContext, setWorkContext] = useState("")
+  const [workInstructions, setWorkInstructions] = useState("")
+  const [savingSettings, setSavingSettings] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -100,11 +104,19 @@ export default function ChatPage() {
     }).catch(() => {})
   }, [authLoading, user])
 
-  // 작품 선택 시 세션 로드
+  // 작품 선택 시 세션 로드 + context/instructions 로드
   useEffect(() => {
-    if (!selectedWorkId) return
+    if (!selectedWorkId || !user) return
     api.listChatSessions(selectedWorkId).then(setSessions).catch(() => setSessions([]))
-  }, [selectedWorkId])
+    // 작품의 context/instructions 로드
+    const selectedWork = works.find(w => w.id === selectedWorkId)
+    if (selectedWork && user) {
+      api.getWork<any>(user.slug, (selectedWork as any).slug).then(data => {
+        setWorkContext(data.work?.context || data.context || "")
+        setWorkInstructions(data.work?.instructions || data.instructions || "")
+      }).catch(() => {})
+    }
+  }, [selectedWorkId, user, works])
 
   // 세션 선택 시 메시지 로드
   useEffect(() => {
@@ -116,6 +128,17 @@ export default function ChatPage() {
       setTimeout(() => messagesEndRef.current?.scrollIntoView(), 100)
     }).catch(() => setMessages([]))
   }, [activeSession])
+
+  // context/instructions 저장
+  const handleSaveSettings = useCallback(async () => {
+    if (!selectedWorkId) return
+    setSavingSettings(true)
+    try {
+      await api.updateWork(selectedWorkId, { context: workContext || null, instructions: workInstructions || null })
+      setShowSettings(false)
+    } catch {}
+    setSavingSettings(false)
+  }, [selectedWorkId, workContext, workInstructions])
 
   // 새 세션 생성
   const handleNewSession = useCallback(async () => {
@@ -191,9 +214,34 @@ export default function ChatPage() {
             className="mt-2 w-full text-xs rounded border border-gray-300 px-2 py-1.5">
             {works.map(w => <option key={w.id} value={w.id}>{w.title}</option>)}
           </select>
-          <button onClick={handleNewSession} className="mt-2 w-full px-2 py-1.5 bg-black text-white text-xs rounded hover:bg-gray-800">
-            + 새 대화
-          </button>
+          <div className="flex gap-1 mt-2">
+            <button onClick={handleNewSession} className="flex-1 px-2 py-1.5 bg-black text-white text-xs rounded hover:bg-gray-800">
+              + 새 대화
+            </button>
+            <button onClick={() => setShowSettings(!showSettings)} className="px-2 py-1.5 border border-gray-300 text-xs rounded hover:bg-gray-100">
+              ⚙
+            </button>
+          </div>
+          {showSettings && (
+            <div className="mt-3 space-y-2 border-t border-gray-200 pt-3">
+              <div>
+                <label className="text-[10px] font-bold text-gray-500 uppercase">작품 맥락 (메모리)</label>
+                <textarea value={workContext} onChange={e => setWorkContext(e.target.value)} rows={4}
+                  className="w-full text-xs rounded border border-gray-300 px-2 py-1 mt-1 resize-none"
+                  placeholder="세계관, 캐릭터 목록, 배경 설정..." />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-500 uppercase">작품 지침 (지시사항)</label>
+                <textarea value={workInstructions} onChange={e => setWorkInstructions(e.target.value)} rows={4}
+                  className="w-full text-xs rounded border border-gray-300 px-2 py-1 mt-1 resize-none"
+                  placeholder="문체 규칙, 톤, 금지사항..." />
+              </div>
+              <button onClick={handleSaveSettings} disabled={savingSettings}
+                className="w-full px-2 py-1 bg-gray-900 text-white text-xs rounded hover:bg-gray-700 disabled:opacity-50">
+                {savingSettings ? "저장 중..." : "설정 저장"}
+              </button>
+            </div>
+          )}
         </div>
         <div className="flex-1 overflow-y-auto">
           {sessions.map(s => (
