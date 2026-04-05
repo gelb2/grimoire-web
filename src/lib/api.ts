@@ -200,7 +200,7 @@ class ApiClient {
     return this.fetch<any>('/works', { method: 'POST', body: JSON.stringify(data) })
   }
 
-  async updateWork(id: string, data: { title?: string; subtitle?: string; description?: string }) {
+  async updateWork(id: string, data: { title?: string; subtitle?: string; description?: string; context?: string | null; instructions?: string | null }) {
     return this.fetch<any>(`/works/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
   }
 
