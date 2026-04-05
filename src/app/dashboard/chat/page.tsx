@@ -240,6 +240,10 @@ export default function ChatPage() {
                 className="w-full px-2 py-1 bg-gray-900 text-white text-xs rounded hover:bg-gray-700 disabled:opacity-50">
                 {savingSettings ? "저장 중..." : "설정 저장"}
               </button>
+              <div className="mt-3 pt-3 border-t border-gray-200">
+                <label className="text-[10px] font-bold text-gray-500 uppercase">원고 인덱싱 상태</label>
+                <p className="text-[10px] text-gray-400 mt-1">업로드된 에피소드가 자동으로 인덱싱됩니다. 인덱싱된 원고만 AI 채팅에서 참조됩니다.</p>
+              </div>
             </div>
           )}
         </div>
