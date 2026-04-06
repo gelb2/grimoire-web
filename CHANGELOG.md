@@ -1,5 +1,23 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.18.0] - 2026-04-07
+
+### 테마 에디터 완성 + 버그 수정
+
+#### Added
+- 테마 에디터 기본 필드 4개 추가: fontHeading(제목 폰트), showPreface(일러두기 표시), showAfterword(후기 표시), footerText(푸터 텍스트)
+- 테마 에디터 고급 설정 접이식 섹션 12개 필드: cardRadius, sectionSpacing, subtitleStyle, typingSpeed, navOpacity, tabPillRadius, labelLetterSpacing, cardWatermarkOpacity, cardHoverLift, cardCtaText, episodeLabelFormat, showProfileTab
+
+#### Fixed
+- episode/page.tsx: API 응답 타입 통일 (data.theme 우선 체크, layout.tsx와 일관성)
+- ThemeDecorations: dividerColor 커스텀 색상 반영 (빈 문자열이면 accent 폴백)
+- Explore 페이지 WorkCard variant magazine → platform 교체 (ThemeProvider 밖에서 CSS 변수 미정의 문제 해결)
+
+#### Changed
+- docs/theme-spec.md 코드-문서 정합성 수정 (titleWeight 4옵션, bodySize 값, cardRadius 기본값, sectionSpacing enum, subscribeButtonStyle ghost 제거, fontHeading CSS변수)
+
+---
+
 ## [0.17.0] - 2026-04-07
 
 ### AI 채팅 UI + 테마 슬롯 관리
