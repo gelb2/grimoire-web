@@ -57,8 +57,8 @@ interface AuthorTheme {
 
   // 타이포그래피 Phase 1 (v0.16.0 추가)
   titleSize?: "sm" | "md" | "lg" | "xl"    // 제목 크기
-  titleWeight?: "normal" | "bold"           // 제목 두께
-  bodySize?: "sm" | "md" | "lg"             // 본문 크기
+  titleWeight?: "light" | "normal" | "bold" | "black"  // 제목 두께
+  bodySize?: "compact" | "normal" | "large"            // 본문 크기
   letterSpacing?: "tight" | "normal" | "wide"  // 자간
   bodyLineHeight?: "compact" | "normal" | "relaxed"  // 행간
   contentWidth?: "narrow" | "normal" | "wide"  // 콘텐츠 폭
@@ -68,7 +68,7 @@ interface AuthorTheme {
 
   // 추가 시각 요소 (optional)
   typingSpeed?: number     // ms per character (default: 50)
-  cardRadius?: string      // border radius (default: "12px")
+  cardRadius?: string      // border radius (default: "8px")
 
   // UI 세부 조정 (v0.15.0 추가)
   tabPillRadius?: string          // 탭 필 버튼 라운딩 (예: "9999px")
@@ -78,11 +78,11 @@ interface AuthorTheme {
   cardCtaText?: string            // 카드 CTA 텍스트 (예: "읽기", "Read")
   subtitleStyle?: "italic" | "normal"  // 부제 스타일
   episodeLabelFormat?: string     // 에피소드 라벨 포맷 (예: "EP.{n}", "제{n}화")
-  sectionSpacing?: string         // 섹션 간 간격 (예: "4rem")
+  sectionSpacing?: "sm" | "md" | "lg"  // 섹션 간 간격 (default: "md")
   showPreface?: boolean           // 서문 섹션 표시 여부 (default: true)
   showAfterword?: boolean         // 후기 섹션 표시 여부 (default: true)
   showProfileTab?: boolean        // 프로필 탭 표시 여부 (default: true)
-  subscribeButtonStyle?: "filled" | "outlined" | "ghost"  // 구독 버튼 스타일
+  subscribeButtonStyle?: "outlined" | "filled"  // 구독 버튼 스타일
 }
 ```
 
@@ -100,7 +100,7 @@ interface AuthorTheme {
 | accent2 | `--g-accent2` | `text-g-accent2` | 보조 강조색 |
 | border | `--g-border` | `border-g-border` | 경계선 |
 | fontBody | `--g-serif` | `font-g-serif` | 본문 font-family |
-| fontHeading | — | — | 제목 font-family (fontBody와 동일 시 생략) |
+| fontHeading | `--g-heading-font` | — | 제목 font-family |
 
 ## 프리셋
 

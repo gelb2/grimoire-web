@@ -102,12 +102,17 @@ export function ThemeDivider({ decorations, size = 20, className }: DividerProps
   // 아이콘 없음
   if (iconName === "none") return null
 
+  // dividerColor 지정 시 커스텀 색상, 없으면 accent 폴백
+  const customColor = decorations.dividerColor || undefined
+  const colorStyle = customColor ? { backgroundColor: customColor } : undefined
+  const colorClass = customColor ? "" : "bg-g-accent"
+
   // 점 3개 스타일
   if (iconName === "dot") {
     return (
       <div className={cn("flex items-center justify-center gap-4 opacity-30", className)}>
         {[0, 1, 2].map((i) => (
-          <span key={i} className="block size-1 rounded-full bg-g-accent" />
+          <span key={i} className={cn("block size-1 rounded-full", colorClass)} style={colorStyle} />
         ))}
       </div>
     )
@@ -117,7 +122,7 @@ export function ThemeDivider({ decorations, size = 20, className }: DividerProps
   if (iconName === "line") {
     return (
       <div className={cn("opacity-30", className)}>
-        <div className="h-px bg-g-accent" />
+        <div className={cn("h-px", colorClass)} style={colorStyle} />
       </div>
     )
   }
@@ -127,10 +132,10 @@ export function ThemeDivider({ decorations, size = 20, className }: DividerProps
   if (!icon) return null
 
   return (
-    <div className={cn("flex items-center gap-4 opacity-30", className)}>
-      <div className="flex-1 h-px bg-g-accent" />
+    <div className={cn("flex items-center gap-4 opacity-30", className)} style={customColor ? { color: customColor } : undefined}>
+      <div className={cn("flex-1 h-px", colorClass)} style={colorStyle} />
       {icon}
-      <div className="flex-1 h-px bg-g-accent" />
+      <div className={cn("flex-1 h-px", colorClass)} style={colorStyle} />
     </div>
   )
 }
