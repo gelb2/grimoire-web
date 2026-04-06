@@ -161,41 +161,68 @@ src/
 
 ---
 
-## 6. AI 채팅 (레이어 3 — 구현 예정)
+## 6. AI 채팅 (레이어 3 — 구현 완료)
 
-### 6-1. 콘셉
+### 6-1. 콘셉 (Claude 맥 앱 프로젝트 채팅 모방)
 
-Claude 맥 앱의 **프로젝트 → 채팅** 경험을 재현:
 - **프로젝트 = Work** (작품 단위 격리)
-- **프로젝트 안의 원고 = Episodes** (rawMd가 인덱싱됨)
+- **프로젝트 메모리 = Work.context** (AI가 매일 자정 자동 재생성)
+- **프로젝트 지침 = Work.instructions** (작가가 직접 작성)
+- **프로젝트 파일 = Episodes** (rawMd → pgvector 인덱싱, 업로드 시 자동)
 - **채팅 = ChatSession** (Work 안에서 여러 세션 생성 가능)
 
-### 6-2. 흐름
+### 6-2. 시스템 프롬프트 구성 (매 메시지마다)
 
 ```
-작가가 Work "사슴악마" 채팅에서 질문 입력
-  → 질문 임베딩
-  → pgvector에서 해당 Work의 관련 청크 검색 (top 15)
-  → Claude에 전달: [시스템 프롬프트] + [관련 청크] + [대화 히스토리 최근 10개] + [질문]
-  → 응답 스트리밍 (SSE)
-  → ChatMessage에 저장 (user + assistant)
+[1] 절대 규칙 (할루시네이션 방지 5조)
+[2] 에피소드 매니페스트 (DB에서 자동 생성 — "이 목록에 없는 에피소드 만들지 마라")
+[3] 프로젝트 메모리 (Work.context — AI가 자정에 자동 축적)
+[4] 작품 지침 (Work.instructions — 작가가 직접 작성)
+[5] RAG 검색 결과 (질문 관련 원고 청크 top 25)
+[6] 대화 히스토리 (최근 10개 메시지)
+[7] 사용자 질문
 ```
 
-### 6-3. API 설계 (예정)
+### 6-3. 프로젝트 메모리 자동 재생성
+
+- **파일:** `src/application/chat/memory-regeneration.service.ts`
+- **스케줄:** @Cron 매일 KST 자정 (UTC 15:00)
+- **동작:**
+  1. 24시간 내 대화가 있었던 Work 목록 조회
+  2. 각 Work의 전체 ChatMessage 수집 (최근 100개)
+  3. Claude에게 "대화에서 확인된 작품 사실만 정리" 요청
+  4. Work.context 업데이트
+- **기준:** 추론 제외, 작가가 확인한 사실만, 캐릭터/설정/의도
+
+### 6-4. 에피소드 매니페스트 자동 주입
+
+- DB에서 에피소드 목록(title, type, orderNum) 자동 읽기
+- 매 채팅 메시지의 시스템 프롬프트에 고정 주입
+- "이 목록에 없는 에피소드는 존재하지 않는다" 지시
+
+### 6-5. 에피소드 자동 인덱싱
+
+- 에피소드 업로드 시 WorkManagementUseCase에서 비동기 인덱싱 트리거
+- Episode.isIndexed 플래그로 인덱싱 상태 추적
+- 인덱싱 실패해도 에피소드 생성은 성공 (fire-and-forget)
+
+### 6-6. API
 
 | Method | Path | 용도 | 인증 |
 |--------|------|------|------|
 | POST | `/chat/sessions` | 새 채팅 세션 생성 | JWT |
 | GET | `/chat/sessions?workId=` | 세션 목록 조회 | JWT |
 | POST | `/chat/sessions/:sessionId/messages` | 메시지 전송 + AI 응답 | JWT |
-| GET | `/chat/sessions/:sessionId/messages` | 히스토리 조회 | JWT |
+| GET | `/chat/sessions/:sessionId/messages` | 히스토리 조회 (커서 페이지네이션) | JWT |
 | DELETE | `/chat/sessions/:sessionId` | 세션 삭제 | JWT |
 
-### 6-4. 프론트 (예정)
+### 6-7. 프론트
 
-- 대시보드 내 "AI 어시스턴트" 탭 또는 `/dashboard/chat`
-- Work 선택 → 채팅 세션 목록 → 메시지 UI
-- 스트리밍 응답 표시 (SSE or WebSocket)
+- `/dashboard/chat` — Work 선택, 세션 관리, 메시지 UI
+- ⚙ 설정 버튼: 작품 맥락(context) + 지침(instructions) 편집
+- 무한 스크롤 (커서 기반, 맨 위 도달 시 이전 30개 로드)
+- ThinkingIndicator: 바운스 도트 + 순환 문구 ("원고를 살펴보는 중...")
+- StreamedMessage: 문단별 200ms fadeIn 애니메이션 (새 메시지만)
 
 ---
 

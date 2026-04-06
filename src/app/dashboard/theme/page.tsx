@@ -151,6 +151,7 @@ function OptionsPanel({ theme, onChange, onPresetChange, onSave, onPublish, onGe
         <h3 className="text-sm font-bold text-gray-900 mb-2">타이포그래피</h3>
         <div className="space-y-2">
           <SelectField label="본문 폰트" value={theme.fontBody} options={[{ value: "serif", label: "세리프" }, { value: "sans-serif", label: "산세리프" }, { value: "monospace", label: "고정폭" }]} onChange={v => onChange({ fontBody: v })} />
+          <SelectField label="제목 폰트" value={theme.fontHeading ?? "serif"} options={[{ value: "serif", label: "세리프" }, { value: "sans-serif", label: "산세리프" }, { value: "monospace", label: "고정폭" }]} onChange={v => onChange({ fontHeading: v })} />
           <SelectField label="제목 크기" value={theme.titleSize ?? "lg"} options={[{ value: "sm", label: "S" }, { value: "md", label: "M" }, { value: "lg", label: "L" }, { value: "xl", label: "XL" }]} onChange={v => onChange({ titleSize: v })} />
           <SelectField label="제목 두께" value={theme.titleWeight ?? "bold"} options={[{ value: "light", label: "가벼운" }, { value: "normal", label: "보통" }, { value: "bold", label: "굵은" }, { value: "black", label: "매우 굵은" }]} onChange={v => onChange({ titleWeight: v })} />
           <SelectField label="본문 크기" value={theme.bodySize ?? "normal"} options={[{ value: "compact", label: "작게" }, { value: "normal", label: "보통" }, { value: "large", label: "크게" }]} onChange={v => onChange({ bodySize: v })} />
@@ -168,6 +169,14 @@ function OptionsPanel({ theme, onChange, onPresetChange, onSave, onPublish, onGe
           <SelectField label="톤" value={theme.tone} options={[{ value: "dark", label: "다크" }, { value: "light", label: "라이트" }, { value: "sepia", label: "세피아" }]} onChange={v => onChange({ tone: v })} />
           <SelectField label="애니메이션" value={theme.animation} options={[{ value: "typing", label: "타이핑" }, { value: "fade", label: "페이드" }, { value: "slide", label: "슬라이드" }, { value: "none", label: "없음" }]} onChange={v => onChange({ animation: v })} />
           <SelectField label="콘텐츠 폭" value={theme.contentWidth ?? "normal"} options={[{ value: "narrow", label: "좁게" }, { value: "normal", label: "보통" }, { value: "wide", label: "넓게" }]} onChange={v => onChange({ contentWidth: v })} />
+          <label className="flex items-center gap-2 mt-1">
+            <input type="checkbox" checked={theme.showPreface ?? true} onChange={e => onChange({ showPreface: e.target.checked })} className="rounded border-gray-300" />
+            <span className="text-sm text-gray-700">일러두기 표시</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="checkbox" checked={theme.showAfterword ?? true} onChange={e => onChange({ showAfterword: e.target.checked })} className="rounded border-gray-300" />
+            <span className="text-sm text-gray-700">후기 표시</span>
+          </label>
         </div>
       </section>
 
@@ -186,6 +195,10 @@ function OptionsPanel({ theme, onChange, onPresetChange, onSave, onPublish, onGe
           <label className="block">
             <span className="text-sm font-medium text-gray-700">헤더 서브타이틀</span>
             <input type="text" value={theme.decorations.headerSubtitle} onChange={e => updateDeco({ headerSubtitle: e.target.value })} className="mt-1 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm" placeholder="Short Fiction Anthology" />
+          </label>
+          <label className="block">
+            <span className="text-sm font-medium text-gray-700">푸터 텍스트</span>
+            <input type="text" value={theme.decorations.footerText} onChange={e => updateDeco({ footerText: e.target.value })} className="mt-1 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm" placeholder="ⓒ 2024 작가명" />
           </label>
         </div>
       </section>

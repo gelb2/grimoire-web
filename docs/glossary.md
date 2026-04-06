@@ -24,8 +24,15 @@
 | Comment | 독자가 에피소드에 남긴 댓글 |
 | Payment | 크레딧 구매 결제 기록 |
 | Credit | AI 기능 사용에 필요한 내부 화폐 단위 |
-| RAG | Retrieval-Augmented Generation — 소설 분석용 벡터 검색 |
-| Vector/Embedding | 텍스트의 의미를 수치화한 벡터 표현 (소설 분석용) |
+| Plan | 구독 플랜 (free/pro/premium). 슬롯 개수와 기능 제한을 결정 |
+| Slot / isSlotted | 테마 활성화 슬롯. isSlotted=true면 공개 렌더링에 사용, false면 보관 상태 |
+| Context | 작품 프로젝트 메모리 (Work.context). AI가 매일 자정 대화 기반으로 자동 재생성 |
+| Instructions | 작품 지침 (Work.instructions). 작가가 직접 작성하는 문체 규칙/톤/금지사항 |
+| ChatSession | 작가와 AI 어시스턴트의 대화 세션 (Work 단위 격리) |
+| ChatMessage | 채팅 메시지. role: "user"(작가) 또는 "assistant"(AI) |
+| isIndexed | 에피소드 RAG 벡터 인덱싱 완료 여부. 인덱싱된 원고만 AI 채팅에서 참조 |
+| RAG | Retrieval-Augmented Generation — 소설 분석/채팅용 벡터 검색 |
+| Vector/Embedding | 텍스트의 의미를 수치화한 벡터 표현 (소설 분석/채팅용) |
 
 ## Block 타입 (DeerDevil 기반)
 

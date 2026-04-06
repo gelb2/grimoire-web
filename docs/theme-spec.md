@@ -9,7 +9,7 @@ Claude API가 생성하는 JSON의 스키마:
 
 ```typescript
 interface ThemeDecorations {
-  dividerIcon: "antler" | "star" | "dot" | "line" | "none"
+  dividerIcon: "antler" | "flower" | "star" | "geometric" | "brush" | "leaf" | "camellia" | "umbrella" | "waterwheel" | "dot" | "line" | "none"
   dividerColor: string        // CSS 색상 (예: "#9a8060"), 빈 문자열이면 accent 사용
   headerIcon: "antler" | "quill" | "book" | "none"
   headerSubtitle: string      // 헤더 부제 (예: "Short Fiction Anthology")
@@ -38,18 +38,37 @@ interface AuthorTheme {
   tone: "dark" | "light" | "sepia"
 
   // 레이아웃
-  episodeListLayout: "series" | "grid" | "classic"
+  episodeListLayout: "series" | "grid" | "classic" | "magazine" | "gallery" | "minimal"
   // - "series": 시리즈 소설 — 에피소드 네비게이션 탭 + 카드 그리드 + 타이핑 애니메이션
   // - "grid": 기본 그리드 레이아웃 — 작품 카드 목록
   // - "classic": 전통적 웹소설 목록형
+  // - "magazine": 매거진 스타일 레이아웃
+  // - "gallery": 갤러리 스타일 레이아웃
+  // - "minimal": 미니멀 텍스트 중심
   // ※ v0.15.0에서 layout → episodeListLayout으로 리네이밍
+
+  // 네비게이션
+  navStyle?: "top" | "side" | "none"  // 네비게이션 스타일
+  navOpacity?: number                  // 네비게이션 불투명도 (default: 0.95)
+
+  // 히어로
+  heroStyle?: "fullname" | "cover" | "minimal" | "none"
+  tagline?: string                     // 작가 공간 태그라인 (예: "Inspired by the sensibility of A24")
+
+  // 타이포그래피 Phase 1 (v0.16.0 추가)
+  titleSize?: "sm" | "md" | "lg" | "xl"    // 제목 크기
+  titleWeight?: "light" | "normal" | "bold" | "black"  // 제목 두께
+  bodySize?: "compact" | "normal" | "large"            // 본문 크기
+  letterSpacing?: "tight" | "normal" | "wide"  // 자간
+  bodyLineHeight?: "compact" | "normal" | "relaxed"  // 행간
+  contentWidth?: "narrow" | "normal" | "wide"  // 콘텐츠 폭
 
   // 장식 요소
   decorations: ThemeDecorations
 
   // 추가 시각 요소 (optional)
   typingSpeed?: number     // ms per character (default: 50)
-  cardRadius?: string      // border radius (default: "12px")
+  cardRadius?: string      // border radius (default: "8px")
 
   // UI 세부 조정 (v0.15.0 추가)
   tabPillRadius?: string          // 탭 필 버튼 라운딩 (예: "9999px")
@@ -59,11 +78,11 @@ interface AuthorTheme {
   cardCtaText?: string            // 카드 CTA 텍스트 (예: "읽기", "Read")
   subtitleStyle?: "italic" | "normal"  // 부제 스타일
   episodeLabelFormat?: string     // 에피소드 라벨 포맷 (예: "EP.{n}", "제{n}화")
-  sectionSpacing?: string         // 섹션 간 간격 (예: "4rem")
+  sectionSpacing?: "sm" | "md" | "lg"  // 섹션 간 간격 (default: "md")
   showPreface?: boolean           // 서문 섹션 표시 여부 (default: true)
   showAfterword?: boolean         // 후기 섹션 표시 여부 (default: true)
   showProfileTab?: boolean        // 프로필 탭 표시 여부 (default: true)
-  subscribeButtonStyle?: "filled" | "outlined" | "ghost"  // 구독 버튼 스타일
+  subscribeButtonStyle?: "outlined" | "filled"  // 구독 버튼 스타일
 }
 ```
 
@@ -71,17 +90,17 @@ interface AuthorTheme {
 
 | 파라미터 | CSS Variable | Tailwind 토큰 | 적용 대상 |
 |---------|-------------|--------------|----------|
-| bgPrimary | `--u-bg` | `bg-u-bg` | body, 전체 배경 |
-| bgSecondary | `--u-bg2` | `bg-u-bg2` | 카드, 섹션 |
-| textPrimary | `--u-text` | `text-u-text` | 본문 |
-| textMuted | `--u-text-muted` | `text-u-text-muted` | 보조 텍스트 |
-| textDim | `--u-text-dim` | `text-u-text-dim` | 가장 연한 텍스트 |
-| textBright | `--u-text-bright` | `text-u-text-bright` | 제목, 강조 |
-| accent | `--u-accent` | `text-u-accent`, `bg-u-accent` | 강조색 |
-| accent2 | `--u-accent2` | `text-u-accent2` | 보조 강조색 |
-| border | `--u-border` | `border-u-border` | 경계선 |
-| fontBody | `--u-serif` | `font-u-serif` | 본문 font-family |
-| fontHeading | — | — | 제목 font-family (fontBody와 동일 시 생략) |
+| bgPrimary | `--g-bg` | `bg-g-bg` | body, 전체 배경 |
+| bgSecondary | `--g-bg2` | `bg-g-bg2` | 카드, 섹션 |
+| textPrimary | `--g-text` | `text-g-text` | 본문 |
+| textMuted | `--g-text-muted` | `text-g-text-muted` | 보조 텍스트 |
+| textDim | `--g-text-dim` | `text-g-text-dim` | 가장 연한 텍스트 |
+| textBright | `--g-text-bright` | `text-g-text-bright` | 제목, 강조 |
+| accent | `--g-accent` | `text-g-accent`, `bg-g-accent` | 강조색 |
+| accent2 | `--g-accent2` | `text-g-accent2` | 보조 강조색 |
+| border | `--g-border` | `border-g-border` | 경계선 |
+| fontBody | `--g-serif` | `font-g-serif` | 본문 font-family |
+| fontHeading | `--g-heading-font` | — | 제목 font-family |
 
 ## 프리셋
 
@@ -145,7 +164,14 @@ interface AuthorTheme {
 | dividerIcon | 설명 |
 |-------------|------|
 | `antler` | 사슴뿔 SVG — DeerDevil 전용 |
+| `flower` | 꽃 장식 |
 | `star` | 별표 — 판타지/서정 |
+| `geometric` | 기하학 문양 |
+| `brush` | 붓터치 |
+| `leaf` | 잎사귀 |
+| `camellia` | 동백꽃 |
+| `umbrella` | 우산 |
+| `waterwheel` | 물레방아 |
 | `dot` | 점 3개 기본 구분선 |
 | `line` | 단순 수평선 |
 | `none` | 구분선 없음 |

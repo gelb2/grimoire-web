@@ -23,7 +23,8 @@ async function getThemeLayout(authorSlug: string): Promise<string> {
     })
     if (res.ok) {
       const data = await res.json()
-      return data.overrides?.episodeListLayout ?? data.overrides?.layout ?? 'grid'
+      // data.theme (새 API) 우선, data.overrides (하위 호환) 폴백
+      return data.theme?.episodeListLayout ?? data.overrides?.episodeListLayout ?? data.overrides?.layout ?? 'grid'
     }
   } catch {
     // 테마 로드 실패 — 기본 grid
