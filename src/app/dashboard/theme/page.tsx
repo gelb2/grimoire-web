@@ -202,6 +202,54 @@ function OptionsPanel({ theme, onChange, onPresetChange, onSave, onPublish, onGe
           </label>
         </div>
       </section>
+
+      {/* 고급 설정 (접이식) */}
+      <details className="group">
+        <summary className="text-sm font-bold text-gray-900 cursor-pointer select-none flex items-center gap-1">
+          <span className="transition-transform group-open:rotate-90">▶</span>
+          고급 설정
+        </summary>
+        <div className="mt-3 space-y-2">
+          <SelectField label="카드 둥글기" value={theme.cardRadius ?? "8px"} options={[{ value: "0", label: "없음" }, { value: "4px", label: "작게" }, { value: "8px", label: "보통" }, { value: "16px", label: "크게" }]} onChange={v => onChange({ cardRadius: v })} />
+          <SelectField label="섹션 간격" value={theme.sectionSpacing ?? "md"} options={[{ value: "sm", label: "좁게" }, { value: "md", label: "보통" }, { value: "lg", label: "넓게" }]} onChange={v => onChange({ sectionSpacing: v })} />
+          <SelectField label="소제목 스타일" value={theme.subtitleStyle ?? "italic"} options={[{ value: "italic", label: "이탤릭" }, { value: "normal", label: "보통" }]} onChange={v => onChange({ subtitleStyle: v })} />
+          <label className="block">
+            <span className="text-sm font-medium text-gray-700">타이핑 속도 (ms)</span>
+            <input type="number" min={5} max={200} value={theme.typingSpeed ?? 50} onChange={e => onChange({ typingSpeed: Number(e.target.value) })} className="mt-1 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm" />
+          </label>
+          <label className="block">
+            <span className="text-sm font-medium text-gray-700">네비 투명도</span>
+            <input type="range" min={0} max={1} step={0.05} value={theme.navOpacity ?? 0.95} onChange={e => onChange({ navOpacity: Number(e.target.value) })} className="mt-1 block w-full" />
+            <span className="text-xs text-gray-500">{theme.navOpacity ?? 0.95}</span>
+          </label>
+          <SelectField label="탭 버튼 둥글기" value={theme.tabPillRadius ?? "20px"} options={[{ value: "4px", label: "약간" }, { value: "20px", label: "보통" }, { value: "9999px", label: "완전 둥글게" }]} onChange={v => onChange({ tabPillRadius: v })} />
+          <label className="block">
+            <span className="text-sm font-medium text-gray-700">라벨 자간</span>
+            <input type="text" value={theme.labelLetterSpacing ?? "0.25em"} onChange={e => onChange({ labelLetterSpacing: e.target.value })} className="mt-1 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm" placeholder="0.25em" />
+          </label>
+          <label className="block">
+            <span className="text-sm font-medium text-gray-700">카드 워터마크 투명도</span>
+            <input type="range" min={0} max={0.5} step={0.01} value={theme.cardWatermarkOpacity ?? 0.15} onChange={e => onChange({ cardWatermarkOpacity: Number(e.target.value) })} className="mt-1 block w-full" />
+            <span className="text-xs text-gray-500">{theme.cardWatermarkOpacity ?? 0.15}</span>
+          </label>
+          <label className="block">
+            <span className="text-sm font-medium text-gray-700">카드 호버 상승</span>
+            <input type="text" value={theme.cardHoverLift ?? "0.125rem"} onChange={e => onChange({ cardHoverLift: e.target.value })} className="mt-1 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm" placeholder="0.125rem" />
+          </label>
+          <label className="block">
+            <span className="text-sm font-medium text-gray-700">카드 CTA 텍스트</span>
+            <input type="text" value={theme.cardCtaText ?? "읽기 →"} onChange={e => onChange({ cardCtaText: e.target.value })} className="mt-1 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm" placeholder="읽기 →" />
+          </label>
+          <label className="block">
+            <span className="text-sm font-medium text-gray-700">에피소드 라벨 포맷</span>
+            <input type="text" value={theme.episodeLabelFormat ?? "{author} · {type} {num}"} onChange={e => onChange({ episodeLabelFormat: e.target.value })} className="mt-1 block w-full rounded border border-gray-300 px-2 py-1.5 text-sm" placeholder="{author} · {type} {num}" />
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="checkbox" checked={theme.showProfileTab ?? true} onChange={e => onChange({ showProfileTab: e.target.checked })} className="rounded border-gray-300" />
+            <span className="text-sm text-gray-700">프로필 탭 표시</span>
+          </label>
+        </div>
+      </details>
     </div>
   )
 }
