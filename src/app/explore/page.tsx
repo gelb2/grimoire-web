@@ -315,7 +315,7 @@ const MagazineGrid = memo(function MagazineGrid({ works }: { works: MagazineWork
                   genre={work.genre}
                   episodeCount={work.episodeCount ?? 0}
                   viewCount={work.viewCount}
-                  variant="magazine"
+                  variant="platform"
                 />
               ))}
             </div>
@@ -332,7 +332,7 @@ const MagazineGrid = memo(function MagazineGrid({ works }: { works: MagazineWork
             genre={big.genre}
             episodeCount={big.episodeCount ?? 0}
             viewCount={big.viewCount}
-            variant="magazine"
+            variant="platform"
           />
         )
 
@@ -348,7 +348,7 @@ const MagazineGrid = memo(function MagazineGrid({ works }: { works: MagazineWork
                 genre={work.genre}
                 episodeCount={work.episodeCount ?? 0}
                 viewCount={work.viewCount}
-                variant="magazine"
+                variant="platform"
               />
             ))}
           </div>
