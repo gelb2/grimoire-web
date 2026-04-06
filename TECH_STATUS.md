@@ -7,7 +7,7 @@
 
 ## 1. 현재 버전
 
-**v0.15.0** — 테마 CSS 리팩터링 (globals.css → theme.css) + 프리셋 통일 + 런타임 에러 수정
+**v0.17.0** — AI 채팅 UI + 테마 슬롯 관리 + 문서 현행화
 
 ---
 
@@ -29,6 +29,7 @@
 | 원고 업로드 | `/dashboard/upload` | 구현 완료 | createWork, createEpisode, parseManuscript |
 | 크레딧 | `/dashboard/credits` | UI 완료, 결제 미연동 | getProducts, getCredits (결제 버튼 비활성) |
 | 프로필 편집 | `/dashboard/profile` | 구현 완료 | updateBio |
+| AI 채팅 | `/dashboard/chat` | 구현 완료 | listChatSessions, createChatSession, sendChatMessage, getChatMessages |
 | 관리자 | `/admin` | 구현 완료 | getAdminStats, adminGrantCredits |
 
 ---

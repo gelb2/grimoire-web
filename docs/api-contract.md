@@ -177,6 +177,16 @@
 | GET | `/api/admin/stats` | 플랫폼 통계 | JWT, admin |
 | POST | `/api/admin/credits` | 크레딧 수동 부여 | JWT, admin |
 
+### Chat (AI 어시스턴트)
+
+| Method | Path | 용도 | 인증 |
+|--------|------|------|------|
+| POST | `/api/chat/sessions` | 새 채팅 세션 생성 | JWT |
+| GET | `/api/chat/sessions?workId=` | 세션 목록 조회 | JWT |
+| POST | `/api/chat/sessions/:sessionId/messages` | 메시지 전송 + AI 응답 | JWT |
+| GET | `/api/chat/sessions/:sessionId/messages` | 히스토리 조회 (커서 페이지네이션) | JWT |
+| DELETE | `/api/chat/sessions/:sessionId` | 세션 삭제 | JWT |
+
 ### Analysis (RAG)
 
 | Method | Path | 용도 | 인증 |
@@ -625,6 +635,50 @@ Request:
 }
 
 Response 200: AnalysisResult
+```
+
+### POST /api/chat/sessions
+
+```
+Headers: Authorization: Bearer <token>
+Request: { "workId": "uuid", "title?": "대화 제목" }
+Response 201: ChatSession (id, workId, title, createdAt, updatedAt)
+```
+
+### GET /api/chat/sessions
+
+```
+Headers: Authorization: Bearer <token>
+Query: ?workId=uuid
+Response 200: [ChatSession]
+```
+
+### POST /api/chat/sessions/:sessionId/messages
+
+메시지 전송 + RAG 기반 AI 응답 생성. 시스템 프롬프트에 에피소드 매니페스트, 프로젝트 메모리(Work.context), 작품 지침(Work.instructions), 관련 원고 청크(top 25)가 자동 주입된다.
+
+```
+Headers: Authorization: Bearer <token>
+Request: { "content": "질문 내용" }
+Response 200: { "userMsg": ChatMessage, "assistantMsg": ChatMessage }
+Error 403: 본인 세션 아님
+Error 404: 세션 없음
+```
+
+### GET /api/chat/sessions/:sessionId/messages
+
+```
+Headers: Authorization: Bearer <token>
+Query: ?limit=30&cursor=messageId
+Response 200: [ChatMessage] (오래된 순)
+```
+
+### DELETE /api/chat/sessions/:sessionId
+
+```
+Headers: Authorization: Bearer <token>
+Response 200: { "deleted": true }
+Error 403: 본인 세션 아님
 ```
 
 ### GET /api/analysis/status/:workId
