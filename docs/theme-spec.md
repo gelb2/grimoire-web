@@ -104,13 +104,18 @@ interface AuthorTheme {
 
 ## 프리셋
 
+시스템 프리셋 8종 (DB: authorId=null, source='system'). deerDevil은 프리셋이 아님.
+
 | 이름 | tone | episodeListLayout | bgPrimary | textPrimary | fontBody | animation |
 |------|------|--------|-----------|-------------|----------|-----------|
-| Midnight | dark | series | #07070a | #cdc8bc | serif | typing |
+| Midnight | dark | series | #08080e | #c8c4bc | serif | typing |
 | Parchment | sepia | grid | #f5f0e8 | #3d3529 | serif | fade |
 | Morning | light | grid | #ffffff | #1a1a1a | sans-serif | slide |
 | Neon | dark | grid | #0d0d0d | #e0e0e0 | monospace | none |
 | Cream | light | grid | #faf8f5 | #4a4035 | serif | none |
+| Magazine | light | magazine | #ffffff | #1a1a1a | serif | fade |
+| Gallery | dark | gallery | #0a0a0a | #e0e0e0 | sans-serif | fade |
+| Minimal | dark | minimal | #111111 | #d4d0c8 | serif | none |
 
 ## 레이아웃 타입
 

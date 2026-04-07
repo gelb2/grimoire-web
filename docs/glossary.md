@@ -12,7 +12,7 @@
 | Episode | 작품의 개별 편 (에피소드, 챕터) |
 | Theme | 작가 공간의 시각적 설정 (색상, 폰트, 애니메이션) |
 | Theme Baking | 테마 JSON → CSS Variables 변환 + CSS 파일 생성 과정 |
-| Preset | 시스템이 제공하는 기본 테마 (Midnight, Parchment 등) |
+| Preset | 시스템이 제공하는 기본 테마 8종 (DB: authorId=null, source='system'). deerDevil은 프리셋이 아닌 작가 테마 |
 | Block | 파싱된 콘텐츠의 최소 단위 (paragraph, chapter, divider 등) |
 | Manuscript | 작가가 업로드하는 원고 (MD/TXT/DOCX 파일) |
 | Viewer | 에피소드를 렌더링하는 읽기 화면 |
