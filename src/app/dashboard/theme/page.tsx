@@ -1,13 +1,32 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
 import { api } from "@/lib/api"
 import { useAuth } from "@/features/auth"
-import { ThemeProvider, useTheme } from "@/features/theme"
+import { ThemeProvider } from "@/features/theme"
 import type { AuthorTheme, ThemeDecorations } from "@/features/theme/presets"
 import { AuthorSpace } from "@/features/reader/ui/AuthorSpace"
+import { EpisodeViewer } from "@/features/reader/ui/EpisodeViewer"
 import type { AuthorData } from "@/features/reader/ui/layouts"
 import { themePresets } from "@/features/theme/presets"
+import { useThemeEditorStore, inferTabFromField } from "@/stores/useThemeEditorStore"
+import type { PreviewTab } from "@/stores/useThemeEditorStore"
+
+// ── 에피소드 미리보기용 더미 데이터 ──
+import type { ContentMeta, EpisodeData, Block } from "@/features/reader/data"
+
+const DUMMY_META: ContentMeta = { slug: "preview", type: "episode", num: "001", title: "미리보기 에피소드", subtitle: "소제목 — 이탤릭 스타일 확인용", description: "테마 에디터 미리보기" }
+const DUMMY_BLOCKS: Block[] = [
+  { type: "paragraph", text: "첫 번째 문단입니다. 타이핑 애니메이션과 본문 폰트, 행간, 자간이 이 영역에서 확인됩니다. 충분히 긴 텍스트를 넣어야 콘텐츠 폭과 본문 크기를 비교할 수 있습니다." },
+  { type: "paragraph", text: "두 번째 문단. 섹션 간격(sectionSpacing)이 문단 사이의 여백을 결정합니다." },
+  { type: "italic", text: "이것은 이탤릭 블록입니다. 강조 스타일로 렌더링됩니다." },
+  { type: "divider" },
+  { type: "paragraph", text: "구분선 이후의 문단입니다. 디바이더 아이콘과 색상이 위에 표시됩니다." },
+  { type: "italic", text: "이탤릭 강조 텍스트입니다." },
+  { type: "paragraph", text: "마지막 문단. 에피소드 라벨 포맷과 소제목 스타일은 상단 헤더 영역에서 확인할 수 있습니다." },
+]
+const DUMMY_EPISODE: EpisodeData = { slug: "preview", title: "미리보기 에피소드", blocks: DUMMY_BLOCKS }
 
 // ── 색상 입력 ──
 function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
@@ -31,17 +50,14 @@ function SelectField<T extends string>({ label, value, options, onChange }: { la
   )
 }
 
-// ── 옵션 패널 (좌측) ──
-function OptionsPanel({ theme, onChange, onPresetChange, onSave, onPublish, onGenerate, saving, slotInfo, onSlotToggle }: {
+// ── 옵션 패널 (좌측) — 편집 전용, 퍼블리시/슬롯 관리 제거 ──
+function OptionsPanel({ theme, onChange, onPresetChange, onSave, onGenerate, saving }: {
   theme: AuthorTheme
   onChange: (partial: Partial<AuthorTheme>) => void
   onPresetChange: (preset: string) => void
   onSave: () => void
-  onPublish: () => void
   onGenerate: (description: string) => void
   saving: boolean
-  slotInfo: { plan: string; slotLimit: number; slottedCount: number; isExpired: boolean; themes: any[] } | null
-  onSlotToggle: (themeId: string, isSlotted: boolean) => void
 }) {
   const [aiPrompt, setAiPrompt] = useState("")
 
@@ -51,33 +67,10 @@ function OptionsPanel({ theme, onChange, onPresetChange, onSave, onPublish, onGe
 
   return (
     <div className="w-80 shrink-0 bg-white border-r border-gray-200 overflow-y-auto h-screen p-4 space-y-6">
-      {/* 플랜 정보 */}
-      {slotInfo && (
-        <section className="bg-gray-50 rounded-lg p-3">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-xs font-bold text-gray-500 uppercase">{slotInfo.plan} 플랜</span>
-            {slotInfo.isExpired && <span className="text-xs text-red-500 font-bold">만료됨</span>}
-          </div>
-          <p className="text-sm text-gray-700">슬롯: {slotInfo.slottedCount} / {slotInfo.slotLimit == null || slotInfo.slotLimit === Infinity ? '∞' : slotInfo.slotLimit}</p>
-        </section>
-      )}
-
-      {/* 만기 경고 */}
-      {slotInfo?.isExpired && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
-          구독이 만료되어 시스템 기본 테마가 적용됩니다. 플랜을 갱신하세요.
-        </div>
-      )}
-
-      {/* 액션 버튼 */}
-      <div className="flex gap-2">
-        <button onClick={onSave} disabled={saving || slotInfo?.isExpired} className="flex-1 px-3 py-2 bg-gray-900 text-white text-sm rounded hover:bg-gray-700 disabled:opacity-50">
-          {saving ? "저장 중..." : "저장"}
-        </button>
-        <button onClick={onPublish} disabled={saving || slotInfo?.isExpired} className="flex-1 px-3 py-2 bg-amber-600 text-white text-sm rounded hover:bg-amber-500 disabled:opacity-50">
-          퍼블리시
-        </button>
-      </div>
+      {/* 저장 버튼 */}
+      <button onClick={onSave} disabled={saving} className="w-full px-3 py-2 bg-gray-900 text-white text-sm rounded hover:bg-gray-700 disabled:opacity-50">
+        {saving ? "저장 중..." : "저장"}
+      </button>
 
       {/* AI 테마 생성 */}
       <section>
@@ -90,36 +83,12 @@ function OptionsPanel({ theme, onChange, onPresetChange, onSave, onPublish, onGe
         />
         <button
           onClick={() => { if (aiPrompt.trim()) onGenerate(aiPrompt.trim()) }}
-          disabled={saving || !aiPrompt.trim() || !!slotInfo?.isExpired || !!(slotInfo && slotInfo.slotLimit != null && slotInfo.slottedCount >= slotInfo.slotLimit)}
+          disabled={saving || !aiPrompt.trim()}
           className="mt-2 w-full px-3 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-500 disabled:opacity-50"
         >
           {saving ? "생성 중..." : "AI로 생성 (1 크레딧)"}
         </button>
-        {slotInfo && slotInfo.slotLimit != null && slotInfo.slottedCount >= slotInfo.slotLimit && !slotInfo.isExpired && (
-          <p className="text-xs text-red-500 mt-1">슬롯이 가득 찼습니다. 기존 테마를 슬롯에서 제거하세요.</p>
-        )}
       </section>
-
-      {/* 테마 슬롯 관리 */}
-      {slotInfo && slotInfo.themes.length > 0 && (
-        <section>
-          <h3 className="text-sm font-bold text-gray-900 mb-2">내 테마 ({slotInfo.themes.length}개)</h3>
-          <div className="space-y-1">
-            {slotInfo.themes.map((t: any) => (
-              <div key={t.id} className="flex items-center justify-between py-1.5 px-2 rounded bg-gray-50 text-sm">
-                <span className="truncate flex-1">{t.name}</span>
-                <button
-                  onClick={() => onSlotToggle(t.id, t.isSlotted)}
-                  disabled={slotInfo.isExpired}
-                  className={`ml-2 px-2 py-0.5 text-xs rounded ${t.isSlotted ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-500'}`}
-                >
-                  {t.isSlotted ? '활성' : '보관'}
-                </button>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* 프리셋 선택 */}
       <section>
@@ -134,15 +103,15 @@ function OptionsPanel({ theme, onChange, onPresetChange, onSave, onPublish, onGe
       <section>
         <h3 className="text-sm font-bold text-gray-900 mb-2">색상</h3>
         <div className="grid grid-cols-2 gap-2">
-          <ColorField label="배경" value={theme.bgPrimary} onChange={v => onChange({ bgPrimary: v })} />
-          <ColorField label="배경2" value={theme.bgSecondary} onChange={v => onChange({ bgSecondary: v })} />
-          <ColorField label="텍스트" value={theme.textPrimary} onChange={v => onChange({ textPrimary: v })} />
-          <ColorField label="뮤트" value={theme.textMuted} onChange={v => onChange({ textMuted: v })} />
-          <ColorField label="딤" value={theme.textDim} onChange={v => onChange({ textDim: v })} />
-          <ColorField label="밝은" value={theme.textBright} onChange={v => onChange({ textBright: v })} />
-          <ColorField label="액센트" value={theme.accent} onChange={v => onChange({ accent: v })} />
-          <ColorField label="액센트2" value={theme.accent2} onChange={v => onChange({ accent2: v })} />
-          <ColorField label="보더" value={theme.border} onChange={v => onChange({ border: v })} />
+          <ColorField label="전체 배경" value={theme.bgPrimary} onChange={v => onChange({ bgPrimary: v })} />
+          <ColorField label="카드 배경" value={theme.bgSecondary} onChange={v => onChange({ bgSecondary: v })} />
+          <ColorField label="본문 글자" value={theme.textPrimary} onChange={v => onChange({ textPrimary: v })} />
+          <ColorField label="보조 글자" value={theme.textMuted} onChange={v => onChange({ textMuted: v })} />
+          <ColorField label="흐린 글자" value={theme.textDim} onChange={v => onChange({ textDim: v })} />
+          <ColorField label="강조 글자" value={theme.textBright} onChange={v => onChange({ textBright: v })} />
+          <ColorField label="포인트 색" value={theme.accent} onChange={v => onChange({ accent: v })} />
+          <ColorField label="포인트 보조" value={theme.accent2} onChange={v => onChange({ accent2: v })} />
+          <ColorField label="구분선" value={theme.border} onChange={v => onChange({ border: v })} />
         </div>
       </section>
 
@@ -184,7 +153,7 @@ function OptionsPanel({ theme, onChange, onPresetChange, onSave, onPublish, onGe
       <section>
         <h3 className="text-sm font-bold text-gray-900 mb-2">장식</h3>
         <div className="space-y-2">
-          <SelectField label="디바이더 아이콘" value={theme.decorations.dividerIcon} options={[{ value: "antler", label: "사슴뿔" }, { value: "flower", label: "꽃" }, { value: "star", label: "별" }, { value: "geometric", label: "기하학" }, { value: "brush", label: "붓" }, { value: "leaf", label: "잎" }, { value: "dot", label: "점" }, { value: "line", label: "선" }, { value: "none", label: "없음" }]} onChange={v => updateDeco({ dividerIcon: v })} />
+          <SelectField label="디바이더 아이콘" value={theme.decorations.dividerIcon} options={[{ value: "antler", label: "사슴뿔" }, { value: "flower", label: "꽃" }, { value: "star", label: "별" }, { value: "geometric", label: "기하학" }, { value: "brush", label: "붓" }, { value: "leaf", label: "잎" }, { value: "book", label: "책" }, { value: "dot", label: "점" }, { value: "line", label: "선" }, { value: "none", label: "없음" }]} onChange={v => updateDeco({ dividerIcon: v })} />
           <ColorField label="디바이더 색상" value={theme.decorations.dividerColor || theme.accent} onChange={v => updateDeco({ dividerColor: v })} />
           <SelectField label="헤더 아이콘" value={theme.decorations.headerIcon} options={[{ value: "antler", label: "사슴뿔" }, { value: "quill", label: "깃펜" }, { value: "book", label: "책" }, { value: "dot", label: "점" }, { value: "none", label: "없음" }]} onChange={v => updateDeco({ headerIcon: v })} />
           <SelectField label="카드 악센트" value={theme.decorations.cardAccentPosition} options={[{ value: "left", label: "왼쪽" }, { value: "top", label: "상단" }, { value: "none", label: "없음" }]} onChange={v => updateDeco({ cardAccentPosition: v })} />
@@ -254,73 +223,98 @@ function OptionsPanel({ theme, onChange, onPresetChange, onSave, onPublish, onGe
   )
 }
 
-// ── 메인 페이지 ──
-export default function ThemeEditorPage() {
+// ── 미리보기 탭 바 ──
+function PreviewTabBar({ current, onTabChange }: { current: PreviewTab; onTabChange: (tab: PreviewTab) => void }) {
+  return (
+    <div className="flex border-b border-gray-200 bg-white">
+      {([["authorSpace", "작가공간"], ["episode", "에피소드"]] as const).map(([tab, label]) => (
+        <button
+          key={tab}
+          onClick={() => onTabChange(tab)}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${current === tab ? "border-gray-900 text-gray-900" : "border-transparent text-gray-500 hover:text-gray-700"}`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+// ── 메인 에디터 (useSearchParams 사용) ──
+function ThemeEditorInner() {
   const { user, loading: authLoading } = useAuth()
+  const searchParams = useSearchParams()
+  const editThemeId = searchParams.get("id")
+
   const [theme, setTheme] = useState<AuthorTheme | null>(null)
   const [themeId, setThemeId] = useState<string | null>(null)
   const [previewData, setPreviewData] = useState<AuthorData | null>(null)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState("")
-  const [slotInfo, setSlotInfo] = useState<{ plan: string; slotLimit: number; slottedCount: number; isExpired: boolean; themes: any[] } | null>(null)
 
-  // 슬롯 정보 로드
-  const loadSlotInfo = useCallback(async () => {
-    try {
-      const info = await api.getSlotInfo()
-      setSlotInfo(info)
-    } catch { /* 무시 */ }
-  }, [])
+  const { previewTab, setPreviewTab, autoSwitchTab, resetManualSwitch } = useThemeEditorStore()
 
-  // 작가 테마 + 작가 데이터 로드
+  // 테마 + 프리뷰 데이터 로드
   useEffect(() => {
     if (authLoading || !user) return
 
-    Promise.all([
-      api.getTheme(user.slug),
-      api.getAuthorSpace<any>(user.slug),
-    ]).then(async ([themeRes, authorRes]) => {
-      // 테마 로드 — /themes/{slug}는 resolveTheme 거친 완전한 theme 객체 반환
-      const themeData = themeRes as any
-      if (themeData.theme) {
-        setTheme(themeData.theme)
-        setThemeId(themeData.id)
-      } else if (themeData.overrides) {
-        // 폴백: overrides로 직접 사용
-        setTheme(themeData.overrides)
-        setThemeId(themeData.id)
-      }
+    const loadTheme = async () => {
+      try {
+        let themeData: any
+        if (editThemeId) {
+          // URL 파라미터로 특정 테마 로드
+          themeData = await api.getThemeById(editThemeId)
+        } else {
+          // 기본 테마 로드
+          themeData = await api.getTheme(user.slug)
+        }
 
-      // 프리뷰 데이터 로드
-      const authorInfo = authorRes.author ?? authorRes
-      const works = authorRes.works ?? authorInfo.works ?? []
-      const worksWithEpisodes = await Promise.all(
-        works.map(async (work: { slug: string }) => {
-          try {
-            const workRes = await api.getWork<any>(user.slug, work.slug)
-            return { ...work, episodes: workRes.episodes ?? workRes.work?.episodes ?? [] }
-          } catch {
-            return work
-          }
+        if (themeData.theme) {
+          setTheme(themeData.theme)
+          setThemeId(themeData.id)
+        } else if (themeData.overrides) {
+          setTheme(themeData.overrides)
+          setThemeId(themeData.id)
+        }
+
+        // 프리뷰 데이터 로드
+        const authorRes = await api.getAuthorSpace<any>(user.slug)
+        const authorInfo = authorRes.author ?? authorRes
+        const works = authorRes.works ?? authorInfo.works ?? []
+        const worksWithEpisodes = await Promise.all(
+          works.map(async (work: { slug: string }) => {
+            try {
+              const workRes = await api.getWork<any>(user.slug, work.slug)
+              return { ...work, episodes: workRes.episodes ?? workRes.work?.episodes ?? [] }
+            } catch { return work }
+          })
+        )
+        setPreviewData({
+          id: authorInfo.id,
+          slug: authorInfo.slug ?? user.slug,
+          name: authorInfo.name ?? user.slug,
+          description: authorInfo.description,
+          works: worksWithEpisodes,
         })
-      )
+      } catch {
+        setMessage("테마를 불러올 수 없습니다.")
+      }
+    }
 
-      setPreviewData({
-        id: authorInfo.id,
-        slug: authorInfo.slug ?? user.slug,
-        name: authorInfo.name ?? user.slug,
-        description: authorInfo.description,
-        works: worksWithEpisodes,
-      })
-    }).catch(() => {
-      setMessage("테마를 불러올 수 없습니다.")
-    })
-    loadSlotInfo()
-  }, [authLoading, user, loadSlotInfo])
+    loadTheme()
+  }, [authLoading, user, editThemeId])
 
   const handleChange = useCallback((partial: Partial<AuthorTheme>) => {
     setTheme(prev => prev ? { ...prev, ...partial } : prev)
-  }, [])
+    // 자동 탭 전환: 변경된 필드에 따라 적절한 탭으로 전환
+    const fieldName = Object.keys(partial)[0]
+    if (fieldName) {
+      const targetTab = inferTabFromField(fieldName)
+      if (targetTab) autoSwitchTab(targetTab)
+      // 공통 필드 편집 시 수동 전환 플래그 초기화
+      if (!targetTab) resetManualSwitch()
+    }
+  }, [autoSwitchTab, resetManualSwitch])
 
   const handlePresetChange = useCallback((presetName: string) => {
     if (!presetName || !themePresets[presetName as keyof typeof themePresets]) return
@@ -349,35 +343,8 @@ export default function ThemeEditorPage() {
       setTheme(result.preview as unknown as AuthorTheme)
       setThemeId(result.themeId)
       setMessage("AI 테마 생성 완료! (1 크레딧 사용)")
-      loadSlotInfo()
     } catch (e: any) {
       setMessage(e.message || "테마 생성 실패")
-    }
-    setSaving(false)
-  }, [user, loadSlotInfo])
-
-  const handleSlotToggle = useCallback(async (themeId: string, currentlySlotted: boolean) => {
-    try {
-      if (currentlySlotted) {
-        await api.removeThemeSlot(themeId)
-      } else {
-        await api.assignThemeSlot(themeId)
-      }
-      loadSlotInfo()
-    } catch (e: any) {
-      setMessage(e.message || "슬롯 변경 실패")
-    }
-  }, [loadSlotInfo])
-
-  const handlePublish = useCallback(async () => {
-    if (!user) return
-    setSaving(true)
-    setMessage("")
-    try {
-      await api.publishTheme(user.slug)
-      setMessage("퍼블리시 완료")
-    } catch {
-      setMessage("퍼블리시 실패")
     }
     setSaving(false)
   }, [user])
@@ -394,24 +361,50 @@ export default function ThemeEditorPage() {
         onChange={handleChange}
         onPresetChange={handlePresetChange}
         onSave={handleSave}
-        onPublish={handlePublish}
         onGenerate={handleGenerate}
         saving={saving}
-        slotInfo={slotInfo}
-        onSlotToggle={handleSlotToggle}
       />
 
-      {/* 우측: 실제 컴포넌트 프리뷰 */}
-      <div className="flex-1 overflow-y-auto relative">
+      {/* 우측: 미리보기 */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* 탭 바 */}
+        <PreviewTabBar current={previewTab} onTabChange={setPreviewTab} />
+
+        {/* 메시지 */}
         {message && (
-          <div className="absolute top-2 right-2 z-50 bg-white border border-gray-200 rounded px-3 py-1.5 text-sm shadow-sm">
+          <div className="bg-white border-b border-gray-200 px-4 py-2 text-sm text-gray-700">
             {message}
           </div>
         )}
-        <ThemeProvider theme={theme}>
-          <AuthorSpace authorSlug={user.slug} previewData={previewData ?? undefined} />
-        </ThemeProvider>
+
+        {/* 미리보기 영역 — 클릭 시 라우팅 차단 */}
+        <div
+          className="flex-1 overflow-y-auto"
+          onClickCapture={(e) => {
+            // 미리보기 내 모든 링크/버튼의 네비게이션 차단
+            const target = e.target as HTMLElement
+            const anchor = target.closest("a")
+            if (anchor) { e.preventDefault(); e.stopPropagation() }
+          }}
+        >
+          <ThemeProvider theme={theme}>
+            {previewTab === "authorSpace" ? (
+              <AuthorSpace authorSlug={user.slug} previewData={previewData ?? undefined} />
+            ) : (
+              <EpisodeViewer meta={DUMMY_META} data={DUMMY_EPISODE} authorName={user.name ?? user.slug} />
+            )}
+          </ThemeProvider>
+        </div>
       </div>
     </div>
+  )
+}
+
+// ── 페이지 컴포넌트 (Suspense boundary for useSearchParams) ──
+export default function ThemeEditorPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-screen text-gray-500">로딩 중...</div>}>
+      <ThemeEditorInner />
+    </Suspense>
   )
 }
