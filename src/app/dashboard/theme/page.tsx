@@ -60,6 +60,11 @@ function OptionsPanel({ theme, onChange, onPresetChange, onSave, onGenerate, sav
   saving: boolean
 }) {
   const [aiPrompt, setAiPrompt] = useState("")
+  const [apiPresets, setApiPresets] = useState<{ name: string; label: string }[]>([])
+
+  useEffect(() => {
+    api.getPresets().then(list => setApiPresets(list.map(p => ({ name: p.name, label: p.label })))).catch(() => {})
+  }, [])
 
   const updateDeco = (partial: Partial<ThemeDecorations>) => {
     onChange({ decorations: { ...theme.decorations, ...partial } })
@@ -95,7 +100,10 @@ function OptionsPanel({ theme, onChange, onPresetChange, onSave, onGenerate, sav
         <h3 className="text-sm font-bold text-gray-900 mb-2">프리셋</h3>
         <select onChange={e => onPresetChange(e.target.value)} className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm bg-white">
           <option value="">현재 설정 유지</option>
-          {Object.keys(themePresets).map(k => <option key={k} value={k}>{k}</option>)}
+          {apiPresets.length > 0
+            ? apiPresets.map(p => <option key={p.name} value={p.name}>{p.label}</option>)
+            : Object.keys(themePresets).map(k => <option key={k} value={k}>{k}</option>)
+          }
         </select>
       </section>
 
