@@ -116,7 +116,7 @@ const defaultUI = {
   subscribeButtonStyle: "outlined" as const,
 }
 
-// Midnight — 시스템 기본 다크 프리셋 (deerDevil과 독립적)
+// Midnight — 시스템 다크 프리셋 (book 아이콘, 보라 계열 accent)
 const midnight: AuthorTheme = {
   bgPrimary: "#08080e",
   bgSecondary: "#0e0e16",
@@ -324,38 +324,9 @@ const minimal: AuthorTheme = {
   ...defaultUI,
 }
 
-// DeerDevil — 사슴악마 작가가 AI로 생성한 전용 테마 (source: "ai")
-// antler 아이콘은 사슴악마 전용. midnight 프리셋과 독립적인 값.
-const deerDevil: AuthorTheme = {
-  bgPrimary: "#07070a",
-  bgSecondary: "#0d0d12",
-  textPrimary: "#cdc8bc",
-  textMuted: "#7a7570",
-  textDim: "#4a4740",
-  textBright: "#e8e3d8",
-  accent: "#9a8060",
-  accent2: "#c4a46a",
-  border: "#1e1e26",
-  fontBody: "serif",
-  fontHeading: "serif",
-  animation: "typing",
-  tone: "dark",
-  episodeListLayout: "series",
-  decorations: {
-    dividerIcon: "antler",
-    dividerColor: "#9a8060",
-    headerIcon: "antler",
-    headerSubtitle: "Short Fiction Anthology",
-    cardAccentPosition: "left",
-    footerText: "Inspired by the sensibility of A24",
-  },
-  ...defaultTypography,
-  ...defaultUI,
-}
-
+/** 시스템 프리셋 8종 — DB system theme(authorId=null)의 원본 값 */
 export const themePresets: Record<string, AuthorTheme> = {
   midnight,
-  deerDevil,
   parchment,
   morning,
   neon,
