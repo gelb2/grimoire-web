@@ -56,6 +56,8 @@
 
 | Method | Path | 용도 | 인증 |
 |--------|------|------|------|
+| GET | `/api/themes/presets` | 시스템 프리셋 목록 조회 (8종) | - |
+| POST | `/api/themes/from-preset` | 프리셋으로 테마 생성 (무료) | JWT |
 | POST | `/api/themes/generate` | AI 테마 생성 | JWT, 크레딧 1 |
 | GET | `/api/themes/:authorSlug` | 작가 테마 조회 | - |
 | POST | `/api/themes/publish/:authorSlug` | 테마 퍼블리시 (CSS 베이킹) | JWT |

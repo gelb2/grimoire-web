@@ -24,34 +24,8 @@ const notoSerifKR = Noto_Serif_KR({
   display: "swap",
 })
 
-// API 실패 시 기본 다크 테마 (로컬 프리셋 사용 안 함)
-const DEFAULT_THEME: AuthorTheme = {
-  bgPrimary: "#07070a",
-  bgSecondary: "#0d0d12",
-  textPrimary: "#cdc8bc",
-  textMuted: "#7a7570",
-  textDim: "#4a4740",
-  textBright: "#e8e3d8",
-  accent: "#9a8060",
-  accent2: "#c4a46a",
-  border: "#1e1e26",
-  fontBody: "serif",
-  fontHeading: "serif",
-  animation: "typing",
-  tone: "dark",
-  episodeListLayout: "grid",
-  decorations: {
-    dividerIcon: "dot",
-    dividerColor: "",
-    headerIcon: "none",
-    headerSubtitle: "",
-    cardAccentPosition: "left",
-    footerText: "",
-  },
-}
-
-// API에서 테마를 로드한다. 백엔드가 preset + overrides를 merge한 완전한 테마를 반환.
-async function loadTheme(authorSlug: string): Promise<AuthorTheme> {
+// API에서 테마를 로드한다. 백엔드가 완전한 테마를 반환 (시스템 테마 폴백 포함).
+async function loadTheme(authorSlug: string): Promise<AuthorTheme | null> {
   try {
     const apiUrl = process.env.API_URL || 'http://localhost:3000/api'
     const res = await fetch(`${apiUrl}/themes/${authorSlug}`, {
@@ -60,15 +34,14 @@ async function loadTheme(authorSlug: string): Promise<AuthorTheme> {
     })
     if (res.ok) {
       const data = await res.json()
-      // 백엔드가 merge한 완전한 테마 사용 (data.theme)
-      // 하위 호환: data.theme 없으면 기존 overrides 방식 폴백
+      // 백엔드가 완전한 테마를 반환 (overrides가 곧 전체 테마)
       if (data.theme) return data.theme as AuthorTheme
-      if (data.overrides) return { ...DEFAULT_THEME, ...data.overrides } as AuthorTheme
+      if (data.overrides) return data.overrides as AuthorTheme
     }
   } catch {
-    // API 연결 실패 — 기본 다크 테마 사용
+    // API 연결 실패
   }
-  return DEFAULT_THEME
+  return null
 }
 
 interface Props {
@@ -170,11 +143,11 @@ export default async function AuthorLayout({ params, children }: Props) {
   return (
     <>
       {/* 모바일: status bar + body 배경색을 테마와 통일 (safe-area 틈 방지) */}
-      <meta name="theme-color" content={theme.bgPrimary} />
-      <style>{`html, body { background-color: ${theme.bgPrimary}; }`}</style>
+      <meta name="theme-color" content={theme?.bgPrimary ?? '#08080e'} />
+      <style>{`html, body { background-color: ${theme?.bgPrimary ?? '#08080e'}; }`}</style>
       <div className={`${garamond.variable} ${notoSerifKR.variable}`}>
       <AuthProvider>
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={theme ?? {} as AuthorTheme}>
           <CardTransitionProvider>
             {/* 모든 작가공간에 SeriesNav 표시 (네비 통일) */}
             <SeriesNav
