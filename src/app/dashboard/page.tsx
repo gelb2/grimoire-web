@@ -50,6 +50,9 @@ export default function DashboardPage() {
   const [statsData, setStatsData] = useState<WorkStatsData | null>(null)
   const [statsLoading, setStatsLoading] = useState(false)
   const [slotInfo, setSlotInfo] = useState<{ plan: string; slotLimit: number; slottedCount: number; isExpired: boolean; themes: any[] } | null>(null)
+  const [showPresetPicker, setShowPresetPicker] = useState(false)
+  const [presets, setPresets] = useState<{ name: string; label: string; tone: string; genre: string; preview: { bgPrimary: string; accent: string; textPrimary: string } }[]>([])
+  const [creatingPreset, setCreatingPreset] = useState<string | null>(null)
 
   useEffect(() => {
     if (!loading && !user) router.push('/login')
@@ -106,6 +109,24 @@ export default function DashboardPage() {
     }
   }
 
+  const handleOpenPresetPicker = async () => {
+    setShowPresetPicker(true)
+    if (presets.length === 0) {
+      try { setPresets(await api.getPresets()) } catch { toast.error('프리셋 목록을 불러올 수 없습니다') }
+    }
+  }
+
+  const handleCreateFromPreset = async (presetName: string) => {
+    setCreatingPreset(presetName)
+    try {
+      await api.createFromPreset(presetName)
+      toast.success('테마가 생성되었습니다')
+      setShowPresetPicker(false)
+      loadSlotInfo()
+    } catch (err: any) { toast.error(err.message || '테마 생성 실패') }
+    finally { setCreatingPreset(null) }
+  }
+
   if (loading) return <div className="min-h-screen bg-white flex items-center justify-center"><p className="text-neutral-400">로딩 중...</p></div>
   if (!user) return null
 
@@ -157,14 +178,56 @@ export default function DashboardPage() {
                 <h2 className="text-2xl font-black text-black">내 테마</h2>
                 <div className="flex-1 h-px bg-black" />
               </div>
-              <Link href="/dashboard/theme" className="text-sm text-[#e53e3e] hover:underline ml-4">+ 새 테마</Link>
+              <button onClick={handleOpenPresetPicker} className="text-sm text-[#e53e3e] hover:underline ml-4">+ 새 테마</button>
             </div>
             <p className="text-xs text-neutral-400 mb-4 uppercase tracking-widest">
               {slotInfo.plan} · 슬롯 {slotInfo.slottedCount} / {slotInfo.slotLimit == null ? '∞' : slotInfo.slotLimit}
               {slotInfo.isExpired && <span className="text-red-500 ml-2">만료됨</span>}
             </p>
-            {slotInfo.themes.length === 0 ? (
-              <p className="text-sm text-neutral-400 py-4 border-b border-neutral-200">아직 테마가 없습니다. AI로 생성하거나 프리셋을 선택하세요.</p>
+
+            {/* 프리셋 선택 패널 */}
+            {showPresetPicker && (
+              <div className="mb-6 border border-neutral-200 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold text-black">테마 만들기</h3>
+                  <button onClick={() => setShowPresetPicker(false)} className="text-xs text-neutral-400 hover:text-black">닫기</button>
+                </div>
+
+                {/* 생성 옵션 */}
+                <div className="flex gap-2 mb-4">
+                  <Link href="/dashboard/theme" className="px-3 py-1.5 text-xs rounded border border-neutral-200 text-neutral-700 hover:bg-neutral-50">AI로 생성 (1 크레딧)</Link>
+                  <Link href="/dashboard/theme" className="px-3 py-1.5 text-xs rounded border border-neutral-200 text-neutral-700 hover:bg-neutral-50">직접 만들기</Link>
+                </div>
+
+                {/* 프리셋 그리드 */}
+                <p className="text-xs text-neutral-500 mb-2">시스템 프리셋 (무료)</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {presets.map((p) => (
+                    <button
+                      key={p.name}
+                      onClick={() => handleCreateFromPreset(p.name)}
+                      disabled={creatingPreset !== null || slotInfo.isExpired}
+                      className="group flex flex-col items-start p-3 rounded-lg border border-neutral-200 hover:border-neutral-400 transition text-left disabled:opacity-50"
+                    >
+                      <div className="flex gap-1 mb-2">
+                        <span className="w-4 h-4 rounded-full border border-neutral-200" style={{ backgroundColor: p.preview.bgPrimary }} />
+                        <span className="w-4 h-4 rounded-full border border-neutral-200" style={{ backgroundColor: p.preview.accent }} />
+                        <span className="w-4 h-4 rounded-full border border-neutral-200" style={{ backgroundColor: p.preview.textPrimary }} />
+                      </div>
+                      <span className="text-xs font-bold text-black">{p.label}</span>
+                      <span className="text-[10px] text-neutral-400">{p.genre}</span>
+                      {creatingPreset === p.name && <span className="text-[10px] text-blue-500 mt-1">생성 중...</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {slotInfo.themes.length === 0 && !showPresetPicker ? (
+              <div className="text-center py-8 border-b border-neutral-200">
+                <p className="text-sm text-neutral-400 mb-3">아직 테마가 없습니다</p>
+                <button onClick={handleOpenPresetPicker} className="px-4 py-2 text-sm bg-black text-white rounded-lg hover:bg-neutral-800 transition">프리셋에서 선택하기</button>
+              </div>
             ) : (
               slotInfo.themes.map((t: any, i: number) => (
                 <div key={t.id} className="grid grid-cols-[50px_1fr_auto] items-center gap-4 py-3 border-b border-neutral-200">
