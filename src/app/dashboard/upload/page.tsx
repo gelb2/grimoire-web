@@ -45,8 +45,18 @@ export default function UploadPage() {
       .catch(() => {})
   }, [user])
 
+  // 최대 파일 크기: 10MB (서버 Multer 제한과 동일)
+  const MAX_FILE_SIZE = 10 * 1024 * 1024
+
   // 파일 핸들러
   const handleFile = useCallback(async (file: File) => {
+    // 클라이언트 파일 크기 검증 — 서버 전송 전에 차단
+    if (file.size > MAX_FILE_SIZE) {
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(1)
+      setError(`파일 크기가 너무 큽니다 (${sizeMB}MB). 최대 10MB까지 업로드할 수 있습니다.`)
+      return
+    }
+
     const ext = file.name.split('.').pop()?.toLowerCase()
     const nameWithoutExt = file.name.replace(/\.(md|txt|docx|hwp|html?)$/i, '')
     setTitle(nameWithoutExt)
@@ -251,7 +261,7 @@ export default function UploadPage() {
               ) : (
                 <>
                   <p className="text-neutral-500 mb-2">파일을 드래그하거나 클릭하여 업로드</p>
-                  <p className="text-neutral-400 text-sm">.md, .txt, .docx, .hwp</p>
+                  <p className="text-neutral-400 text-sm">.md, .txt, .docx, .hwp · 최대 10MB</p>
                 </>
               )}
               <input
