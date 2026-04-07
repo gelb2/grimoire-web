@@ -56,7 +56,7 @@ export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", de
   // 섹션 여백 매핑
   // main 원본: pt-12 md:pt-20 pb-8 md:pb-14 → md 기본값을 이에 맞춤
   const spacingMap = { sm: { pt: "pt-6 md:pt-10", pb: "pb-4 md:pb-8" }, md: { pt: "pt-12 md:pt-20", pb: "pb-8 md:pb-14" }, lg: { pt: "pt-16 md:pt-28", pb: "pb-12 md:pb-20" } }
-  const spacing = spacingMap[sectionSpacing]
+  const spacing = spacingMap[sectionSpacing as keyof typeof spacingMap] ?? spacingMap.md
 
   // 애니메이션 없음(none) → 모든 콘텐츠 즉시 표시
   const skipAnimation = animationType === "none"
