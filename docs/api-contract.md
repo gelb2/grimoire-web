@@ -67,6 +67,7 @@
 | POST | `/api/themes/:themeId/slot` | 테마를 활성 슬롯에 배치 | JWT |
 | DELETE | `/api/themes/:themeId/slot` | 테마를 슬롯에서 제거 (보관) | JWT |
 | GET | `/api/themes/slots/info` | 슬롯 현황 (플랜/슬롯수/테마목록) | JWT |
+| GET | `/api/themes/detail/:themeId` | 개별 테마 상세 조회 (소유권 확인) | JWT |
 
 ### Plan
 
@@ -298,6 +299,17 @@ Error 404: 테마 없음
 
 ```
 Response 200: text/css (베이킹된 CSS 문자열)
+Error 404: 테마 없음
+```
+
+### GET /api/themes/detail/:themeId
+
+개별 테마 상세 조회 (인증 필수, 소유권 확인). preset + overrides merge된 완전한 theme 객체 반환.
+
+```
+Response 200:
+{ "id": "...", "name": "...", "preset": "...", "source": "ai", "theme": { ...resolved theme }, ... }
+Error 403: 본인의 테마만 조회 가능
 Error 404: 테마 없음
 ```
 

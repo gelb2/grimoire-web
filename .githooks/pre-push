@@ -1,5 +1,7 @@
 #!/bin/sh
 set -e
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 echo "=== Pre-Push 검증 ==="
 echo "[1/3] TypeScript 컴파일 체크..."
 npx tsc --noEmit
