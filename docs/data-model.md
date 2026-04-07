@@ -38,6 +38,7 @@
 | raw_description | text (nullable) | - | 작가 원본 구술 텍스트 |
 | baked_css_url | text (nullable) | - | Baking된 CSS 파일 URL |
 | is_slotted | boolean | default(true) | 활성 슬롯 배치 여부 (true=활성, false=보관) |
+| source | text | default("user") | 테마 출처 ("system"=시스템 프리셋, "ai"=AI 생성, "user"=직접 편집) |
 | updated_at | timestamptz | auto-update | 수정일 |
 
 ### works

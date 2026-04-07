@@ -1,6 +1,6 @@
 // 장식 요소 — 테마 데코레이션 시스템
 export interface ThemeDecorations {
-  dividerIcon: "antler" | "flower" | "star" | "geometric" | "brush" | "leaf" | "camellia" | "umbrella" | "waterwheel" | "dot" | "line" | "none"
+  dividerIcon: "antler" | "flower" | "star" | "geometric" | "brush" | "leaf" | "camellia" | "umbrella" | "waterwheel" | "book" | "dot" | "line" | "none"
   dividerColor: string
   headerIcon: "antler" | "quill" | "book" | "dot" | "none"
   headerSubtitle: string    // 예: "Short Fiction Anthology"
@@ -116,29 +116,29 @@ const defaultUI = {
   subscribeButtonStyle: "outlined" as const,
 }
 
-// Midnight — 사슴악마 기본 테마 (DeerDevil 원본 값 그대로)
+// Midnight — 시스템 기본 다크 프리셋 (deerDevil과 독립적)
 const midnight: AuthorTheme = {
-  bgPrimary: "#07070a",
-  bgSecondary: "#0d0d12",
-  textPrimary: "#cdc8bc",
-  textMuted: "#7a7570",
-  textDim: "#4a4740",
-  textBright: "#e8e3d8",
-  accent: "#9a8060",
-  accent2: "#c4a46a",
-  border: "#1e1e26",
+  bgPrimary: "#08080e",
+  bgSecondary: "#0e0e16",
+  textPrimary: "#c8c4bc",
+  textMuted: "#7a7575",
+  textDim: "#4a4545",
+  textBright: "#e4e0d8",
+  accent: "#8a7a90",
+  accent2: "#a896b8",
+  border: "#1e1e28",
   fontBody: "serif",
   fontHeading: "serif",
   animation: "typing",
   tone: "dark",
   episodeListLayout: "series",
   decorations: {
-    dividerIcon: "antler",
-    dividerColor: "#9a8060",
-    headerIcon: "antler",
-    headerSubtitle: "Short Fiction Anthology",
+    dividerIcon: "book",
+    dividerColor: "#8a7a90",
+    headerIcon: "book",
+    headerSubtitle: "Solitary Script For Midnight",
     cardAccentPosition: "left",
-    footerText: "Inspired by the sensibility of A24",
+    footerText: "Until 4 AM",
   },
   ...defaultTypography,
   ...defaultUI,
@@ -324,10 +324,34 @@ const minimal: AuthorTheme = {
   ...defaultUI,
 }
 
-// DeerDevil — midnight 값을 그대로 복사한 사슴악마 전용 테마
-// midnight과 동일한 값이므로, 두 테마를 쓰는 작가 화면이 똑같이 보여야 함
-// 다르게 보이면 테마 바인딩이 안 된 하드코딩이 있다는 뜻
-const deerDevil: AuthorTheme = { ...midnight }
+// DeerDevil — 사슴악마 작가가 AI로 생성한 전용 테마 (source: "ai")
+// antler 아이콘은 사슴악마 전용. midnight 프리셋과 독립적인 값.
+const deerDevil: AuthorTheme = {
+  bgPrimary: "#07070a",
+  bgSecondary: "#0d0d12",
+  textPrimary: "#cdc8bc",
+  textMuted: "#7a7570",
+  textDim: "#4a4740",
+  textBright: "#e8e3d8",
+  accent: "#9a8060",
+  accent2: "#c4a46a",
+  border: "#1e1e26",
+  fontBody: "serif",
+  fontHeading: "serif",
+  animation: "typing",
+  tone: "dark",
+  episodeListLayout: "series",
+  decorations: {
+    dividerIcon: "antler",
+    dividerColor: "#9a8060",
+    headerIcon: "antler",
+    headerSubtitle: "Short Fiction Anthology",
+    cardAccentPosition: "left",
+    footerText: "Inspired by the sensibility of A24",
+  },
+  ...defaultTypography,
+  ...defaultUI,
+}
 
 export const themePresets: Record<string, AuthorTheme> = {
   midnight,
