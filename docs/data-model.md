@@ -31,10 +31,10 @@
 | 컬럼 | 타입 | 제약 | 설명 |
 |------|------|------|------|
 | id | uuid | PK | 테마 식별자 |
-| author_id | uuid | FK→authors | 작가 (1:N) |
+| author_id | uuid (nullable) | FK→authors | 작가 (1:N). null이면 시스템 테마 |
 | name | text | default("기본 테마") | 테마 이름 |
-| preset | text | default("midnight") | 프리셋명 |
-| overrides | jsonb (nullable) | - | AuthorTheme 커스텀 값 |
+| preset | text | default("midnight") | 프리셋명 (파생 출처 기록용) |
+| overrides | jsonb (nullable) | - | AuthorTheme 전체 값 (독립 레코드) |
 | raw_description | text (nullable) | - | 작가 원본 구술 텍스트 |
 | baked_css_url | text (nullable) | - | Baking된 CSS 파일 URL |
 | is_slotted | boolean | default(true) | 활성 슬롯 배치 여부 (true=활성, false=보관) |

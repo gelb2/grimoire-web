@@ -106,6 +106,17 @@ class ApiClient {
     return this.fetch<Theme[]>('/themes/mine')
   }
 
+  async getPresets() {
+    return this.fetch<{ name: string; label: string; tone: string; genre: string; preview: { bgPrimary: string; bgSecondary: string; accent: string; textPrimary: string; textBright: string } }[]>('/themes/presets')
+  }
+
+  async createFromPreset(preset: string, name?: string) {
+    return this.fetch<{ themeId: string; preset: string; name: string }>('/themes/from-preset', {
+      method: 'POST',
+      body: JSON.stringify({ preset, name }),
+    })
+  }
+
   async getSlotInfo() {
     return this.fetch<{
       plan: string; planExpireAt: string | null; isExpired: boolean
