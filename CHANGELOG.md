@@ -1,5 +1,32 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.21.0] - 2026-04-08
+
+### 테마 시스템 정합성 정리 + spacing 버그 수정
+
+#### Changed
+- themePresets에서 deerDevil 제거 (프리셋 아닌 데드코드)
+- 에디터 프리셋 드롭다운 API 기반으로 전환 (로컬 상수 폴백)
+- theme-spec.md 프리셋 표 8종 완성 + glossary.md 프리셋 정의 보강
+- midnight 주석 수정
+
+#### Fixed
+- EpisodeViewer spacing undefined 런타임 에러 수정 (sectionSpacing 방어코드)
+
+---
+
+## [0.20.0] - 2026-04-07
+
+### 시스템 프리셋 UI + DEFAULT_THEME 제거
+
+#### Added
+- 대시보드 시스템 프리셋 선택 UI (API 기반)
+
+#### Changed
+- 작가 레이아웃 DEFAULT_THEME 제거 (DB 테마만 사용)
+
+---
+
 ## [0.19.0] - 2026-04-07
 
 ### 테마 시스템 리팩토링 — 에디터/대시보드 분리 + 에피소드 미리보기
