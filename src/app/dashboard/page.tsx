@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/features/auth'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
@@ -49,10 +49,15 @@ export default function DashboardPage() {
   const [selectedWorkId, setSelectedWorkId] = useState<string>('')
   const [statsData, setStatsData] = useState<WorkStatsData | null>(null)
   const [statsLoading, setStatsLoading] = useState(false)
+  const [slotInfo, setSlotInfo] = useState<{ plan: string; slotLimit: number; slottedCount: number; isExpired: boolean; themes: any[] } | null>(null)
 
   useEffect(() => {
     if (!loading && !user) router.push('/login')
   }, [user, loading, router])
+
+  const loadSlotInfo = useCallback(async () => {
+    try { setSlotInfo(await api.getSlotInfo()) } catch { /* 무시 */ }
+  }, [])
 
   useEffect(() => {
     if (user) {
@@ -60,8 +65,9 @@ export default function DashboardPage() {
         .then(data => setWorks(data.works || []))
         .catch(() => { setWorks([]); toast.error('작품 목록을 불러올 수 없습니다') })
         .finally(() => setWorksLoading(false))
+      loadSlotInfo()
     }
-  }, [user])
+  }, [user, loadSlotInfo])
 
   useEffect(() => {
     if (!selectedWorkId) { setStatsData(null); return }
@@ -142,6 +148,68 @@ export default function DashboardPage() {
             </Link>
           ))}
         </section>
+
+        {/* 내 테마 */}
+        {slotInfo && (
+          <section className="mb-12">
+            <div className="flex items-baseline justify-between mb-2">
+              <div className="flex items-baseline gap-4 flex-1">
+                <h2 className="text-2xl font-black text-black">내 테마</h2>
+                <div className="flex-1 h-px bg-black" />
+              </div>
+              <Link href="/dashboard/theme" className="text-sm text-[#e53e3e] hover:underline ml-4">+ 새 테마</Link>
+            </div>
+            <p className="text-xs text-neutral-400 mb-4 uppercase tracking-widest">
+              {slotInfo.plan} · 슬롯 {slotInfo.slottedCount} / {slotInfo.slotLimit == null ? '∞' : slotInfo.slotLimit}
+              {slotInfo.isExpired && <span className="text-red-500 ml-2">만료됨</span>}
+            </p>
+            {slotInfo.themes.length === 0 ? (
+              <p className="text-sm text-neutral-400 py-4 border-b border-neutral-200">아직 테마가 없습니다. AI로 생성하거나 프리셋을 선택하세요.</p>
+            ) : (
+              slotInfo.themes.map((t: any, i: number) => (
+                <div key={t.id} className="grid grid-cols-[50px_1fr_auto] items-center gap-4 py-3 border-b border-neutral-200">
+                  <span className="text-sm font-mono text-neutral-300">{String(i + 1).padStart(2, '0')}</span>
+                  <div>
+                    <span className="text-sm font-bold text-black">{t.name}</span>
+                    <span className="ml-2 text-xs text-neutral-400">{t.source === 'ai' ? 'AI 생성' : t.source === 'system' ? '시스템' : '직접 편집'}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={async () => {
+                        try {
+                          if (t.isSlotted) await api.removeThemeSlot(t.id)
+                          else await api.assignThemeSlot(t.id)
+                          loadSlotInfo()
+                        } catch (e: any) { toast.error(e.message || '슬롯 변경 실패') }
+                      }}
+                      disabled={slotInfo.isExpired}
+                      className={`px-2 py-0.5 text-xs rounded ${t.isSlotted ? 'bg-green-100 text-green-700' : 'bg-neutral-100 text-neutral-500'}`}
+                    >
+                      {t.isSlotted ? '활성' : '보관'}
+                    </button>
+                    <Link href={`/dashboard/theme?id=${t.id}`} className="px-2 py-0.5 text-xs rounded bg-neutral-100 text-neutral-700 hover:bg-neutral-200">
+                      편집
+                    </Link>
+                    {t.isSlotted && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            await api.publishTheme(user.slug)
+                            toast.success('퍼블리시 완료')
+                          } catch { toast.error('퍼블리시 실패') }
+                        }}
+                        disabled={slotInfo.isExpired}
+                        className="px-2 py-0.5 text-xs rounded bg-amber-100 text-amber-700 hover:bg-amber-200"
+                      >
+                        퍼블리시
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </section>
+        )}
 
         {/* 내 작품 */}
         <section className="mb-12">
