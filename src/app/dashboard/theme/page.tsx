@@ -347,7 +347,7 @@ function ThemeEditorInner() {
     setSaving(true)
     setMessage("")
     try {
-      const result = await api.generateTheme(user.id, description)
+      const result = await api.generateTheme(description)
       setTheme(result.preview as unknown as AuthorTheme)
       setThemeId(result.themeId)
       setMessage("AI 테마 생성 완료! (1 크레딧 사용)")
