@@ -82,10 +82,10 @@ class ApiClient {
     return this.fetch<any>(`/themes/detail/${themeId}`)
   }
 
-  async generateTheme(authorId: string, description: string) {
+  async generateTheme(description: string) {
     return this.fetch<{ themeId: string; preview: Record<string, unknown> }>('/themes/generate', {
       method: 'POST',
-      body: JSON.stringify({ authorId, description }),
+      body: JSON.stringify({ description }),
     })
   }
 
