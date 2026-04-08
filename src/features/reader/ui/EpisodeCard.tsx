@@ -36,8 +36,8 @@ export function EpisodeCard({ content, workSlug }: { content: ContentMeta; workS
     <div
       ref={cardRef}
       onClick={handleClick}
-      className="group relative h-full overflow-hidden rounded-lg border border-g-border bg-g-bg2 p-5 md:p-8 cursor-pointer transition-all duration-300 hover:border-g-accent"
-      style={{ '--hover-lift': `var(--g-card-hover-lift, 0.125rem)` } as React.CSSProperties}
+      className="group relative h-full overflow-hidden border border-g-border bg-g-bg2 p-5 md:p-8 cursor-pointer transition-all duration-300 hover:border-g-accent"
+      style={{ '--hover-lift': `var(--g-card-hover-lift, 0.125rem)`, borderRadius: 'var(--g-card-radius, 0.5rem)' } as React.CSSProperties}
       onMouseEnter={e => (e.currentTarget.style.transform = `translateY(calc(-1 * var(--g-card-hover-lift, 0.125rem)))`)}
       onMouseLeave={e => (e.currentTarget.style.transform = '')}
     >
