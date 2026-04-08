@@ -1,5 +1,18 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.23.0] - 2026-04-08
+
+### 테마 UI 갭 해소
+
+#### Added
+- 대시보드: 비활성 테마 삭제 버튼 (confirm 다이얼로그 포함)
+- api.ts: deleteTheme() 메서드, updateTheme()에 name 옵션 추가
+
+#### Changed
+- EpisodeCard: rounded-lg 고정값 → var(--g-card-radius) CSS 변수 적용
+
+---
+
 ## [0.22.0] - 2026-04-08
 
 ### 보안 대응 + 업로드 검증

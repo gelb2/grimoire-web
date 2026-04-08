@@ -321,6 +321,21 @@ export default function DashboardPage() {
                         퍼블리시
                       </button>
                     )}
+                    {!t.isSlotted && t.source !== 'system' && (
+                      <button
+                        onClick={async () => {
+                          if (!confirm(`"${t.name}" 테마를 삭제하시겠습니까?`)) return
+                          try {
+                            await api.deleteTheme(t.id)
+                            loadSlotInfo()
+                            toast.success('테마가 삭제됐습니다')
+                          } catch (e: any) { toast.error(e.message || '삭제 실패') }
+                        }}
+                        className="px-2 py-0.5 text-xs rounded bg-red-50 text-red-500 hover:bg-red-100"
+                      >
+                        삭제
+                      </button>
+                    )}
                   </div>
                 </div>
               ))
