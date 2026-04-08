@@ -89,10 +89,16 @@ class ApiClient {
     })
   }
 
-  async updateTheme(themeId: string, overrides: Record<string, unknown>) {
-    return this.fetch<{ themeId: string; overrides: Record<string, unknown> }>(`/themes/${themeId}`, {
+  async updateTheme(themeId: string, overrides?: Record<string, unknown>, name?: string) {
+    return this.fetch<{ themeId: string; name: string; overrides: Record<string, unknown> }>(`/themes/${themeId}`, {
       method: 'PUT',
-      body: JSON.stringify({ overrides }),
+      body: JSON.stringify({ ...(overrides && { overrides }), ...(name && { name }) }),
+    })
+  }
+
+  async deleteTheme(themeId: string) {
+    return this.fetch<{ deleted: boolean }>(`/themes/${themeId}`, {
+      method: 'DELETE',
     })
   }
 
