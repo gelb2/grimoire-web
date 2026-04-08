@@ -39,6 +39,11 @@ ProjectGrimoire의 프론트엔드. DeerDevil(사슴악마 단편소설 웹 뷰�
   - `[author]/layout.tsx`가 SeriesNav를 담당 → 하위 페이지에서 PlatformNav/WorkNav 렌더링 금지
   - 플랫폼 페이지(`explore`, `dashboard`, `library` 등)에서만 PlatformNav 사용
 
+### 핵심 문서 규칙
+- **코드 변경과 문서 변경은 같은 커밋** — 별도 커밋으로 미루지 않는다
+- **정본이 아닌 문서는 직접 수정 금지** — 정본 레포에서 수정 후 동기화를 기다린다
+  - 이 레포가 정본이 아닌 문서: `docs/api-contract.md`, `docs/data-model.md`, `docs/glossary.md`, `docs/environments.md`, `docs/ai-analysis-spec.md`, `docs/TERMS_OF_SERVICE.md`, `docs/PRIVACY_POLICY.md` (정본: server)
+
 ### 문서 동기화 체크리스트 (커밋 전 확인)
 
 - 테마 파라미터 변경 → `docs/theme-spec.md` 업데이트
