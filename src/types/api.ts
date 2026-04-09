@@ -117,3 +117,16 @@ export interface Product {
   price: number
   pricePerCredit: number
 }
+
+export interface AnalysisResult {
+  type: 'consistency' | 'tone' | 'character'
+  score: number
+  summary: string
+  issues: string[]
+  suggestions: string[]
+}
+
+export interface IndexStatus {
+  chunkCount: number
+  isIndexed: boolean
+}
