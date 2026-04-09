@@ -38,9 +38,13 @@ const mockUseTheme = vi.fn(() => ({
   tagline: "테스트 태그라인",
   animation: "typing",
 }))
-vi.mock("@/features/theme", () => ({
-  useTheme: () => mockUseTheme(),
-}))
+vi.mock("@/features/theme", () => {
+  const { createContext } = require("react")
+  return {
+    useTheme: () => mockUseTheme(),
+    ThemeContext: createContext(null),
+  }
+})
 
 const mockMeta: ContentMeta = {
   slug: "ep-test",

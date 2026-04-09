@@ -37,7 +37,7 @@ function RegisterForm() {
       router.replace('/dashboard')
     } catch (err: any) { setError(err.message || '회원가입에 실패했습니다') }
     finally { setLoading(false) }
-  }, [form, executeRecaptcha, register, router])
+  }, [form, agreed, executeRecaptcha, register, router])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">

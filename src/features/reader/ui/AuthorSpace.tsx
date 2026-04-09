@@ -30,16 +30,10 @@ export function AuthorSpace({ authorSlug, previewData }: AuthorSpaceProps) {
   const [error, setError] = useState(false)
 
   useEffect(() => {
-    // 프리뷰 모드: API 호출 건너뛰기
-    if (previewData) {
-      setAuthor(previewData)
-      setLoading(false)
-      return
-    }
+    // 프리뷰 모드: 이미 초기값으로 설정됨, API 호출 건너뛰기
+    if (previewData) return
 
     let mounted = true
-    setLoading(true)
-    setError(false)
 
     api.getAuthorSpace<any>(authorSlug)
       .then(async (res) => {

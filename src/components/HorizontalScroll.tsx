@@ -31,21 +31,21 @@ export function HorizontalScroll({
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
 
-  // 뷰포트에 따른 열 수 (행은 항상 2). 초기값 4로 SSR/CSR 일치.
-  const [columnsPerPage, setColumnsPerPage] = useState(4)
+  // 뷰포트에 따른 열 수 (행은 항상 2). SSR fallback: 4열.
+  const calcColumns = useCallback(() => {
+    const width = typeof window !== 'undefined' ? window.innerWidth : 1024
+    if (width < 640) return 1   // 모바일: 2행 1열
+    if (width < 1024) return 2  // 태블릿: 2행 2열
+    return 4                     // 데스크톱: 2행 4열
+  }, [])
+
+  const [columnsPerPage, setColumnsPerPage] = useState(() => calcColumns())
 
   useEffect(() => {
-    const calcColumns = () => {
-      const width = window.innerWidth
-      if (width < 640) return 1   // 모바일: 2행 1열
-      if (width < 1024) return 2  // 태블릿: 2행 2열
-      return 4                     // 데스크톱: 2행 4열
-    }
-    setColumnsPerPage(calcColumns())
     const handleResize = () => setColumnsPerPage(calcColumns())
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [])
+  }, [calcColumns])
 
   const getColumnsPerPage = useCallback(() => columnsPerPage, [columnsPerPage])
 
@@ -99,19 +99,17 @@ export function HorizontalScroll({
     const el = scrollRef.current
     if (!el) return
 
-    updateScrollState()
+    // requestAnimationFrame으로 초기 스크롤 상태를 비동기로 계산
+    const rafId = requestAnimationFrame(() => updateScrollState())
 
     el.addEventListener('scroll', updateScrollState, { passive: true })
     window.addEventListener('resize', updateScrollState)
     return () => {
+      cancelAnimationFrame(rafId)
       el.removeEventListener('scroll', updateScrollState)
       window.removeEventListener('resize', updateScrollState)
     }
-  }, [updateScrollState])
-
-  useEffect(() => {
-    updateScrollState()
-  }, [children.length, updateScrollState])
+  }, [updateScrollState, children.length])
 
   // 페이지 이동
   const scrollToPage = useCallback((direction: 'left' | 'right') => {

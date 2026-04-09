@@ -54,7 +54,6 @@ export default function AnalyticsPage() {
   // 프로필 + 작품 데이터 로드
   useEffect(() => {
     if (!user) return
-    setProfileLoading(true)
 
     Promise.all([
       api.getAuthorProfile<ProfileData>(user.slug).catch(() => null),
@@ -71,8 +70,9 @@ export default function AnalyticsPage() {
             episodeCount: w.episodeCount ?? 0,
           })),
         })
-        if (works.length > 0 && !selectedWorkId) {
-          setSelectedWorkId(works[0].id)
+        if (works.length > 0) {
+          setSelectedWorkId(prev => prev || works[0].id)
+          setStatsLoading(true)
         }
       }
     }).finally(() => setProfileLoading(false))
@@ -80,8 +80,7 @@ export default function AnalyticsPage() {
 
   // 선택된 작품의 차트 데이터 로드
   useEffect(() => {
-    if (!selectedWorkId) { setStatsData(null); return }
-    setStatsLoading(true)
+    if (!selectedWorkId) return
     api.getWorkStats(selectedWorkId)
       .then(setStatsData)
       .catch(() => setStatsData(null))
@@ -90,9 +89,9 @@ export default function AnalyticsPage() {
 
   // 선택된 작품의 에피소드 목록 로드
   useEffect(() => {
-    if (!user || !selectedWorkId || !profile) { setEpisodes([]); return }
+    if (!user || !selectedWorkId || !profile) return
     const work = profile.works.find(w => w.id === selectedWorkId)
-    if (!work) { setEpisodes([]); return }
+    if (!work) return
 
     api.getWork<{ work?: { episodes?: EpisodeInfo[] }; episodes?: EpisodeInfo[] }>(user.slug, work.slug)
       .then(res => {
@@ -158,7 +157,7 @@ export default function AnalyticsPage() {
               </div>
               <select
                 value={selectedWorkId}
-                onChange={(e) => setSelectedWorkId(e.target.value)}
+                onChange={(e) => { setStatsLoading(true); setSelectedWorkId(e.target.value) }}
                 className="bg-white border border-neutral-300 text-black text-sm rounded-lg px-3 py-1.5 ml-4 focus:outline-none focus:border-black"
               >
                 {profile?.works.map(w => (
