@@ -19,11 +19,17 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!loading && !user) router.push('/login')
-    if (user) {
-      setName(user.name)
-      setBio(user.bio ?? '')
-    }
   }, [user, loading, router])
+
+  // user 정보로 폼 초기화 (user가 로드되면 1회)
+  useEffect(() => {
+    if (user) {
+      requestAnimationFrame(() => {
+        setName(user.name)
+        setBio(user.bio ?? '')
+      })
+    }
+  }, [user])
 
   const handleSave = () => {
     saveAction.execute(async () => {

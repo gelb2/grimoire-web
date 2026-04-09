@@ -4,7 +4,7 @@ import { createContext, useContext, type ReactNode } from "react"
 import type { AuthorTheme } from "./presets"
 
 // 테마 컨텍스트 — 자식 컴포넌트에서 테마 데이터에 접근
-const ThemeContext = createContext<AuthorTheme | null>(null)
+export const ThemeContext = createContext<AuthorTheme | null>(null)
 
 export function useTheme(): AuthorTheme {
   const ctx = useContext(ThemeContext)

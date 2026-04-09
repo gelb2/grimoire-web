@@ -3,7 +3,7 @@
 // 작가 공개 프로필 페이지 — /{author}/profile
 // 작가 소개, 작품 목록, 구독자/좋아요 통계, 구독 버튼
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { api } from '@/lib/api'
@@ -47,24 +47,22 @@ export default function AuthorProfilePage() {
   const [subscriberCount, setSubscriberCount] = useState(0)
   const subscribeThrottle = useThrottledAction(1000)
 
-  const fetchProfile = useCallback(() => {
-    setLoading(true)
-    setError(false)
+  useEffect(() => {
+    let mounted = true
     api.getAuthorProfile<any>(authorSlug)
       .then((data: AuthorProfile) => {
+        if (!mounted) return
         setProfile(data)
         setSubscriberCount(data.subscriberCount)
         setLoading(false)
       })
       .catch(() => {
+        if (!mounted) return
         setError(true)
         setLoading(false)
       })
+    return () => { mounted = false }
   }, [authorSlug])
-
-  useEffect(() => {
-    fetchProfile()
-  }, [fetchProfile])
 
   const handleSubscribe = () => {
     if (!profile) return

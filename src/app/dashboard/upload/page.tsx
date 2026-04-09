@@ -9,6 +9,9 @@ import { toast } from 'sonner'
 
 interface WorkOption { id: string; slug: string; title: string }
 
+// 최대 파일 크기: 10MB (서버 Multer 제한과 동일)
+const MAX_FILE_SIZE = 10 * 1024 * 1024
+
 export default function UploadPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
@@ -44,9 +47,6 @@ export default function UploadPage() {
       })
       .catch(() => {})
   }, [user])
-
-  // 최대 파일 크기: 10MB (서버 Multer 제한과 동일)
-  const MAX_FILE_SIZE = 10 * 1024 * 1024
 
   // 파일 핸들러
   const handleFile = useCallback(async (file: File) => {
