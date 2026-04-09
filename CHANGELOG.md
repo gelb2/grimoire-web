@@ -1,5 +1,20 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.24.0] - 2026-04-09
+
+### Polar 결제 UI 3환경 배포 + 전수검사
+
+#### Added
+- `api.initiatePayment(productId, returnUrl)` (src/lib/api.ts)
+- 크레딧 충전 페이지 결제 버튼 활성화 — Polar hosted checkout URL로 리다이렉트, 복귀 시 자동 balance refresh
+
+#### Verified
+- dev/inhouse/prod 3환경 결제 플로우 end-to-end 검증 (100% 할인 쿠폰 기반)
+- 운영 페이지 curl HTTP 전수검사 25/25 통과 (플랫폼 페이지 13 + 사슴악마 공간 2 + 에피소드 5 + API 4 + 기타)
+- 사슴악마 에피소드 시각 정본 정상 렌더링 확인
+
+---
+
 ## [0.23.0] - 2026-04-08
 
 ### 테마 UI 갭 해소
