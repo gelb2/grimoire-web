@@ -7,7 +7,8 @@
 ## 단기 (다음 우선순위)
 
 ### 외부 연동
-- [ ] 크레딧 충전 UI (결제 모듈 연동, API 키 필요)
+- [x] ~~크레딧 충전 UI (Polar hosted checkout 리다이렉트)~~ (v0.24.0)
+- [ ] 결제 성공/실패 후 토스트 UI 개선 (현재 단순 alert)
 - [ ] 테마 Baking 후 CDN CSS 로드
 - [ ] Azure Blob Storage 커버 이미지 실제 저장 (환경변수 필요)
 
