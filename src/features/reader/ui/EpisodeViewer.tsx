@@ -130,9 +130,11 @@ export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", de
     return id
   }, [])
 
-  // 마운트/언마운트 라이프사이클 — 모든 타이머 정리
+  // 마운트/언마운트 라이프사이클 — 모든 타이머 정리 (mount-only)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     cancelledRef.current = false
+    const timers = timersRef.current
 
     // 재방문 확인 (sessionStorage — 클라이언트 전용)
     const isRevisit = sessionStorage.getItem(visitedKey) === "true"
@@ -157,11 +159,11 @@ export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", de
 
     return () => {
       cancelledRef.current = true
-      for (const id of timersRef.current) {
+      for (const id of timers) {
         clearTimeout(id)
         clearInterval(id)
       }
-      timersRef.current.clear()
+      timers.clear()
     }
   }, [])
 
