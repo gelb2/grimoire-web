@@ -49,8 +49,6 @@ export function WorkPage({ authorSlug, workSlug }: WorkPageProps) {
 
   useEffect(() => {
     let cancelled = false
-    setLoading(true)
-    setError(false)
 
     api.getWork<any>(authorSlug, workSlug)
       .then(async (data) => {

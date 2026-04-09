@@ -534,7 +534,7 @@ export default function DashboardPage() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShareModal(null)}>
           <div className="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-xl" onClick={e => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-black mb-1">공유 링크 생성</h3>
-            <p className="text-sm text-neutral-500 mb-4">"{shareModal.title}"</p>
+            <p className="text-sm text-neutral-500 mb-4">&ldquo;{shareModal.title}&rdquo;</p>
 
             {shareResult ? (
               <div className="space-y-3">

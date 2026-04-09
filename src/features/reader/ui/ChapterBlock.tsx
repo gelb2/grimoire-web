@@ -1,7 +1,8 @@
 import type { Block } from "@/features/reader/data"
 import type { ReactNode } from "react"
+import { useContext } from "react"
 import { SectionLabel } from "./SectionLabel"
-import { useTheme } from "@/features/theme"
+import { ThemeContext } from "@/features/theme"
 
 // 인라인 마크다운 서식 → React 렌더링
 // ***볼드이탤릭***, **볼드**, *이탤릭* 순서로 처리 (greedy 방지)
@@ -27,9 +28,10 @@ function parseInlineText(text: string): ReactNode {
 }
 
 // 구분선 (점 세 개) — 테마 dividerColor 적용
+// ThemeProvider 없이도 안전 (테스트 환경 대응)
 function Divider() {
-  let color: string | undefined
-  try { color = useTheme().decorations?.dividerColor } catch { /* ThemeProvider 밖에서도 동작 */ }
+  const theme = useContext(ThemeContext)
+  const color = theme?.decorations?.dividerColor
 
   return (
     <div className="flex items-center justify-center gap-4 my-14 opacity-30">

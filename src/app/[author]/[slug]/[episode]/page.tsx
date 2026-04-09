@@ -66,7 +66,6 @@ export default async function EpisodePage({ params }: Props) {
 
   try {
     // 에피소드 + 작가 정보 + 테마 레이아웃 + 작품(에피소드 목록) 동시 로드
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [episodeData, authorRes, themeLayout, workData] = await Promise.all([
       api.getEpisode<any>(author, slug, episode),
       api.getAuthorSpace<any>(author).catch(() => null),

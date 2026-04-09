@@ -5,7 +5,7 @@ import { BackLink } from "./BackLink"
 import { SectionLabel } from "./SectionLabel"
 import { ChapterBlock } from "./ChapterBlock"
 import { TypeWriter } from "./TypeWriter"
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { motion } from "framer-motion"
 import type { EpisodeData, ContentMeta, Block } from "@/features/reader/data"
 import type { ThemeDecorations as DecorationConfig } from "@/features/theme"
@@ -99,12 +99,15 @@ export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", de
     .trim()
 
   // 타이핑 대상 블록 찾기 (paragraph 타입만, 최대 TYPING_BLOCKS개)
-  const typingTargets: number[] = []
-  for (let i = 0; i < data.blocks.length && typingTargets.length < TYPING_BLOCKS; i++) {
-    if (data.blocks[i].type === "paragraph" || data.blocks[i].type === "italic") {
-      typingTargets.push(i)
+  const typingTargets = useMemo(() => {
+    const targets: number[] = []
+    for (let i = 0; i < data.blocks.length && targets.length < TYPING_BLOCKS; i++) {
+      if (data.blocks[i].type === "paragraph" || data.blocks[i].type === "italic") {
+        targets.push(i)
+      }
     }
-  }
+    return targets
+  }, [data.blocks])
   const lastTypingIdx = typingTargets.length > 0 ? typingTargets[typingTargets.length - 1] : -1
 
   // 안전한 타이머 등록 — 자동 추적 + 완료 시 자동 제거
@@ -131,7 +134,6 @@ export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", de
   }, [])
 
   // 마운트/언마운트 라이프사이클 — 모든 타이머 정리 (mount-only)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     cancelledRef.current = false
     const timers = timersRef.current
@@ -165,32 +167,8 @@ export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", de
       }
       timers.clear()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only: 에피소드 전환 시 key prop으로 리마운트
   }, [])
-
-  // 본문 타이핑 시작
-  const startBodyTyping = useCallback(() => {
-    if (cancelledRef.current) return
-    setStage(3)
-    if (typingTargets.length > 0) {
-      setTypingBlockIdx(0)
-      setRevealedCount(typingTargets[0])
-    } else {
-      startFadeIn()
-    }
-  }, [typingTargets])
-
-  // 타이핑 블록 하나 완료 → 다음
-  const handleTypingBlockComplete = useCallback(() => {
-    if (cancelledRef.current) return
-    const nextIdx = typingBlockIdx + 1
-    if (nextIdx < typingTargets.length) {
-      setTypingBlockIdx(nextIdx)
-      setRevealedCount(typingTargets[nextIdx])
-    } else {
-      setRevealedCount(lastTypingIdx + 1)
-      safeTimeout(() => startFadeIn(), 150)
-    }
-  }, [typingBlockIdx, typingTargets, lastTypingIdx, safeTimeout])
 
   // 나머지 블록 순차 페이드인
   const startFadeIn = useCallback(() => {
@@ -223,7 +201,32 @@ export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", de
         }, 100)
       }
     }, 80)
-  }, [data.blocks.length, data.slug, lastTypingIdx, safeInterval, safeTimeout])
+  }, [data.blocks.length, lastTypingIdx, safeInterval, safeTimeout, visitedKey])
+
+  // 본문 타이핑 시작
+  const startBodyTyping = useCallback(() => {
+    if (cancelledRef.current) return
+    setStage(3)
+    if (typingTargets.length > 0) {
+      setTypingBlockIdx(0)
+      setRevealedCount(typingTargets[0])
+    } else {
+      startFadeIn()
+    }
+  }, [typingTargets, startFadeIn])
+
+  // 타이핑 블록 하나 완료 → 다음
+  const handleTypingBlockComplete = useCallback(() => {
+    if (cancelledRef.current) return
+    const nextIdx = typingBlockIdx + 1
+    if (nextIdx < typingTargets.length) {
+      setTypingBlockIdx(nextIdx)
+      setRevealedCount(typingTargets[nextIdx])
+    } else {
+      setRevealedCount(lastTypingIdx + 1)
+      safeTimeout(() => startFadeIn(), 150)
+    }
+  }, [typingBlockIdx, typingTargets, lastTypingIdx, safeTimeout, startFadeIn])
 
   return (
     <div className="mx-auto px-4 md:px-8 pb-16 md:pb-32" style={{ lineHeight: 'var(--g-line-height, 1.9)' }}>
