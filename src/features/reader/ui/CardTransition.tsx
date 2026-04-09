@@ -92,10 +92,12 @@ export function CardTransitionProvider({ children }: { children: ReactNode }) {
     }
   }, [phase])
 
-  const [vw, setVw] = useState(typeof window !== "undefined" ? window.innerWidth : 1920)
-  const [vh, setVh] = useState(typeof window !== "undefined" ? window.innerHeight : 1080)
+  const [vw, setVw] = useState(1920)
+  const [vh, setVh] = useState(1080)
 
   useEffect(() => {
+    setVw(window.innerWidth)
+    setVh(window.innerHeight)
     const handleResize = () => { setVw(window.innerWidth); setVh(window.innerHeight) }
     window.addEventListener("resize", handleResize)
     return () => window.removeEventListener("resize", handleResize)

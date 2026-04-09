@@ -15,11 +15,20 @@ interface Product {
   pricePerCredit: number
 }
 
+interface CreditLog {
+  id: string
+  type: string
+  amount: number
+  description: string
+  createdAt: string
+}
+
 export default function CreditsPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null)
+  const [logs, setLogs] = useState<CreditLog[]>([])
   const purchaseAction = useLoadingAction()  // 결제 버튼 더블클릭 방지
 
   useEffect(() => {
@@ -35,6 +44,7 @@ export default function CreditsPage() {
         { id: 'credit-100', credits: 100, price: 7000, pricePerCredit: 70 },
       ])
     })
+    api.getCreditLogs().then(setLogs).catch(() => {})
   }, [])
 
   if (loading || !user) return null
@@ -96,6 +106,26 @@ export default function CreditsPage() {
             <p>· 공간 유지: <span className="text-green-500">무료</span></p>
           </div>
         </div>
+
+        {/* 크레딧 사용 내역 */}
+        {logs.length > 0 && (
+          <div className="mt-8">
+            <h3 className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-3">사용 내역</h3>
+            <div className="border border-neutral-200 rounded-xl overflow-hidden">
+              {logs.map(log => (
+                <div key={log.id} className="flex items-center justify-between px-4 py-3 border-b border-neutral-100 last:border-0">
+                  <div>
+                    <p className="text-sm text-black">{log.description}</p>
+                    <p className="text-xs text-neutral-400">{new Date(log.createdAt).toLocaleDateString('ko-KR')}</p>
+                  </div>
+                  <span className={`text-sm font-bold ${log.amount > 0 ? 'text-green-600' : 'text-[#e53e3e]'}`}>
+                    {log.amount > 0 ? '+' : ''}{log.amount}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )
