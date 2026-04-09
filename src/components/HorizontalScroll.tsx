@@ -31,19 +31,28 @@ export function HorizontalScroll({
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
 
-  // 뷰포트에 따른 열 수 (행은 항상 2)
-  const getColumnsPerPage = useCallback(() => {
-    if (typeof window === 'undefined') return 4
-    const width = window.innerWidth
-    if (width < 640) return 1   // 모바일: 2행 1열
-    if (width < 1024) return 2  // 태블릿: 2행 2열
-    return 4                     // 데스크톱: 2행 4열
+  // 뷰포트에 따른 열 수 (행은 항상 2). 초기값 4로 SSR/CSR 일치.
+  const [columnsPerPage, setColumnsPerPage] = useState(4)
+
+  useEffect(() => {
+    const calcColumns = () => {
+      const width = window.innerWidth
+      if (width < 640) return 1   // 모바일: 2행 1열
+      if (width < 1024) return 2  // 태블릿: 2행 2열
+      return 4                     // 데스크톱: 2행 4열
+    }
+    setColumnsPerPage(calcColumns())
+    const handleResize = () => setColumnsPerPage(calcColumns())
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
   }, [])
+
+  const getColumnsPerPage = useCallback(() => columnsPerPage, [columnsPerPage])
 
   // 한 페이지당 카드 수 (2행 x 열수)
   const getCardsPerPage = useCallback(() => {
-    return getColumnsPerPage() * 2
-  }, [getColumnsPerPage])
+    return columnsPerPage * 2
+  }, [columnsPerPage])
 
   // 카드를 2행 그리드 페이지로 그룹화 (메모이제이션)
   const pages = useMemo(() => {
@@ -134,7 +143,7 @@ export function HorizontalScroll({
 
   if (children.length === 0) return null
 
-  const cols = typeof window !== 'undefined' ? getColumnsPerPage() : 4
+  const cols = columnsPerPage
 
   return (
     <div className="relative group/scroll">
