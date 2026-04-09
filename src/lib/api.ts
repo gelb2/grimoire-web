@@ -216,6 +216,20 @@ class ApiClient {
     return this.fetch<{ credits: number }>('/payments/credits')
   }
 
+  /**
+   * 결제 시작 — Polar Checkout URL 반환.
+   * 성공 시 응답의 `paymentUrl`로 리다이렉트하면 Polar 호스티드 결제 페이지로 이동.
+   */
+  async initiatePayment(productId: string, returnUrl: string) {
+    return this.fetch<{ paymentId: string; paymentUrl: string; tradeNo: string }>(
+      '/payments/initiate',
+      {
+        method: 'POST',
+        body: JSON.stringify({ productId, returnUrl }),
+      },
+    )
+  }
+
   // 작품 관리
   async createWork(data: { title: string; slug: string; subtitle?: string; description?: string }) {
     return this.fetch<any>('/works', { method: 'POST', body: JSON.stringify(data) })

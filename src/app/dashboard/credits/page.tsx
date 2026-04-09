@@ -87,14 +87,23 @@ export default function CreditsPage() {
           onClick={() => {
             if (!selectedProduct) return
             purchaseAction.execute(async () => {
-              // TODO: PAYAPP 결제 연동 후 활성화
-              // await api.initiatePayment(selectedProduct, window.location.href)
+              try {
+                // Polar 호스티드 Checkout URL 요청 → 리다이렉트
+                const result = await api.initiatePayment(
+                  selectedProduct,
+                  window.location.href,
+                )
+                window.location.href = result.paymentUrl
+              } catch (err) {
+                console.error('결제 시작 실패:', err)
+                alert('결제를 시작할 수 없습니다. 잠시 후 다시 시도해주세요.')
+              }
             })
           }}
           disabled={!selectedProduct || purchaseAction.pending}
           className="w-full py-3 bg-black hover:bg-neutral-800 disabled:bg-neutral-300 disabled:text-neutral-500 text-white font-medium rounded-lg transition"
         >
-          {purchaseAction.pending ? '처리 중...' : selectedProduct ? '결제하기 (PAYAPP 연동 예정)' : '패키지를 선택하세요'}
+          {purchaseAction.pending ? '처리 중...' : selectedProduct ? '결제하기' : '패키지를 선택하세요'}
         </button>
 
         <div className="mt-8 bg-[#f5f5f5] border border-neutral-200 rounded-xl p-6">
