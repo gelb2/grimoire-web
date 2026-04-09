@@ -1,4 +1,4 @@
-import type { AuthResponse, AuthUser, Theme, GiftedAuthor, WorkStats, Product } from "@/types/api"
+import type { AuthResponse, AuthUser, Theme, GiftedAuthor, WorkStats, Product, AnalysisResult, IndexStatus } from "@/types/api"
 /** 페이지네이션 작품 응답 타입 */
 export interface PaginatedWorksResponse {
   works: Array<{
@@ -181,11 +181,11 @@ class ApiClient {
     return this.fetch<T>(`/authors/${slug}/profile`)
   }
 
-  // 작가 bio 업데이트
-  async updateBio(slug: string, bio: string) {
-    return this.fetch<{ bio: string }>(`/authors/${slug}/profile`, {
+  // 작가 프로필(name, bio) 업데이트
+  async updateProfile(slug: string, data: { name?: string; bio?: string }) {
+    return this.fetch<{ name: string; bio: string }>(`/authors/${slug}/profile`, {
       method: 'PATCH',
-      body: JSON.stringify({ bio }),
+      body: JSON.stringify(data),
     })
   }
 
@@ -367,12 +367,42 @@ class ApiClient {
     return this.fetch<void>(`/social/comments/${commentId}`, options)
   }
 
-  // 크레딧 선물
-  async giftCredits(receiverId: string, amount: number) {
-    return this.fetch<{ senderCredits: number; receiverCredits: number }>('/credits/gift', {
+  // 크레딧 선물 (authorSlug 기반)
+  async giftCredits(authorSlug: string, amount: number) {
+    return this.fetch<{ senderCredits: number; receiverCredits: number }>(`/social/gift/${authorSlug}`, {
       method: 'POST',
-      body: JSON.stringify({ receiverId, amount }),
+      body: JSON.stringify({ amount }),
     })
+  }
+
+  // 크레딧 잔액 조회
+  async getCreditBalance() {
+    return this.fetch<{ credits: number }>('/credits/balance')
+  }
+
+  // 크레딧 사용 로그
+  async getCreditLogs() {
+    return this.fetch<{ id: string; type: string; amount: number; description: string; createdAt: string }[]>('/credits/logs')
+  }
+
+  // AI 분석
+  async indexEpisode(episodeId: string, workId: string, rawText: string) {
+    return this.fetch<{ chunkCount: number; tokensUsed: number }>('/analysis/index', {
+      method: 'POST',
+      body: JSON.stringify({ episodeId, workId, rawText }),
+    })
+  }
+
+  async analyzeEpisode(workId: string, newEpisodeText: string, types?: ('consistency' | 'tone' | 'character')[]) {
+    return this.fetch<AnalysisResult[]>('/analysis/check', {
+      method: 'POST',
+      body: JSON.stringify({ workId, newEpisodeText, types }),
+      signal: AbortSignal.timeout(60000),
+    })
+  }
+
+  async getAnalysisStatus(workId: string) {
+    return this.fetch<IndexStatus>(`/analysis/status/${workId}`)
   }
 
   // 서재

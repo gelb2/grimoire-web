@@ -61,18 +61,14 @@ export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", de
   // 애니메이션 없음(none) → 모든 콘텐츠 즉시 표시
   const skipAnimation = animationType === "none"
 
-  // 세션 내 방문 여부 확인 — 재방문 시 애니메이션 스킵 (작가명 포함으로 slug 충돌 방지)
+  // 세션 내 방문 여부 확인 — hydration 이후에 sessionStorage 접근
   const visitedKey = `visited:${authorName}:${data.slug}`
-  const isRevisit = typeof window !== "undefined"
-    && sessionStorage.getItem(visitedKey) === "true"
 
-  // 즉시 표시 여부: 재방문 또는 animation: "none"
-  const showImmediately = isRevisit || skipAnimation
-
-  // 0: 대기, 1: 라벨 타이핑, 2: 제목 타이핑, 3: 본문 타이핑, 4: 본문 페이드인, 5: 완료
-  const [stage, setStage] = useState(showImmediately ? 5 : 0)
-  const [typingBlockIdx, setTypingBlockIdx] = useState(showImmediately ? TYPING_BLOCKS : -1)
-  const [revealedCount, setRevealedCount] = useState(showImmediately ? data.blocks.length : 0)
+  // SSR/CSR 초기값 일치: skipAnimation만 기준. 재방문 여부는 useEffect에서 반영.
+  const showImmediately = skipAnimation
+  const [stage, setStage] = useState(skipAnimation ? 5 : 0)
+  const [typingBlockIdx, setTypingBlockIdx] = useState(skipAnimation ? TYPING_BLOCKS : -1)
+  const [revealedCount, setRevealedCount] = useState(skipAnimation ? data.blocks.length : 0)
 
   // 언마운트 감지 — 모든 비동기 콜백에서 체크
   const cancelledRef = useRef(false)
@@ -138,7 +134,15 @@ export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", de
   useEffect(() => {
     cancelledRef.current = false
 
-    if (!showImmediately) {
+    // 재방문 확인 (sessionStorage — 클라이언트 전용)
+    const isRevisit = sessionStorage.getItem(visitedKey) === "true"
+
+    if (skipAnimation || isRevisit) {
+      // 즉시 표시 — 재방문 또는 animation: "none"
+      setStage(5)
+      setTypingBlockIdx(TYPING_BLOCKS)
+      setRevealedCount(data.blocks.length)
+    } else {
       if (animationType === "typing") {
         // typing: 라벨 → 제목 → 본문 순차 타이핑
         safeTimeout(() => setStage(1), 200)

@@ -44,14 +44,17 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
   const [giftSending, setGiftSending] = useState(false)
   const [giftMessage, setGiftMessage] = useState<string | null>(null)
   // 익명 댓글용
-  const [anonNickname, setAnonNickname] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('grimoire_anon_nickname') || ''
-    return ''
-  })
+  const [anonNickname, setAnonNickname] = useState('')
   const [anonPassword, setAnonPassword] = useState('')
   const [deletePasswordModal, setDeletePasswordModal] = useState<string | null>(null)
   const [deletePassword, setDeletePassword] = useState('')
   const likeThrottle = useThrottledAction(1000)
+
+  useEffect(() => {
+    // 익명 닉네임 복원 (localStorage → hydration 이후)
+    const saved = localStorage.getItem('grimoire_anon_nickname')
+    if (saved) setAnonNickname(saved)
+  }, [])
 
   useEffect(() => {
     // 좋아요 상태+수 한 번에 조회

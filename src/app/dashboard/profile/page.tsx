@@ -6,23 +6,36 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { PlatformNav } from '@/components/PlatformNav'
 import { useLoadingAction } from '@/hooks/useThrottle'
+import { api } from '@/lib/api'
 
 export default function ProfilePage() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const [name, setName] = useState('')
+  const [bio, setBio] = useState('')
   const [message, setMessage] = useState('')
+  const [messageType, setMessageType] = useState<'success' | 'error'>('success')
   const saveAction = useLoadingAction()
 
   useEffect(() => {
     if (!loading && !user) router.push('/login')
-    if (user) setName(user.name)
+    if (user) {
+      setName(user.name)
+      setBio(user.bio ?? '')
+    }
   }, [user, loading, router])
 
   const handleSave = () => {
     saveAction.execute(async () => {
-      // TODO: 프로필 업데이트 API 연동
-      setMessage('프로필이 저장되었습니다 (서버 연동 후 활성화)')
+      if (!user) return
+      try {
+        await api.updateProfile(user.slug, { name, bio })
+        setMessageType('success')
+        setMessage('프로필이 저장되었습니다')
+      } catch (err: unknown) {
+        setMessageType('error')
+        setMessage(err instanceof Error ? err.message : '저장에 실패했습니다')
+      }
     })
   }
 
@@ -37,7 +50,7 @@ export default function ProfilePage() {
         <h1 className="text-3xl font-black text-black mb-6">프로필 설정</h1>
 
         {message && (
-          <div className="border-l-2 border-[#e53e3e] text-[#e53e3e] px-4 py-3 text-sm mb-6">{message}</div>
+          <div className={`border-l-2 px-4 py-3 text-sm mb-6 ${messageType === 'error' ? 'border-[#e53e3e] text-[#e53e3e]' : 'border-black text-black'}`}>{message}</div>
         )}
 
         <div className="space-y-6">
@@ -50,6 +63,12 @@ export default function ProfilePage() {
           <div>
             <label className="block text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-1">작가명</label>
             <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-4 py-3 bg-[#f5f5f5] border border-neutral-300 rounded-lg text-black focus:outline-none focus:border-black transition" />
+          </div>
+
+          <div>
+            <label className="block text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-1">소개글</label>
+            <textarea value={bio} onChange={e => setBio(e.target.value)} maxLength={500} rows={3} className="w-full px-4 py-3 bg-[#f5f5f5] border border-neutral-300 rounded-lg text-black focus:outline-none focus:border-black transition resize-none" placeholder="작가 소개를 입력하세요 (최대 500자)" />
+            <p className="text-neutral-400 text-xs mt-1 text-right">{bio.length}/500</p>
           </div>
 
           <div>
