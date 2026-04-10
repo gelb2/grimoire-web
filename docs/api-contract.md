@@ -51,6 +51,7 @@
 | GET | `/api/auth/profile` | 내 프로필 조회 | JWT |
 | POST | `/api/auth/google` | Google OAuth 로그인 | - |
 | POST | `/api/auth/logout` | 로그아웃 (쿠키 삭제) | JWT |
+| POST | `/api/auth/change-password` | 비밀번호 변경 | JWT |
 
 ### Theme
 
