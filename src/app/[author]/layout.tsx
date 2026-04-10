@@ -25,7 +25,7 @@ const notoSerifKR = Noto_Serif_KR({
 })
 
 // API에서 테마를 로드한다. 백엔드가 완전한 테마를 반환 (시스템 테마 폴백 포함).
-async function loadTheme(authorSlug: string): Promise<AuthorTheme | null> {
+async function loadTheme(authorSlug: string): Promise<{ theme: AuthorTheme | null; bakedCssUrl: string | null }> {
   try {
     const apiUrl = process.env.API_URL || 'http://localhost:3000/api'
     const res = await fetch(`${apiUrl}/themes/${authorSlug}`, {
@@ -34,14 +34,15 @@ async function loadTheme(authorSlug: string): Promise<AuthorTheme | null> {
     })
     if (res.ok) {
       const data = await res.json()
-      // 백엔드가 완전한 테마를 반환 (overrides가 곧 전체 테마)
-      if (data.theme) return data.theme as AuthorTheme
-      if (data.overrides) return data.overrides as AuthorTheme
+      const theme = (data.theme ?? data.overrides ?? null) as AuthorTheme | null
+      // CDN URL이면 <link>로 로드 (Blob Storage URL)
+      const bakedCssUrl = data.bakedCssUrl?.startsWith('http') ? data.bakedCssUrl : null
+      return { theme, bakedCssUrl }
     }
   } catch {
     // API 연결 실패
   }
-  return null
+  return { theme: null, bakedCssUrl: null }
 }
 
 interface Props {
@@ -135,13 +136,16 @@ async function loadAuthorInfo(authorSlug: string): Promise<AuthorInfo> {
 
 export default async function AuthorLayout({ params, children }: Props) {
   const { author } = await params
-  const [theme, authorInfo] = await Promise.all([
+  const [themeData, authorInfo] = await Promise.all([
     loadTheme(author),
     loadAuthorInfo(author),
   ])
+  const { theme, bakedCssUrl } = themeData
 
   return (
     <>
+      {/* CDN 베이킹된 테마 CSS — Blob Storage URL이 있으면 <link>로 로드 */}
+      {bakedCssUrl && <link rel="stylesheet" href={bakedCssUrl} />}
       {/* 모바일: status bar + body 배경색을 테마와 통일 (safe-area 틈 방지) */}
       <meta name="theme-color" content={theme?.bgPrimary ?? '#08080e'} />
       <style>{`html, body { background-color: ${theme?.bgPrimary ?? '#08080e'}; }`}</style>

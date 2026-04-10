@@ -39,9 +39,9 @@ export default function CreditsPage() {
     api.getProducts().then(setProducts).catch(() => {
       // 서버 미연결 시 기본값
       setProducts([
-        { id: 'credit-10', credits: 10, price: 1000, pricePerCredit: 100 },
-        { id: 'credit-30', credits: 30, price: 2500, pricePerCredit: 83 },
-        { id: 'credit-100', credits: 100, price: 7000, pricePerCredit: 70 },
+        { id: 'credit-5', credits: 5, price: 1000, pricePerCredit: 200 },
+        { id: 'credit-20', credits: 20, price: 3000, pricePerCredit: 150 },
+        { id: 'credit-50', credits: 50, price: 5000, pricePerCredit: 100 },
       ])
     })
     api.getCreditLogs().then(setLogs).catch(() => {})
@@ -76,7 +76,7 @@ export default function CreditsPage() {
               <p className="text-2xl font-bold text-black">{product.credits} 크레딧</p>
               <p className="text-[#e53e3e] text-lg mt-1">₩{product.price.toLocaleString()}</p>
               <p className="text-neutral-400 text-sm mt-2">개당 ₩{product.pricePerCredit}</p>
-              {product.id === 'credit-100' && (
+              {product.id === 'credit-50' && (
                 <span className="inline-block mt-2 px-2 py-0.5 bg-black text-white text-xs rounded">베스트</span>
               )}
             </button>
