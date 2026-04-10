@@ -457,6 +457,63 @@ class ApiClient {
     return res.json() as Promise<{ coverImage: string }>
   }
 
+  // ─── 관리자 API ───
+
+  async adminGetStats() {
+    return this.fetch<{ totalAuthors: number; totalWorks: number; totalEpisodes: number; totalCreditsConsumed: number }>('/admin/stats')
+  }
+
+  async adminListAuthors(params?: { page?: number; limit?: number; q?: string }) {
+    const qs = new URLSearchParams()
+    if (params?.page) qs.set('page', String(params.page))
+    if (params?.limit) qs.set('limit', String(params.limit))
+    if (params?.q) qs.set('q', params.q)
+    return this.fetch<{ items: any[]; total: number }>(`/admin/authors?${qs}`)
+  }
+
+  async adminGetAuthor(authorId: string) {
+    return this.fetch<any>(`/admin/authors/${authorId}`)
+  }
+
+  async adminCreateAuthor(data: { email: string; name: string; slug: string; password: string; plan?: string }) {
+    return this.fetch<any>('/admin/authors', { method: 'POST', body: JSON.stringify(data) })
+  }
+
+  async adminUpdateAuthor(authorId: string, data: { name?: string; bio?: string }) {
+    return this.fetch<any>(`/admin/authors/${authorId}`, { method: 'PATCH', body: JSON.stringify(data) })
+  }
+
+  async adminDeleteAuthor(authorId: string) {
+    return this.fetch<{ deleted: boolean }>(`/admin/authors/${authorId}`, { method: 'DELETE' })
+  }
+
+  async adminChangeRole(authorId: string, role: string) {
+    return this.fetch<any>(`/admin/authors/${authorId}/role`, { method: 'PATCH', body: JSON.stringify({ role }) })
+  }
+
+  async adminChangePlan(authorId: string, plan: string, durationDays: number) {
+    return this.fetch<{ success: boolean }>(`/admin/authors/${authorId}/plan`, { method: 'PATCH', body: JSON.stringify({ plan, durationDays }) })
+  }
+
+  async adminGrantCredits(authorId: string, amount: number, reason: string) {
+    return this.fetch<any>('/admin/credits/grant', { method: 'POST', body: JSON.stringify({ authorId, amount, reason }) })
+  }
+
+  async adminDeductCredits(authorId: string, amount: number, reason: string) {
+    return this.fetch<any>('/admin/credits/deduct', { method: 'POST', body: JSON.stringify({ authorId, amount, reason }) })
+  }
+
+  async adminGetCreditLogs(authorId?: string) {
+    const qs = authorId ? `?authorId=${authorId}` : ''
+    return this.fetch<any[]>(`/admin/credits/logs${qs}`)
+  }
+
+  async adminGetAuditLogs(params?: { page?: number; action?: string }) {
+    const qs = new URLSearchParams()
+    if (params?.page) qs.set('page', String(params.page))
+    if (params?.action) qs.set('action', params.action)
+    return this.fetch<{ items: any[]; total: number }>(`/admin/audit-logs?${qs}`)
+  }
 }
 
 export const api = new ApiClient()

@@ -273,18 +273,10 @@ export default function UploadPage() {
               />
             </div>
 
-            {/* 텍스트 직접 입력 */}
-            <div>
-              <label className="block text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-1">또는 텍스트 직접 붙여넣기</label>
-              <textarea
-                value={content}
-                onChange={e => setContent(e.target.value)}
-                onBlur={handlePaste}
-                rows={10}
-                className="w-full px-4 py-3 bg-[#f5f5f5] border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black transition font-mono text-sm resize-y"
-                placeholder="마크다운 또는 텍스트를 붙여넣으세요..."
-              />
-            </div>
+            {/* 원칙: 직접 에디터를 제공하지 않음 — 파일 업로드만 허용 */}
+            <p className="text-xs text-neutral-400">
+              MD, TXT, DOCX, HWP 파일을 업로드하세요. 원고 수정은 작가 도구에서 한 후 다시 업로드합니다.
+            </p>
 
             {format && (
               <p className="text-sm text-neutral-400">
