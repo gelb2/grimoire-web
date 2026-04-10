@@ -459,6 +459,13 @@ class ApiClient {
 
   // ─── 관리자 API ───
 
+  async adminLogin(email: string, password: string) {
+    return this.fetch<{ user: { id: string; slug: string; name: string; email: string; role: string } }>('/admin/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    })
+  }
+
   async adminGetStats() {
     return this.fetch<{ totalAuthors: number; totalWorks: number; totalEpisodes: number; totalCreditsConsumed: number }>('/admin/stats')
   }
