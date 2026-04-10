@@ -515,6 +515,52 @@ class ApiClient {
     return this.fetch<any[]>(`/admin/credits/logs${qs}`)
   }
 
+  async adminListWorks(params?: { page?: number; limit?: number; q?: string; authorId?: string }) {
+    const qs = new URLSearchParams()
+    if (params?.page) qs.set('page', String(params.page))
+    if (params?.limit) qs.set('limit', String(params.limit))
+    if (params?.q) qs.set('q', params.q)
+    if (params?.authorId) qs.set('authorId', params.authorId)
+    return this.fetch<{ items: any[]; total: number }>(`/admin/works?${qs}`)
+  }
+
+  async adminGetWorkDetail(workId: string) { return this.fetch<any>(`/admin/works/${workId}`) }
+
+  async adminChangeEpisodeStatus(workId: string, episodeId: string, status: string) {
+    return this.fetch<any>(`/admin/works/${workId}/episodes/${episodeId}/status`, { method: 'PATCH', body: JSON.stringify({ status }) })
+  }
+
+  async adminListComments(params?: { page?: number; limit?: number; episodeId?: string; q?: string }) {
+    const qs = new URLSearchParams()
+    if (params?.page) qs.set('page', String(params.page))
+    if (params?.limit) qs.set('limit', String(params.limit))
+    if (params?.episodeId) qs.set('episodeId', params.episodeId)
+    if (params?.q) qs.set('q', params.q)
+    return this.fetch<{ items: any[]; total: number }>(`/admin/comments?${qs}`)
+  }
+
+  async adminDeleteComment(commentId: string) {
+    return this.fetch<{ deleted: boolean }>(`/admin/comments/${commentId}`, { method: 'DELETE' })
+  }
+
+  async adminListPayments(params?: { page?: number; limit?: number; authorId?: string; status?: string }) {
+    const qs = new URLSearchParams()
+    if (params?.page) qs.set('page', String(params.page))
+    if (params?.limit) qs.set('limit', String(params.limit))
+    if (params?.authorId) qs.set('authorId', params.authorId)
+    if (params?.status) qs.set('status', params.status)
+    return this.fetch<{ items: any[]; total: number }>(`/admin/payments?${qs}`)
+  }
+
+  async adminListAccessLogs(params?: { page?: number; limit?: number; action?: string; ip?: string }) {
+    const qs = new URLSearchParams()
+    if (params?.page) qs.set('page', String(params.page))
+    if (params?.limit) qs.set('limit', String(params.limit))
+    if (params?.action) qs.set('action', params.action)
+    if (params?.ip) qs.set('ip', params.ip)
+    return this.fetch<{ items: any[]; total: number }>(`/admin/access-logs?${qs}`)
+  }
+
   async adminGetAuditLogs(params?: { page?: number; action?: string }) {
     const qs = new URLSearchParams()
     if (params?.page) qs.set('page', String(params.page))
