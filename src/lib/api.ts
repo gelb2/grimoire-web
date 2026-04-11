@@ -590,6 +590,45 @@ class ApiClient {
     return this.fetch<any>(`/admin/settings/${key}`, { method: 'PATCH', body: JSON.stringify({ value }) })
   }
 
+  // 시계열 통계
+  async adminGetTimeseries(metric: string, days?: number) {
+    const qs = new URLSearchParams({ metric })
+    if (days) qs.set('days', String(days))
+    return this.fetch<{ date: string; count: number }[]>(`/admin/stats/timeseries?${qs}`)
+  }
+
+  // 공지사항
+  async adminListAnnouncements(page?: number) {
+    return this.fetch<{ items: any[]; total: number }>(`/admin/announcements?page=${page ?? 1}`)
+  }
+  async adminCreateAnnouncement(data: { title: string; content: string; isPinned?: boolean; target?: string }) {
+    return this.fetch<any>('/admin/announcements', { method: 'POST', body: JSON.stringify(data) })
+  }
+  async adminDeleteAnnouncement(id: string) {
+    return this.fetch<any>(`/admin/announcements/${id}`, { method: 'DELETE' })
+  }
+
+  // 추천 작품
+  async adminListFeatured(section?: string) {
+    const qs = section ? `?section=${section}` : ''
+    return this.fetch<any[]>(`/admin/featured${qs}`)
+  }
+  async adminAddFeatured(data: { workId: string; section?: string; position?: number }) {
+    return this.fetch<any>('/admin/featured', { method: 'POST', body: JSON.stringify(data) })
+  }
+  async adminRemoveFeatured(id: string) {
+    return this.fetch<any>(`/admin/featured/${id}`, { method: 'DELETE' })
+  }
+
+  async adminGetRevenue() { return this.fetch<any>('/admin/revenue') }
+  async adminListSystemThemes() { return this.fetch<any[]>('/admin/themes') }
+  async adminCreateSystemTheme(data: { name: string; preset: string; overrides: any }) {
+    return this.fetch<any>('/admin/themes', { method: 'POST', body: JSON.stringify(data) })
+  }
+  async adminDeleteSystemTheme(themeId: string) {
+    return this.fetch<any>(`/admin/themes/${themeId}`, { method: 'DELETE' })
+  }
+
   async adminGetAuditLogs(params?: { page?: number; action?: string }) {
     const qs = new URLSearchParams()
     if (params?.page) qs.set('page', String(params.page))
