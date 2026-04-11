@@ -248,11 +248,53 @@ function PreviewTabBar({ current, onTabChange }: { current: PreviewTab; onTabCha
   )
 }
 
+// ── 테마 생성 방식 선택 화면 (RoadRage AngerInputModeSelector 패턴) ──
+function ThemeCreateModeSelector({ onSelectAI, onSelectPreset }: { onSelectAI: () => void; onSelectPreset: () => void }) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-white px-4">
+      <div className="w-full max-w-md">
+        <p className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 text-center mb-3">CREATE YOUR THEME</p>
+        <h1 className="text-3xl font-light text-black text-center mb-2">테마 만들기</h1>
+        <p className="text-sm text-neutral-500 text-center mb-10">작가공간의 분위기를 만들어보세요</p>
+
+        <div className="space-y-4">
+          {/* AI 구술 — 1 크레딧 */}
+          <button onClick={onSelectAI}
+            className="w-full p-6 rounded-xl border-2 border-black bg-white text-left hover:bg-neutral-50 transition group">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg font-bold text-black">AI로 생성하기</h2>
+              <span className="text-xs bg-black text-white px-2 py-0.5 rounded">1 크레딧</span>
+            </div>
+            <p className="text-sm text-neutral-500">분위기를 텍스트로 설명하면 AI가 맞춤 테마를 만들어줍니다</p>
+            <p className="text-xs text-neutral-400 mt-2">&quot;어둡고 묵직한 A24 감성으로 해줘&quot;</p>
+          </button>
+
+          {/* 프리셋 선택 — 무료 */}
+          <button onClick={onSelectPreset}
+            className="w-full p-6 rounded-xl border border-neutral-200 bg-neutral-50 text-left hover:bg-neutral-100 transition group">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg font-bold text-black">프리셋에서 고르기</h2>
+              <span className="text-xs bg-neutral-200 text-neutral-600 px-2 py-0.5 rounded">무료</span>
+            </div>
+            <p className="text-sm text-neutral-500">미리 준비된 테마 중에서 골라 바로 사용합니다</p>
+            <p className="text-xs text-neutral-400 mt-2">미드나잇, 파치먼트, 모닝, 네온 등 8종</p>
+          </button>
+        </div>
+
+        <p className="text-xs text-neutral-400 text-center mt-8">생성 후 Color Picker로 미세 조정 가능 (무료, 무제한)</p>
+      </div>
+    </div>
+  )
+}
+
 // ── 메인 에디터 (useSearchParams 사용) ──
 function ThemeEditorInner() {
   const { user, loading: authLoading } = useAuth()
   const searchParams = useSearchParams()
   const editThemeId = searchParams.get("id")
+
+  // 선택 화면 상태: editThemeId가 있으면 바로 에디터, 없으면 선택 화면
+  const [createMode, setCreateMode] = useState<'select' | 'ai' | 'preset' | 'editor'>(editThemeId ? 'editor' : 'select')
 
   const [theme, setTheme] = useState<AuthorTheme | null>(null)
   const [themeId, setThemeId] = useState<string | null>(null)
@@ -359,6 +401,92 @@ function ThemeEditorInner() {
 
   if (authLoading) return <div className="flex items-center justify-center h-screen text-gray-500">로딩 중...</div>
   if (!user) return <div className="flex items-center justify-center h-screen text-gray-500">로그인이 필요합니다.</div>
+
+  // 선택 화면
+  if (createMode === 'select') {
+    return (
+      <ThemeCreateModeSelector
+        onSelectAI={() => setCreateMode('ai')}
+        onSelectPreset={() => setCreateMode('preset')}
+      />
+    )
+  }
+
+  // AI 생성 모드 — 텍스트 입력 후 생성
+  if (createMode === 'ai' && !theme) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white px-4">
+        <div className="w-full max-w-md">
+          <button onClick={() => setCreateMode('select')} className="text-sm text-neutral-400 hover:text-black mb-6 inline-block">&larr; 돌아가기</button>
+          <h1 className="text-2xl font-bold text-black mb-2">AI 테마 생성</h1>
+          <p className="text-sm text-neutral-500 mb-6">원하는 분위기를 자유롭게 설명하세요. 1 크레딧이 소모됩니다.</p>
+          <textarea
+            id="ai-prompt"
+            rows={4}
+            placeholder="어둡고 묵직한 A24 감성. 세리프 폰트. 타이핑 효과..."
+            className="w-full px-4 py-3 border border-neutral-300 rounded-lg text-black text-sm focus:outline-none focus:border-black transition resize-none mb-4"
+          />
+          <button
+            onClick={async () => {
+              const prompt = (document.getElementById('ai-prompt') as HTMLTextAreaElement)?.value
+              if (!prompt?.trim()) return
+              await handleGenerate(prompt)
+              setCreateMode('editor')
+            }}
+            disabled={saving}
+            className="w-full py-3 bg-black hover:bg-neutral-800 disabled:bg-neutral-300 text-white font-medium rounded-lg transition"
+          >
+            {saving ? '생성 중...' : 'AI로 생성하기 (1 크레딧)'}
+          </button>
+          {message && <p className="text-sm text-neutral-500 mt-3">{message}</p>}
+        </div>
+      </div>
+    )
+  }
+
+  // 프리셋 선택 모드
+  if (createMode === 'preset' && !theme) {
+    return (
+      <div className="min-h-screen bg-white px-4 py-8">
+        <div className="max-w-2xl mx-auto">
+          <button onClick={() => setCreateMode('select')} className="text-sm text-neutral-400 hover:text-black mb-6 inline-block">&larr; 돌아가기</button>
+          <h1 className="text-2xl font-bold text-black mb-2">프리셋 선택</h1>
+          <p className="text-sm text-neutral-500 mb-6">마음에 드는 테마를 골라 바로 사용하세요. 무료입니다.</p>
+          <div className="grid grid-cols-2 gap-4">
+            {Object.entries(themePresets).map(([key, preset]) => (
+              <button key={key} onClick={async () => {
+                try {
+                  const result = await api.createFromPreset(key)
+                  setTheme(preset)
+                  setThemeId(result.themeId)
+                  setCreateMode('editor')
+                  setMessage('프리셋 적용 완료')
+                } catch (e: any) { setMessage(e.message) }
+              }}
+                className="p-4 rounded-xl border border-neutral-200 text-left hover:border-black transition">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 rounded-lg border border-neutral-200" style={{ backgroundColor: preset.bgPrimary }}>
+                    <div className="w-full h-full flex items-center justify-center" style={{ color: preset.accent }}>
+                      <span className="text-xs font-bold">{key[0].toUpperCase()}</span>
+                    </div>
+                  </div>
+                  <span className="font-medium text-black capitalize">{key}</span>
+                </div>
+                <div className="flex gap-1">
+                  {[preset.bgPrimary, preset.accent, preset.textPrimary].map((c, i) => (
+                    <div key={i} className="w-4 h-4 rounded-full border border-neutral-200" style={{ backgroundColor: c }} />
+                  ))}
+                  <span className="text-xs text-neutral-400 ml-1">{preset.tone} · {preset.fontBody}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+          {message && <p className="text-sm text-neutral-500 mt-4">{message}</p>}
+        </div>
+      </div>
+    )
+  }
+
   if (!theme) return <div className="flex items-center justify-center h-screen text-gray-500">테마 로딩 중...</div>
 
   return (
