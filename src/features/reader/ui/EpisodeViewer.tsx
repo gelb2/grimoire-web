@@ -228,8 +228,29 @@ export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", de
     }
   }, [typingBlockIdx, typingTargets, lastTypingIdx, safeTimeout, startFadeIn])
 
+  // 본문 크기 독립 제어 (A-/A+) — localStorage 저장
+  const [fontSize, setFontSize] = useState(0) // 0 = 기본, -2~+4 범위
+  useEffect(() => {
+    const saved = localStorage.getItem('grimoire_font_size')
+    if (saved) setFontSize(parseInt(saved) || 0)
+  }, [])
+  const adjustSize = (delta: number) => {
+    setFontSize(prev => {
+      const next = Math.max(-2, Math.min(4, prev + delta))
+      localStorage.setItem('grimoire_font_size', String(next))
+      return next
+    })
+  }
+  const bodyFontSize = `calc(var(--g-body-size, 19px) + ${fontSize}px)`
+
   return (
-    <div className="mx-auto px-4 md:px-8 pb-16 md:pb-32" style={{ lineHeight: 'var(--g-line-height, 1.9)' }}>
+    <div className="mx-auto px-4 md:px-8 pb-16 md:pb-32" style={{ lineHeight: 'var(--g-line-height, 1.9)', fontSize: bodyFontSize }}>
+      {/* 본문 크기 조절 */}
+      <div className="flex justify-end gap-1 pt-3 pb-1">
+        <button onClick={() => adjustSize(-1)} className="w-7 h-7 rounded border border-g-border text-g-text-muted text-xs hover:text-g-text-bright transition" aria-label="글자 작게">A-</button>
+        <button onClick={() => adjustSize(1)} className="w-7 h-7 rounded border border-g-border text-g-text-muted text-xs hover:text-g-text-bright transition" aria-label="글자 크게">A+</button>
+        {fontSize !== 0 && <button onClick={() => { setFontSize(0); localStorage.removeItem('grimoire_font_size') }} className="w-7 h-7 rounded border border-g-border text-g-text-dim text-[10px] hover:text-g-text-bright transition" aria-label="기본 크기">↺</button>}
+      </div>
       {/* 히어로 */}
       <header className={`${spacing.pt} ${spacing.pb} border-b border-g-border`}>
         <div className="font-g-sans fs-caption tracking-wide-g text-g-text-muted uppercase mb-3 md:mb-5 min-h-[1em]">
