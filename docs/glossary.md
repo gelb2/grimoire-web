@@ -57,4 +57,45 @@
 | `theme_regenerate` | -1 | 테마 재생성 |
 | `analysis_check` | -1 | 소설 일관성 분석 |
 | `purchase_credit_N` | +N | 크레딧 구매 |
-| `admin_set_by_{adminId}` | +N | 관리자 수동 부여 |
+| `admin_grant:{reason}` | +N | 관리자 크레딧 부여 |
+| `admin_deduct:{reason}` | -N | 관리자 크레딧 차감 |
+| `gift_sent_to_{slug}` | -N | 크레딧 선물 발신 |
+| `gift_received_from_{slug}` | +N | 크레딧 선물 수신 |
+
+## 제재 유형
+
+| type | 설명 |
+|------|------|
+| `warning` | 경고 (로그인 차단 없음) |
+| `suspend_1d` | 1일 정지 |
+| `suspend_7d` | 7일 정지 |
+| `suspend_30d` | 30일 정지 |
+| `permanent` | 영구 정지 |
+
+## 신고 사유
+
+| reason | 설명 |
+|--------|------|
+| `obscene` | 음란 콘텐츠 |
+| `violence` | 폭력 |
+| `copyright` | 저작권 침해 |
+| `spam` | 스팸/광고 |
+| `other` | 기타 |
+
+## 감사 로그 액션
+
+| action | 설명 |
+|--------|------|
+| `author_create` | 작가 계정 생성 |
+| `author_update` | 작가 정보 수정 |
+| `author_delete` | 작가 삭제 |
+| `role_change` | 역할 변경 |
+| `plan_change` | 플랜 변경 |
+| `credit_grant` | 크레딧 부여 |
+| `credit_deduct` | 크레딧 차감 |
+| `episode_status_change` | 에피소드 상태 변경 |
+| `comment_delete_admin` | 관리자 댓글 삭제 |
+| `user_sanction` | 사용자 제재 |
+| `user_sanction_lift` | 제재 해제 |
+| `report_resolve` | 신고 처리 |
+| `setting_change` | 시스템 설정 변경 |
