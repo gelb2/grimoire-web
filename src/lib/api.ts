@@ -561,6 +561,35 @@ class ApiClient {
     return this.fetch<{ items: any[]; total: number }>(`/admin/access-logs?${qs}`)
   }
 
+  // 제재
+  async adminSanctionUser(body: { authorId: string; type: string; reason: string; detail?: string }) {
+    return this.fetch<any>('/admin/sanctions', { method: 'POST', body: JSON.stringify(body) })
+  }
+  async adminLiftSanction(sanctionId: string) {
+    return this.fetch<any>(`/admin/sanctions/${sanctionId}`, { method: 'DELETE' })
+  }
+  async adminListSanctions(authorId?: string) {
+    const qs = authorId ? `?authorId=${authorId}` : ''
+    return this.fetch<any[]>(`/admin/sanctions${qs}`)
+  }
+
+  // 신고
+  async adminListReports(params?: { page?: number; status?: string }) {
+    const qs = new URLSearchParams()
+    if (params?.page) qs.set('page', String(params.page))
+    if (params?.status) qs.set('status', params.status)
+    return this.fetch<{ items: any[]; total: number }>(`/admin/reports?${qs}`)
+  }
+  async adminResolveReport(reportId: string, action: 'approved' | 'rejected') {
+    return this.fetch<any>(`/admin/reports/${reportId}`, { method: 'PATCH', body: JSON.stringify({ action }) })
+  }
+
+  // 시스템 설정
+  async adminGetSettings() { return this.fetch<Record<string, string>>('/admin/settings') }
+  async adminUpdateSetting(key: string, value: string) {
+    return this.fetch<any>(`/admin/settings/${key}`, { method: 'PATCH', body: JSON.stringify({ value }) })
+  }
+
   async adminGetAuditLogs(params?: { page?: number; action?: string }) {
     const qs = new URLSearchParams()
     if (params?.page) qs.set('page', String(params.page))

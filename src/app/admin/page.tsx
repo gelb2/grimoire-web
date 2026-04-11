@@ -7,12 +7,16 @@ import { WorksTab } from './tabs/WorksTab'
 import { CommentsTab } from './tabs/CommentsTab'
 import { PaymentsTab } from './tabs/PaymentsTab'
 import { AccessLogsTab } from './tabs/AccessLogsTab'
+import { SanctionsTab } from './tabs/SanctionsTab'
+import { ReportsTab } from './tabs/ReportsTab'
+import { SettingsTab } from './tabs/SettingsTab'
 
-type Tab = 'stats' | 'authors' | 'works' | 'comments' | 'payments' | 'access' | 'audit'
+type Tab = 'stats' | 'authors' | 'works' | 'sanctions' | 'reports' | 'comments' | 'payments' | 'access' | 'settings' | 'audit'
 
 const TAB_LABELS: Record<Tab, string> = {
-  stats: '통계', authors: '사용자', works: '콘텐츠',
-  comments: '댓글', payments: '결제', access: '접근 로그', audit: '감사 로그',
+  stats: '통계', authors: '사용자', works: '콘텐츠', sanctions: '제재',
+  reports: '신고', comments: '댓글', payments: '결제',
+  access: '접근 로그', settings: '설정', audit: '감사 로그',
 }
 
 interface AdminUser { id: string; name: string; email: string; role: string }
@@ -56,9 +60,12 @@ export default function AdminPage() {
       {tab === 'stats' && <StatsTab />}
       {tab === 'authors' && <AuthorsTab />}
       {tab === 'works' && <WorksTab />}
+      {tab === 'sanctions' && <SanctionsTab />}
+      {tab === 'reports' && <ReportsTab />}
       {tab === 'comments' && <CommentsTab />}
       {tab === 'payments' && <PaymentsTab />}
       {tab === 'access' && <AccessLogsTab />}
+      {tab === 'settings' && <SettingsTab />}
       {tab === 'audit' && <AuditTab />}
     </main>
   )
