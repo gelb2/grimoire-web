@@ -286,17 +286,24 @@ export default function ChatPage() {
 
             {/* 입력 영역 */}
             <div className="border-t border-gray-200 p-4">
-              <div className="flex gap-2">
-                <input
+              <div className="flex gap-2 items-end">
+                <textarea
+                  ref={el => {
+                    if (el) {
+                      el.style.height = 'auto'
+                      el.style.height = Math.min(el.scrollHeight, 192) + 'px' // 최대 8줄 (24px * 8)
+                    }
+                  }}
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend() } }}
-                  placeholder="원고에 대해 질문하세요..."
+                  placeholder="원고에 대해 질문하세요... (Shift+Enter로 줄바꿈)"
                   disabled={sending}
-                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-black disabled:opacity-50"
+                  rows={1}
+                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-black disabled:opacity-50 resize-none overflow-y-auto"
                 />
                 <button onClick={handleSend} disabled={sending || !input.trim()}
-                  className="px-4 py-2.5 bg-black text-white text-sm rounded-lg hover:bg-gray-800 disabled:opacity-50">
+                  className="px-4 py-2.5 bg-black text-white text-sm rounded-lg hover:bg-gray-800 disabled:opacity-50 shrink-0">
                   전송
                 </button>
               </div>
