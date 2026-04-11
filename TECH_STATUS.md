@@ -7,7 +7,7 @@
 
 ## 1. 현재 버전
 
-최신 버전은 `CHANGELOG.md` 참조.
+최신 버전은 `CHANGELOG.md` 참조. (현재 v0.25.0)
 
 ---
 
@@ -27,10 +27,11 @@
 | 대시보드 홈 | `/dashboard` | 구현 완료 | getProfile, getWorkStats |
 | 테마 에디터 | `/dashboard/theme` | 구현 완료 | getMyThemes, generateTheme, updateTheme, publishTheme |
 | 원고 업로드 | `/dashboard/upload` | 구현 완료 | createWork, createEpisode, parseManuscript |
-| 크레딧 | `/dashboard/credits` | UI 완료, 결제 미연동 | getProducts, getCredits (결제 버튼 비활성) |
+| 크레딧 | `/dashboard/credits` | 구현 완료 | getProducts, initiatePayment (Polar checkout) |
 | 프로필 편집 | `/dashboard/profile` | 구현 완료 | updateBio |
 | AI 채팅 | `/dashboard/chat` | 구현 완료 | listChatSessions, createChatSession, sendChatMessage, getChatMessages |
-| 관리자 | `/admin` | 구현 완료 | getAdminStats, adminGrantCredits |
+| 관리자 로그인 | `/admin/login` | 구현 완료 | adminLogin (독립 인증, reCAPTCHA 없음) |
+| 관리자 패널 | `/admin` | 구현 완료 (10탭) | 통계/사용자/콘텐츠/제재/신고/댓글/결제/접근로그/설정/감사로그 |
 
 ---
 
@@ -40,32 +41,29 @@
 
 ## 3. API 클라이언트 커버리지 (`src/lib/api.ts`)
 
-서버 API 카테고리 대비 api.ts 메서드 구현 현황:
-
-| 카테고리 | api.ts 메서드 | 페이지 연결 |
-|----------|--------------|------------|
-| Auth | register, login, logout, getProfile, googleLogin | ✅ 전체 사용 |
-| Theme | getTheme, generateTheme, updateTheme, publishTheme, getMyThemes | ✅ 전체 사용 |
-| Author | getAuthorSpace, getAuthorProfile, updateBio | ✅ 전체 사용 |
-| Work Management | createWork, updateWork, deleteWork, createEpisode, deleteEpisode | ✅ 전체 사용 |
-| Content | getWork, getEpisode | ✅ 전체 사용 |
-| Manuscript | parseManuscript | ✅ 업로드 페이지에서 사용 (파일 업로드 UI 미구현) |
-| Reader | toggleBookmark, getBookmarks, saveProgress, getProgress | ⚠️ 메서드 있음, 에피소드 뷰어 미연결 |
-| Discovery | searchAuthors, getPopular/Recent, getMostGiftedAuthors | ✅ explore에서 사용 |
-| Social (좋아요/댓글) | toggleLike, getLikeCount, createComment, getComments, deleteComment | ⚠️ 메서드 있음, UI 없음 |
-| Social (구독) | toggleSubscription, getSubscriptions, getSubscriberCount | ✅ 프로필 페이지에서 사용 |
-| Payment | getProducts, getCredits, giftCredits | ⚠️ 결제 시작 미연동, giftCredits UI 없음 |
-| Admin | getAdminStats, adminGrantCredits | ✅ admin 페이지에서 사용 |
-| **Analysis** | **없음** | ❌ 미구현 |
+| 카테고리 | 페이지 연결 |
+|----------|------------|
+| Auth | ✅ 전체 사용 |
+| Theme | ✅ 전체 사용 |
+| Author | ✅ 전체 사용 |
+| Work Management | ✅ 전체 사용 |
+| Content | ✅ 전체 사용 |
+| Manuscript | ✅ 업로드 페이지에서 사용 |
+| Reader (북마크/진행도) | ⚠️ 메서드 있음, 에피소드 뷰어 미연결 |
+| Discovery | ✅ explore에서 사용 |
+| Social (좋아요/댓글) | ⚠️ 메서드 있음, 에피소드 뷰어 미연결 |
+| Social (구독) | ✅ 프로필 페이지에서 사용 |
+| Payment (Polar) | ✅ 결제 페이지에서 사용 (KYC 전 test mode) |
+| Admin (28개) | ✅ 관리자 패널 10탭에서 사용 |
+| **Analysis** | ❌ api.ts 메서드 미구현 |
 
 ---
 
 ## 5. 테스트
 
-- 테스트 수: `npm test` 실행으로 확인
-- E2E 테스트: `npm run test:e2e` 실행으로 확인
+- 유닛 테스트: `npm test` 실행으로 확인 (현재 113개)
+- E2E 테스트: `npm run test:e2e` 실행으로 확인 (admin 포함)
 - 커버리지: `npm run test:coverage` (목표 55%)
-- 전략: `TESTING.md` 참조
 
 ---
 
@@ -82,18 +80,14 @@
 
 ## 7. 다음 단계
 
-우선순위 순:
-1. 커버 이미지 업로드 UI (Azure Blob 환경변수 필요)
-2. 에피소드 뷰어: 좋아요 + 북마크 버튼 연결
-3. 에피소드 뷰어: 댓글 섹션 UI
-4. 크레딧 선물 UI (작가 프로필)
-5. 결제 UI 활성화 (PAYAPP API 키 발급 후)
-6. Analysis UI (대시보드 분석 탭)
-7. 플랫폼 페이지 레디맥 디자인 적용
+1. 에피소드 뷰어: 좋아요 + 북마크 + 댓글 UI 연결
+2. 크레딧 선물 UI (작가 프로필)
+3. Analysis UI (대시보드 분석 탭)
+4. 플랫폼 페이지 디자인 리뉴얼 (레디맥 참고)
 
 ---
 
-## 7. 참조 문서
+## 8. 참조 문서
 
 - 루트 `SYNC_STATUS.md` — 서버-웹 연결 현황 + 갭 (정본)
 - `docs/api-contract.md` — 서버 API 명세 (정본)
