@@ -31,17 +31,18 @@ export function HorizontalScroll({
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
 
-  // 뷰포트에 따른 열 수 (행은 항상 2). SSR fallback: 4열.
+  // 뷰포트에 따른 열 수 (행은 항상 2). SSR 고정값 4열 → hydration 후 실제 값.
   const calcColumns = useCallback(() => {
-    const width = typeof window !== 'undefined' ? window.innerWidth : 1024
+    const width = window.innerWidth
     if (width < 640) return 1   // 모바일: 2행 1열
     if (width < 1024) return 2  // 태블릿: 2행 2열
     return 4                     // 데스크톱: 2행 4열
   }, [])
 
-  const [columnsPerPage, setColumnsPerPage] = useState(() => calcColumns())
+  const [columnsPerPage, setColumnsPerPage] = useState(4) // SSR 고정값
 
   useEffect(() => {
+    setColumnsPerPage(calcColumns())
     const handleResize = () => setColumnsPerPage(calcColumns())
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
