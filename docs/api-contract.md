@@ -98,6 +98,7 @@
 | PUT | `/api/works/:id/cover` | 커버 이미지 업로드 | JWT |
 | PATCH | `/api/works/:workId/episodes/:episodeId/status` | 에피소드 상태 변경 | JWT |
 | POST | `/api/works/:workId/episodes/:episodeId/share` | 공유 링크 생성 | JWT |
+| PATCH | `/api/episodes/:episodeId/reupload` | 에피소드 재업로드 (파일 교체) | JWT |
 
 ### Author (공개)
 
@@ -174,12 +175,38 @@
 |--------|------|------|------|
 | GET | `/api/works/:workId/stats` | 작품 조회수 통계 (소유자만) | JWT |
 
-### Admin
+### Admin (관리자 전용 — AdminGuard, reCAPTCHA 없음)
 
 | Method | Path | 용도 | 인증 |
 |--------|------|------|------|
-| GET | `/api/admin/stats` | 플랫폼 통계 | JWT, admin |
-| POST | `/api/admin/credits` | 크레딧 수동 부여 | JWT, admin |
+| POST | `/api/admin/login` | 관리자 로그인 | - |
+| GET | `/api/admin/stats` | 플랫폼 통계 (6개 KPI) | JWT, admin |
+| GET | `/api/admin/authors` | 작가 목록 (검색/페이징) | JWT, admin |
+| GET | `/api/admin/authors/:id` | 작가 상세 | JWT, admin |
+| POST | `/api/admin/authors` | 작가 생성 | JWT, admin |
+| PATCH | `/api/admin/authors/:id` | 작가 정보 수정 | JWT, admin |
+| DELETE | `/api/admin/authors/:id` | 작가 삭제 | JWT, admin |
+| PATCH | `/api/admin/authors/:id/role` | 역할 변경 (user/admin) | JWT, admin |
+| PATCH | `/api/admin/authors/:id/plan` | 플랜 변경 | JWT, admin |
+| POST | `/api/admin/credits/grant` | 크레딧 부여 | JWT, admin |
+| POST | `/api/admin/credits/deduct` | 크레딧 차감 | JWT, admin |
+| GET | `/api/admin/credits/logs` | 크레딧 이력 조회 | JWT, admin |
+| GET | `/api/admin/works` | 작품 목록 (검색/필터) | JWT, admin |
+| GET | `/api/admin/works/:id` | 작품 상세 + 에피소드 목록 | JWT, admin |
+| GET | `/api/admin/works/:wid/episodes/:eid` | 에피소드 상세 | JWT, admin |
+| PATCH | `/api/admin/works/:wid/episodes/:eid/status` | 에피소드 상태 강제 변경 | JWT, admin |
+| GET | `/api/admin/comments` | 댓글 목록 (검색) | JWT, admin |
+| DELETE | `/api/admin/comments/:id` | 댓글 삭제 (모더레이션) | JWT, admin |
+| GET | `/api/admin/payments` | 결제 내역 전체 조회 | JWT, admin |
+| POST | `/api/admin/sanctions` | 사용자 제재 | JWT, admin |
+| DELETE | `/api/admin/sanctions/:id` | 제재 해제 | JWT, admin |
+| GET | `/api/admin/sanctions` | 제재 이력 조회 | JWT, admin |
+| GET | `/api/admin/reports` | 신고 목록 | JWT, admin |
+| PATCH | `/api/admin/reports/:id` | 신고 처리 (승인/기각) | JWT, admin |
+| GET | `/api/admin/settings` | 시스템 설정 조회 | JWT, admin |
+| PATCH | `/api/admin/settings/:key` | 시스템 설정 변경 | JWT, admin |
+| GET | `/api/admin/access-logs` | 접근 로그 조회 | JWT, admin |
+| GET | `/api/admin/audit-logs` | 감사 로그 조회 | JWT, admin |
 
 ### Chat (AI 어시스턴트)
 
@@ -617,17 +644,51 @@ Headers: Authorization: Bearer <token>
 Response 200: { "credits": 5 }
 ```
 
+### POST /api/admin/login
+
+관리자 전용 로그인. reCAPTCHA 불요, `role=admin` 검증.
+
+```
+Request: { "email": "admin@grimoire-book.com", "password": "..." }
+Response 200: { "user": { "id", "slug", "name", "email", "role" } }
+Set-Cookie: grimoire_token (HttpOnly)
+Error 401: 이메일/비밀번호 오류 또는 admin 권한 없음
+```
+
 ### GET /api/admin/stats
 
 ```
-Response 200: { "totalAuthors", "totalWorks", "totalEpisodes", "totalCreditsUsed" }
+Response 200:
+{ "totalAuthors", "totalWorks", "totalEpisodes", "totalCreditsConsumed", "totalComments", "totalPaymentsCompleted" }
 ```
 
-### POST /api/admin/credits
+### POST /api/admin/credits/grant
 
 ```
-Request: { "authorId": "uuid", "amount": 10, "reason": "이벤트 보상" }
-Response 200: CreditLog
+Request: { "authorId": "uuid", "amount": 10, "reason": "프로모션" }
+Response 200: { "credits": 15, "log": CreditLog }
+```
+
+### POST /api/admin/sanctions
+
+```
+Request: { "authorId": "uuid", "type": "suspend_7d", "reason": "욕설", "detail?": "..." }
+Response 201: UserSanction
+```
+
+### PATCH /api/admin/reports/:id
+
+```
+Request: { "action": "approved" | "rejected" }
+Response 200: { "resolved": true }
+# approved 시 대상 콘텐츠 자동 비공개/삭제
+```
+
+### PATCH /api/admin/settings/:key
+
+```
+Request: { "value": "true" }
+Response 200: { "key": "maintenance_mode", "value": "true" }
 ```
 
 ### POST /api/analysis/index
