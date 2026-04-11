@@ -10,12 +10,17 @@ import { AccessLogsTab } from './tabs/AccessLogsTab'
 import { SanctionsTab } from './tabs/SanctionsTab'
 import { ReportsTab } from './tabs/ReportsTab'
 import { SettingsTab } from './tabs/SettingsTab'
+import { AnnouncementsTab } from './tabs/AnnouncementsTab'
+import { FeaturedTab } from './tabs/FeaturedTab'
+import { RevenueTab } from './tabs/RevenueTab'
+import { ThemesTab } from './tabs/ThemesTab'
 
-type Tab = 'stats' | 'authors' | 'works' | 'sanctions' | 'reports' | 'comments' | 'payments' | 'access' | 'settings' | 'audit'
+type Tab = 'stats' | 'authors' | 'works' | 'sanctions' | 'reports' | 'comments' | 'payments' | 'revenue' | 'announcements' | 'featured' | 'themes' | 'access' | 'settings' | 'audit'
 
 const TAB_LABELS: Record<Tab, string> = {
   stats: '통계', authors: '사용자', works: '콘텐츠', sanctions: '제재',
-  reports: '신고', comments: '댓글', payments: '결제',
+  reports: '신고', comments: '댓글', payments: '결제', revenue: '수익',
+  announcements: '공지', featured: '추천', themes: '테마',
   access: '접근 로그', settings: '설정', audit: '감사 로그',
 }
 
@@ -64,6 +69,10 @@ export default function AdminPage() {
       {tab === 'reports' && <ReportsTab />}
       {tab === 'comments' && <CommentsTab />}
       {tab === 'payments' && <PaymentsTab />}
+      {tab === 'revenue' && <RevenueTab />}
+      {tab === 'announcements' && <AnnouncementsTab />}
+      {tab === 'featured' && <FeaturedTab />}
+      {tab === 'themes' && <ThemesTab />}
       {tab === 'access' && <AccessLogsTab />}
       {tab === 'settings' && <SettingsTab />}
       {tab === 'audit' && <AuditTab />}
@@ -71,10 +80,15 @@ export default function AdminPage() {
   )
 }
 
-// ─── 통계 탭 (강화) ───
+// ─── 통계 탭 (KPI + 시계열 차트) ───
 function StatsTab() {
   const [stats, setStats] = useState<any>(null)
+  const [chart, setChart] = useState<{ date: string; count: number }[]>([])
+  const [metric, setMetric] = useState('signups')
+
   useEffect(() => { api.adminGetStats().then(setStats).catch(() => {}) }, [])
+  useEffect(() => { api.adminGetTimeseries(metric, 30).then(setChart).catch(() => setChart([])) }, [metric])
+
   if (!stats) return <p className="text-neutral-500">로딩 중...</p>
 
   const items = [
@@ -86,14 +100,43 @@ function StatsTab() {
     { label: '결제 완료', value: stats.totalPaymentsCompleted },
   ]
 
+  const maxCount = Math.max(...chart.map(c => c.count), 1)
+
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-      {items.map(item => (
-        <div key={item.label} className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-center">
-          <p className="text-3xl font-bold text-white">{(item.value ?? 0).toLocaleString()}</p>
-          <p className="text-xs text-neutral-500 mt-1 uppercase tracking-wider">{item.label}</p>
+    <div>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+        {items.map(item => (
+          <div key={item.label} className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 text-center">
+            <p className="text-3xl font-bold text-white">{(item.value ?? 0).toLocaleString()}</p>
+            <p className="text-xs text-neutral-500 mt-1 uppercase tracking-wider">{item.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* 시계열 차트 */}
+      <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-medium text-white">30일 추이</h3>
+          <select value={metric} onChange={e => setMetric(e.target.value)}
+            className="px-2 py-1 bg-neutral-800 border border-neutral-700 rounded text-xs text-white">
+            <option value="signups">가입자</option>
+            <option value="views">조회수</option>
+            <option value="payments">결제</option>
+          </select>
         </div>
-      ))}
+        {chart.length === 0 ? <p className="text-neutral-500 text-sm text-center py-8">데이터 없음</p> : (
+          <div className="flex items-end gap-px h-32">
+            {chart.map((c, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center justify-end group relative">
+                <div className="w-full bg-blue-500/80 rounded-t-sm transition-all" style={{ height: `${(c.count / maxCount) * 100}%`, minHeight: c.count > 0 ? '2px' : '0' }} />
+                <div className="absolute -top-6 bg-neutral-800 text-white text-[10px] px-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap">
+                  {c.date.slice(5)} : {c.count}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

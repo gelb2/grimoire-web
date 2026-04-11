@@ -45,6 +45,8 @@ export default function AuthorProfilePage() {
   const [error, setError] = useState(false)
   const [subscribed, setSubscribed] = useState(false)
   const [subscriberCount, setSubscriberCount] = useState(0)
+  const [showGift, setShowGift] = useState(false)
+  const [giftMsg, setGiftMsg] = useState('')
   const subscribeThrottle = useThrottledAction(1000)
 
   useEffect(() => {
@@ -161,19 +163,49 @@ export default function AuthorProfilePage() {
             </div>
           </div>
 
-          <button
-            onClick={handleSubscribe}
-            disabled={subscribeThrottle.pending}
-            className={`px-8 py-2.5 rounded-full text-sm font-medium transition disabled:opacity-50 ${
-              subscribed
-                ? 'border border-g-accent text-g-accent bg-transparent'
-                : theme.subscribeButtonStyle === 'filled'
-                  ? 'bg-g-accent text-g-bg'
-                  : 'border border-g-accent text-g-accent bg-transparent'
-            }`}
-          >
-            {subscribed ? '구독 중' : '구독하기'}
-          </button>
+          <div className="flex gap-3 items-center">
+            <button
+              onClick={handleSubscribe}
+              disabled={subscribeThrottle.pending}
+              className={`px-8 py-2.5 rounded-full text-sm font-medium transition disabled:opacity-50 ${
+                subscribed
+                  ? 'border border-g-accent text-g-accent bg-transparent'
+                  : theme.subscribeButtonStyle === 'filled'
+                    ? 'bg-g-accent text-g-bg'
+                    : 'border border-g-accent text-g-accent bg-transparent'
+              }`}
+            >
+              {subscribed ? '구독 중' : '구독하기'}
+            </button>
+
+            <div className="relative">
+              <button onClick={() => setShowGift(!showGift)}
+                className="px-5 py-2.5 rounded-full text-sm font-medium border border-g-border text-g-text-muted hover:text-g-accent hover:border-g-accent transition">
+                🎁 응원
+              </button>
+              {showGift && (
+                <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-g-bg2 border border-g-border rounded-xl p-3 shadow-lg z-10 min-w-[160px]">
+                  <p className="text-xs text-g-text-muted text-center mb-2">크레딧 선물</p>
+                  <div className="flex gap-2 justify-center">
+                    {[1, 3, 5].map(amount => (
+                      <button key={amount} onClick={async () => {
+                        try {
+                          await api.giftCredits(authorSlug, amount)
+                          setGiftMsg(`${amount} 크레딧을 선물했습니다!`)
+                          setShowGift(false)
+                          setTimeout(() => setGiftMsg(''), 3000)
+                        } catch { setGiftMsg('선물 실패 (로그인 필요)'); setTimeout(() => setGiftMsg(''), 3000) }
+                      }}
+                        className="px-3 py-1.5 bg-g-accent/20 text-g-accent text-sm rounded-lg hover:bg-g-accent/30 transition">
+                        {amount}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          {giftMsg && <p className="text-sm text-g-accent mt-2">{giftMsg}</p>}
         </section>
 
         {/* 작품 목록 */}
