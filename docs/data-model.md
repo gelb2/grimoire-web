@@ -5,7 +5,7 @@
 
 ---
 
-## 테이블 (16개)
+## 테이블 (21개)
 
 ### authors
 
@@ -230,7 +230,85 @@ ReadingProgress (독자 행위 기록)
 Like (독자 행위 기록)
 Subscription (구독 관계)
 Payment (결제 기록)
+UserSanction (제재/정지 — 작가별 이력)
+Report (콘텐츠 신고 큐)
+SystemSetting (동적 설정값)
+AccessLog (보안 접근 로그)
+AdminAuditLog (관리자 감사 로그)
 ```
+
+---
+
+### user_sanctions
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 제재 식별자 |
+| author_id | text | FK(authors) | 대상 작가 |
+| type | text | not null | warning, suspend_1d, suspend_7d, suspend_30d, permanent |
+| reason | text | not null | 욕설, 스팸, 저작권, 기타 |
+| detail | text | nullable | 관리자 메모 |
+| admin_id | text | not null | 제재를 건 관리자 ID |
+| start_at | timestamptz | default now | 시작 시각 |
+| end_at | timestamptz | nullable | 해제 시각 (null = 영구) |
+| is_active | boolean | default true | 활성 여부 |
+| created_at | timestamptz | default now | 기록 시각 |
+
+인덱스: `(author_id, is_active)`, `(end_at)`
+
+### reports
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 신고 식별자 |
+| target_type | text | not null | work, episode, comment |
+| target_id | text | not null | 신고 대상 ID |
+| reporter_id | text | nullable | 신고자 (비로그인 시 null) |
+| reason | text | not null | obscene, violence, copyright, spam, other |
+| detail | text | nullable | 상세 사유 |
+| status | text | default 'pending' | pending, approved, rejected |
+| resolved_by | text | nullable | 처리한 관리자 ID |
+| resolved_at | timestamptz | nullable | 처리 시각 |
+| created_at | timestamptz | default now | 접수 시각 |
+
+인덱스: `(status, created_at)`, `(target_type, target_id)`
+
+### system_settings
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| key | text | PK | 설정 키 (maintenance_mode, recaptcha_enabled 등) |
+| value | text | not null | 설정 값 |
+| updated_by | text | nullable | 마지막 변경 관리자 |
+| updated_at | timestamptz | auto | 변경 시각 |
+
+### access_logs
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 로그 식별자 |
+| action | text | not null | register, login_success, login_fail, login_blocked, password_change, admin_login_* |
+| author_id | text | nullable | 사용자 (미식별 시 null) |
+| email | text | nullable | 시도한 이메일 |
+| ip | text | nullable | 클라이언트 IP |
+| user_agent | text | nullable | 브라우저/봇 UA |
+| detail | text | nullable | 실패 사유 등 |
+| created_at | timestamptz | default now | 기록 시각 |
+
+인덱스: `(action, created_at)`, `(ip)`, `(author_id)`
+
+### admin_audit_logs
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 감사 로그 식별자 |
+| admin_id | text | not null | 행위 관리자 |
+| action | text | not null | author_create, credit_grant, episode_status_change, user_sanction, report_resolve, setting_change 등 |
+| target_id | text | nullable | 대상 리소스 ID |
+| detail | jsonb | nullable | 변경 전/후 값, 사유 등 |
+| created_at | timestamptz | default now | 기록 시각 |
+
+인덱스: `(admin_id, created_at)`, `(action)`
 
 ---
 

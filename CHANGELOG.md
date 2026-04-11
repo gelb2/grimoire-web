@@ -1,5 +1,25 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.25.0] - 2026-04-11
+
+### 관리자 패널 + 크레딧 정렬 + 테마 CDN
+
+#### Added
+- 관리자 패널 10탭 UI (/admin — 독립 인증, 다크 테마)
+  - 통계, 사용자, 콘텐츠, 제재, 신고, 댓글, 결제, 접근로그, 설정, 감사로그
+- 관리자 전용 로그인 (/admin/login — reCAPTCHA 없음)
+- 탭 컴포넌트 분리 (src/app/admin/tabs/)
+- 관리자 E2E 테스트 (Playwright, e2e/admin.spec.ts)
+
+#### Changed
+- 크레딧 페이지 폴백값 기획서 기준 (5/20/50)
+- [author]/layout.tsx: CDN bakedCssUrl <link> 태그 로드
+- 업로드 페이지 textarea 제거 (원칙 위반 수정)
+
+#### Docs
+- api-contract.md: 관리자 28개 엔드포인트 + reupload 추가
+- environments.md: Polar + Blob Storage 환경변수 추가
+
 ## [0.24.0] - 2026-04-09
 
 ### Polar 결제 UI 3환경 배포 + 전수검사
