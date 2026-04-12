@@ -25,22 +25,23 @@ function getApiBase(): string {
 }
 
 class ApiClient {
+  private refreshing: Promise<boolean> | null = null
+
   private async fetch<T>(path: string, options?: RequestInit): Promise<T> {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      ...((options?.headers as Record<string, string>) || {}),
+    const res = await this.rawFetch(path, options)
+
+    // 401 + 브라우저 + refresh 경로 아님 → 자동 갱신 시도
+    if (res.status === 401 && typeof window !== 'undefined' && !path.startsWith('/auth/')) {
+      const refreshed = await this.tryRefresh()
+      if (refreshed) {
+        const retry = await this.rawFetch(path, options)
+        if (!retry.ok) {
+          const body = await retry.json().catch(() => ({}))
+          throw new Error(body.message || `API 오류: ${retry.status}`)
+        }
+        return retry.json()
+      }
     }
-
-    // 타임아웃: SSR=5초 (서버 미연결 시 빠른 폴백), 클라이언트=10초 (prod Cold Start 대응)
-    const timeout = typeof window === 'undefined' ? 5000 : 10000
-    const signal = options?.signal ?? AbortSignal.timeout(timeout)
-
-    const res = await fetch(`${getApiBase()}${path}`, {
-      ...options,
-      credentials: 'include',
-      headers,
-      signal,
-    })
 
     if (!res.ok) {
       const body = await res.json().catch(() => ({}))
@@ -48,6 +49,39 @@ class ApiClient {
     }
 
     return res.json()
+  }
+
+  private async rawFetch(path: string, options?: RequestInit): Promise<globalThis.Response> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...((options?.headers as Record<string, string>) || {}),
+    }
+
+    const timeout = typeof window === 'undefined' ? 5000 : 10000
+    const signal = options?.signal ?? AbortSignal.timeout(timeout)
+
+    return fetch(`${getApiBase()}${path}`, {
+      ...options,
+      credentials: 'include',
+      headers,
+      signal,
+    })
+  }
+
+  /** Access Token 만료 시 Refresh Token으로 자동 갱신 (중복 요청 방지) */
+  private async tryRefresh(): Promise<boolean> {
+    if (this.refreshing) return this.refreshing
+    this.refreshing = (async () => {
+      try {
+        const res = await this.rawFetch('/auth/refresh', { method: 'POST' })
+        return res.ok
+      } catch {
+        return false
+      } finally {
+        this.refreshing = null
+      }
+    })()
+    return this.refreshing
   }
 
   // 인증
