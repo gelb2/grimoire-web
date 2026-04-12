@@ -20,6 +20,7 @@ interface AuthContextType {
   googleLogin: (googleToken: string) => Promise<void>
   register: (data: { email: string; password: string; name: string; slug: string }, recaptchaToken?: string) => Promise<void>
   logout: () => void
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -51,6 +52,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(result.user)
   }
 
+  const refreshUser = async () => {
+    try {
+      const profile = await api.getProfile()
+      setUser(profile)
+    } catch {
+      // 실패 시 무시 (로그아웃 상태면 null 유지)
+    }
+  }
+
   const logout = async () => {
     try {
       await api.logout()
@@ -61,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, googleLogin, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, googleLogin, register, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   )
