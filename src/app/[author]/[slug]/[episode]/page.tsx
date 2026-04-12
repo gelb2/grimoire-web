@@ -73,9 +73,20 @@ export default async function EpisodePage({ params }: Props) {
       api.getWork<any>(author, slug).catch(() => null),
     ])
 
-    // API 응답에서 num 파싱: orderNum → 2자리 zero-padded 문자열
-    const episodeNum = episodeData.num
-      ?? (episodeData.orderNum != null ? String(episodeData.orderNum).padStart(2, '0') : undefined)
+    // 에피소드 번호: 작품 내 episode 타입 순번으로 계산 (orderNum 갭 무시)
+    let episodeNum = episodeData.num
+    if (!episodeNum && episodeData.type !== 'preface' && episodeData.type !== 'afterword' && episodeData.type !== 'bonus') {
+      const allEps = (workData?.episodes ?? workData?.work?.episodes ?? [])
+        .map((ep: { slug: string; orderNum?: number; order_num?: number; type?: string }) => ({
+          slug: ep.slug, orderNum: ep.orderNum ?? ep.order_num ?? 0, type: ep.type ?? 'episode',
+        }))
+        .sort((a: { orderNum: number }, b: { orderNum: number }) => a.orderNum - b.orderNum)
+      let counter = 0
+      for (const ep of allEps) {
+        if (ep.type === 'episode') counter++
+        if (ep.slug === episode) { episodeNum = String(counter).padStart(2, '0'); break }
+      }
+    }
 
     const meta = {
       slug: episodeData.slug || episode,

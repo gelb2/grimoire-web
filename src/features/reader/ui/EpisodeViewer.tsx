@@ -249,7 +249,7 @@ export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", de
       <div className="flex justify-end gap-1 pt-3 pb-1">
         <button onClick={() => adjustSize(-1)} className="w-7 h-7 rounded border border-g-border text-g-text-muted text-xs hover:text-g-text-bright transition" aria-label="글자 작게">A-</button>
         <button onClick={() => adjustSize(1)} className="w-7 h-7 rounded border border-g-border text-g-text-muted text-xs hover:text-g-text-bright transition" aria-label="글자 크게">A+</button>
-        {fontSize !== 0 && <button onClick={() => { setFontSize(0); localStorage.removeItem('grimoire_font_size') }} className="w-7 h-7 rounded border border-g-border text-g-text-dim text-[10px] hover:text-g-text-bright transition" aria-label="기본 크기">↺</button>}
+        <button onClick={() => { setFontSize(0); localStorage.removeItem('grimoire_font_size') }} className={`w-7 h-7 rounded border border-g-border text-[10px] transition ${fontSize !== 0 ? 'text-g-text-dim hover:text-g-text-bright' : 'text-g-text-dim/30 cursor-default'}`} disabled={fontSize === 0} aria-label="기본 크기">↺</button>
       </div>
       {/* 히어로 */}
       <header className={`${spacing.pt} ${spacing.pb} border-b border-g-border`}>
