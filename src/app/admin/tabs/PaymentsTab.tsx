@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '@/lib/api'
+import { downloadCsv } from '@/lib/csv'
 
 export function PaymentsTab() {
   const [payments, setPayments] = useState<any[]>([])
@@ -23,14 +24,20 @@ export function PaymentsTab() {
 
   return (
     <div>
+      <div className="flex gap-2 mb-4">
       <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1) }}
-        className="px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-sm text-white mb-4">
+        className="px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-sm text-white">
         <option value="">전체 상태</option>
         <option value="completed">완료</option>
         <option value="pending">대기</option>
         <option value="failed">실패</option>
         <option value="refunded">환불</option>
       </select>
+      <button onClick={() => downloadCsv(payments.map(p => ({
+        authorId: p.authorId, productId: p.productId, amount: p.amount,
+        credits: p.credits, status: p.status, createdAt: p.createdAt, completedAt: p.completedAt || '',
+      })), 'payments')} className="px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-sm text-neutral-300 hover:text-white">CSV 내보내기</button>
+      </div>
 
       {payments.length === 0 ? <p className="text-neutral-500 text-sm">결제 내역이 없습니다.</p> : (
         <div className="border border-neutral-800 rounded-xl overflow-hidden">

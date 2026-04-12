@@ -7,6 +7,29 @@ const nextConfig: NextConfig = {
 
   // 프로덕션에서 Source Map 비활성화 — 원본 코드 구조 노출 방지
   productionBrowserSourceMaps: false,
+
+  // 보안 헤더 (서버 Helmet과 별도 — Next.js 프론트 전용)
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'X-DNS-Prefetch-Control', value: 'on' },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
+    ]
+  },
 }
 
 export default nextConfig

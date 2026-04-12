@@ -50,6 +50,12 @@ ProjectGrimoire의 프론트엔드. DeerDevil(사슴악마 단편소설 웹 뷰�
 - 디자인 토큰 변경 → `docs/design-tokens.md` 업데이트
 - 컴포넌트/폴더 리네이밍 → `SCREENS.md`, `DESIGN.md` 업데이트
 - 페이지 추가/삭제 → `SCREENS.md` 업데이트
+- **기능 추가/변경 시 보안 체크** → `../grimoire-server/SECURITY.md` 확인
+  - BFF 프록시 경유하는가? (백엔드 URL 직접 노출 금지)
+  - 인증 Cookie 필요한 API인가? CSRF 방어 되어 있는가?
+  - XSS — `dangerouslySetInnerHTML` 사용하지 않는가? (소설 콘텐츠 포함)
+  - 에러 응답에서 내부 정보 노출하지 않는가?
+- **배포 전 필수** → `../grimoire-server/SECURITY.md` §4 배포 전 체크리스트 통과 확인
 
 ### 아키텍처 — FSD (Feature-Sliced Design)
 ```

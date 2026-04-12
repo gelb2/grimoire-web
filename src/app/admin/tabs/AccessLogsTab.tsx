@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '@/lib/api'
+import { downloadCsv } from '@/lib/csv'
 
 const ACTION_COLORS: Record<string, string> = {
   login_success: 'bg-green-900/50 text-green-400',
@@ -40,6 +41,10 @@ export function AccessLogsTab() {
         </select>
         <input value={ipFilter} onChange={e => { setIpFilter(e.target.value); setPage(1) }}
           placeholder="IP 필터..." className="px-3 py-2 bg-neutral-900 border border-neutral-700 rounded-lg text-sm text-white placeholder-neutral-500" />
+        <button onClick={() => downloadCsv(logs.map(l => ({
+          createdAt: l.createdAt, action: l.action, email: l.email || '',
+          ip: l.ip || '', userAgent: l.userAgent || '', detail: l.detail || '',
+        })), 'access_logs')} className="px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-sm text-neutral-300 hover:text-white">CSV</button>
       </div>
 
       {logs.length === 0 ? <p className="text-neutral-500 text-sm">로그가 없습니다.</p> : (
