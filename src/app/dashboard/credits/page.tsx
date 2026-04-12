@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/features/auth'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
@@ -27,7 +27,6 @@ interface CreditLog {
 export default function CreditsPage() {
   const { user, loading, refreshUser } = useAuth()
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [products, setProducts] = useState<Product[]>([])
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null)
   const [logs, setLogs] = useState<CreditLog[]>([])
@@ -39,19 +38,21 @@ export default function CreditsPage() {
 
   // Polar 결제 완료 후 리턴 감지 — URL에 checkout_id가 있으면 성공
   useEffect(() => {
-    const checkoutId = searchParams.get('checkout_id')
+    const params = new URLSearchParams(window.location.search)
+    const checkoutId = params.get('checkout_id')
     if (checkoutId) {
       toast.success('결제가 완료되었습니다. 크레딧이 곧 반영됩니다.')
       // 크레딧 반영 대기 후 갱신 (webhook 처리 시간 고려)
       const timer = setTimeout(() => {
-        refreshUser?.()
+        refreshUser()
         api.getCreditLogs().then(setLogs).catch(() => {})
       }, 2000)
       // URL에서 checkout_id 제거 (새로고침 시 중복 토스트 방지)
       window.history.replaceState({}, '', '/dashboard/credits')
       return () => clearTimeout(timer)
     }
-  }, [searchParams, refreshUser])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     api.getProducts().then(setProducts).catch(() => {
