@@ -1,4 +1,6 @@
 import type { AuthResponse, AuthUser, Theme, GiftedAuthor, WorkStats, Product, AnalysisResult, IndexStatus } from "@/types/api"
+import { BaseApiClient, getApiBaseUrl } from "./api/client"
+
 /** 페이지네이션 작품 응답 타입 */
 export interface PaginatedWorksResponse {
   works: Array<{
@@ -12,79 +14,9 @@ export interface PaginatedWorksResponse {
   hasMore: boolean
 }
 
-// BFF 패턴:
-// - 클라이언트(브라우저): 같은 도메인의 /api 프록시로 호출
-// - 서버(SSR): API_URL 런타임 환경변수로 백엔드 직접 호출 (루프백 방지)
-function getApiBase(): string {
-  if (typeof window === 'undefined') {
-    // 서버 사이드 — 백엔드 직접 호출
-    return process.env.API_URL || 'http://localhost:3000/api'
-  }
-  // 클라이언트 사이드 — BFF 프록시 경유
-  return '/api'
-}
+class ApiClient extends BaseApiClient {
 
-class ApiClient {
-  private refreshing: Promise<boolean> | null = null
-
-  private async fetch<T>(path: string, options?: RequestInit): Promise<T> {
-    const res = await this.rawFetch(path, options)
-
-    // 401 + 브라우저 + refresh 경로 아님 → 자동 갱신 시도
-    if (res.status === 401 && typeof window !== 'undefined' && !path.startsWith('/auth/')) {
-      const refreshed = await this.tryRefresh()
-      if (refreshed) {
-        const retry = await this.rawFetch(path, options)
-        if (!retry.ok) {
-          const body = await retry.json().catch(() => ({}))
-          throw new Error(body.message || `API 오류: ${retry.status}`)
-        }
-        return retry.json()
-      }
-    }
-
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}))
-      throw new Error(body.message || `API 오류: ${res.status}`)
-    }
-
-    return res.json()
-  }
-
-  private async rawFetch(path: string, options?: RequestInit): Promise<globalThis.Response> {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      ...((options?.headers as Record<string, string>) || {}),
-    }
-
-    const timeout = typeof window === 'undefined' ? 5000 : 10000
-    const signal = options?.signal ?? AbortSignal.timeout(timeout)
-
-    return fetch(`${getApiBase()}${path}`, {
-      ...options,
-      credentials: 'include',
-      headers,
-      signal,
-    })
-  }
-
-  /** Access Token 만료 시 Refresh Token으로 자동 갱신 (중복 요청 방지) */
-  private async tryRefresh(): Promise<boolean> {
-    if (this.refreshing) return this.refreshing
-    this.refreshing = (async () => {
-      try {
-        const res = await this.rawFetch('/auth/refresh', { method: 'POST' })
-        return res.ok
-      } catch {
-        return false
-      } finally {
-        this.refreshing = null
-      }
-    })()
-    return this.refreshing
-  }
-
-  // 인증
+  // ─── 인증 ───
   async register(data: { email: string; password: string; name: string; slug: string; recaptchaToken?: string }) {
     return this.fetch<AuthResponse>('/auth/register', {
       method: 'POST',
@@ -316,7 +248,7 @@ class ApiClient {
   async uploadManuscriptFile(file: File) {
     const formData = new FormData()
     formData.append('file', file)
-    const res = await fetch(`${getApiBase()}/manuscripts/upload`, {
+    const res = await fetch(`${getApiBaseUrl()}/manuscripts/upload`, {
       method: 'POST',
       credentials: 'include',
       body: formData,
@@ -479,7 +411,7 @@ class ApiClient {
   async uploadCover(workId: string, file: File) {
     const formData = new FormData()
     formData.append('file', file)
-    const res = await fetch(`${getApiBase()}/works/${workId}/cover`, {
+    const res = await fetch(`${getApiBaseUrl()}/works/${workId}/cover`, {
       method: 'PUT',
       credentials: 'include',
       body: formData,
