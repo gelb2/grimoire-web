@@ -23,19 +23,20 @@ RUN npm run build
 # 2단계: 실행 (standalone 모드 — node_modules 불필요)
 FROM node:20-alpine AS runner
 RUN apk add --no-cache tini
+
+# non-root 유저 (컨테이너 보안)
+RUN addgroup -g 1001 -S nodejs && adduser -S grimoire -u 1001
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=3001
 
-# API_URL은 런타임에 Container Apps 환경변수로 주입
-# 예: API_URL=https://api.grimoire.app/api
-
 # standalone 서버 + static 파일 복사
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/public ./public
+COPY --from=builder --chown=grimoire:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=grimoire:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=grimoire:nodejs /app/public ./public
 
+USER grimoire
 EXPOSE 3001
 
 ENTRYPOINT ["/sbin/tini", "--"]
