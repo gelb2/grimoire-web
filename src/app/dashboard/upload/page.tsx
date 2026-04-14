@@ -1,11 +1,26 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, ReactNode } from 'react'
 import { useAuth } from '@/features/auth'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import { PlatformNav } from '@/components/PlatformNav'
 import { toast } from 'sonner'
+
+/** 인라인 마크다운 파싱 (***bold italic***, **bold**, *italic*) */
+function renderInline(text?: string): ReactNode {
+  if (!text || !text.includes('*')) return text ?? ''
+  const parts = text.split(/(\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|\*[^*]+\*)/)
+  return parts.map((part, i) => {
+    if (part.startsWith('***') && part.endsWith('***'))
+      return <strong key={i} className="font-semibold italic">{part.slice(3, -3)}</strong>
+    if (part.startsWith('**') && part.endsWith('**'))
+      return <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>
+    if (part.startsWith('*') && part.endsWith('*'))
+      return <em key={i} className="italic">{part.slice(1, -1)}</em>
+    return part
+  })
+}
 
 interface WorkOption { id: string; slug: string; title: string }
 
@@ -313,14 +328,32 @@ export default function UploadPage() {
               <div className="space-y-4 text-neutral-700">
                 {title && <h2 className="text-xl font-bold text-black">{title}</h2>}
                 {preview.map((block: any, i: number) => {
-                  if (block.type === 'paragraph') return <p key={i} className="leading-relaxed">{block.text}</p>
-                  if (block.type === 'chapter') return <h3 key={i} className="text-lg font-bold text-[#e53e3e] mt-6">{block.title ?? block.text}</h3>
-                  if (block.type === 'divider') return <hr key={i} className="border-neutral-300 my-6" />
-                  if (block.type === 'italic') return <p key={i} className="italic text-neutral-500">{block.text}</p>
                   if (block.type === 'heading-1') return <h2 key={i} className="text-xl font-bold mt-6">{block.title ?? block.text}</h2>
-                  if (block.type === 'heading-2') return <h3 key={i} className="text-lg font-semibold mt-4">{block.title ?? block.text}</h3>
-                  if (block.type === 'bold') return <p key={i} className="font-bold">{block.text}</p>
-                  return <p key={i}>{block.text}</p>
+                  if (block.type === 'heading-2') return <h3 key={i} className="text-lg font-medium italic text-neutral-500 mt-8 mb-4">{block.title ?? block.text}</h3>
+                  if (block.type === 'chapter') return (
+                    <div key={i} className="mt-8">
+                      {block.num && <p className="text-xs text-neutral-400 mb-1">{block.num}</p>}
+                      <h3 className="text-base font-medium italic text-[#e53e3e]">{block.title ?? block.text}</h3>
+                    </div>
+                  )
+                  if (block.type === 'paragraph') return <p key={i} className="leading-relaxed mb-3">{renderInline(block.text)}</p>
+                  if (block.type === 'italic') return <p key={i} className="italic text-neutral-500 mb-3">{renderInline(block.text)}</p>
+                  if (block.type === 'bold') return <p key={i} className="font-semibold mb-3">{renderInline(block.text)}</p>
+                  if (block.type === 'refrain') return <div key={i} className="italic text-[#e53e3e] border-l-2 border-[#e53e3e] pl-4 my-4">{renderInline(block.text)}</div>
+                  if (block.type === 'divider') return <div key={i} className="text-center text-neutral-300 my-6">· · ·</div>
+                  if (block.type === 'separator') return <hr key={i} className="border-neutral-300 my-8" />
+                  if (block.type === 'epilogue') return <p key={i} className="text-xs text-neutral-400 mt-8 mb-4 uppercase tracking-widest">에필로그</p>
+                  if (block.type === 'reviews-wrap') return (
+                    <div key={i} className="space-y-3 mt-4">
+                      {(block.children ?? []).map((r: any, j: number) => (
+                        <div key={j} className="border-l-2 border-neutral-300 pl-4 text-sm text-neutral-500 italic">
+                          <p>{r.text}</p>
+                          {r.author && <p className="text-xs text-neutral-400 mt-1">— {r.author}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  )
+                  return <p key={i} className="mb-3">{block.text}</p>
                 })}
               </div>
             )}
