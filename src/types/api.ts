@@ -23,6 +23,8 @@ export interface Theme {
   overrides: Record<string, unknown> | null
   rawDescription: string | null
   bakedCssUrl: string | null
+  isSlotted: boolean
+  source: 'system' | 'ai' | 'user'
   updatedAt: string
 }
 
