@@ -58,25 +58,34 @@ export default function UploadPage() {
       .catch(() => {})
   }, [user])
 
-  // 작가 테마 목록 로드
+  // 작가 테마 + 시스템 프리셋 로드
+  const [presets, setPresets] = useState<{ name: string; label: string; overrides: Record<string, unknown> }[]>([])
   useEffect(() => {
     if (!user) return
     api.getMyThemes().then(setThemes).catch(() => {})
+    api.getPresets().then((list: any[]) => setPresets(list.map((p: any) => ({ name: p.name, label: p.label, overrides: p.overrides ?? {} })))).catch(() => {})
   }, [user])
 
-  // 테마 선택 시 상세 로드
+  // 테마 선택 시 상세 로드 (작가 테마는 API 호출, 프리셋은 이미 로드됨)
+  const [selectedType, setSelectedType] = useState<'none' | 'theme' | 'preset'>('none')
   useEffect(() => {
-    if (!selectedThemeId) {
+    if (selectedType === 'none' || !selectedThemeId) {
       setPreviewTheme(null)
       return
     }
+    if (selectedType === 'preset') {
+      const preset = presets.find(p => p.name === selectedThemeId)
+      if (preset) setPreviewTheme(preset.overrides as unknown as AuthorTheme)
+      return
+    }
+    // 작가 테마
     api.getThemeById(selectedThemeId)
       .then((data: any) => {
         const overrides = data.overrides ?? data.theme ?? data
         setPreviewTheme(overrides as AuthorTheme)
       })
       .catch(() => toast.error('테마를 불러올 수 없습니다'))
-  }, [selectedThemeId])
+  }, [selectedThemeId, selectedType, presets])
 
   // 파일 핸들러
   const handleFile = useCallback(async (file: File) => {
@@ -330,14 +339,6 @@ export default function UploadPage() {
             >
               {parsing ? '파싱 중...' : '미리보기'}
             </button>
-            {preview.length > 0 && (
-              <button
-                onClick={() => setShowPreviewModal(true)}
-                className="py-3 px-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 font-medium rounded-lg transition text-sm"
-              >
-                다시 보기
-              </button>
-            )}
             <button
               onClick={handleSave}
               disabled={saving || preview.length === 0}
@@ -357,14 +358,25 @@ export default function UploadPage() {
             <div className="flex items-center gap-3">
               <span className="text-neutral-400 text-xs uppercase tracking-widest">미리보기</span>
               <select
-                value={selectedThemeId}
-                onChange={e => setSelectedThemeId(e.target.value)}
+                value={`${selectedType}:${selectedThemeId}`}
+                onChange={e => {
+                  const [type, id] = e.target.value.split(':') as ['none' | 'theme' | 'preset', string]
+                  setSelectedType(type)
+                  setSelectedThemeId(id || '')
+                }}
                 className="px-3 py-1.5 bg-neutral-800 border border-neutral-700 rounded text-sm text-white focus:outline-none"
               >
-                <option value="">기본 테마</option>
-                {themes.map(t => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
-                ))}
+                <option value="none:">테마 미적용</option>
+                {presets.length > 0 && <optgroup label="프리셋">
+                  {presets.map(p => (
+                    <option key={p.name} value={`preset:${p.name}`}>{p.label}</option>
+                  ))}
+                </optgroup>}
+                {themes.length > 0 && <optgroup label="내 테마">
+                  {themes.map(t => (
+                    <option key={t.id} value={`theme:${t.id}`}>{t.name}</option>
+                  ))}
+                </optgroup>}
               </select>
             </div>
             <button
