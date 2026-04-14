@@ -1,26 +1,15 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback, ReactNode } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useAuth } from '@/features/auth'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import { PlatformNav } from '@/components/PlatformNav'
 import { toast } from 'sonner'
-
-/** 인라인 마크다운 파싱 (***bold italic***, **bold**, *italic*) */
-function renderInline(text?: string): ReactNode {
-  if (!text || !text.includes('*')) return text ?? ''
-  const parts = text.split(/(\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|\*[^*]+\*)/)
-  return parts.map((part, i) => {
-    if (part.startsWith('***') && part.endsWith('***'))
-      return <strong key={i} className="font-semibold italic">{part.slice(3, -3)}</strong>
-    if (part.startsWith('**') && part.endsWith('**'))
-      return <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>
-    if (part.startsWith('*') && part.endsWith('*'))
-      return <em key={i} className="italic">{part.slice(1, -1)}</em>
-    return part
-  })
-}
+import { ThemeProvider } from '@/features/theme/ThemeProvider'
+import { EpisodeViewer } from '@/features/reader/ui/EpisodeViewer'
+import type { AuthorTheme } from '@/features/theme/presets'
+import type { Theme } from '@/types/api'
 
 interface WorkOption { id: string; slug: string; title: string }
 
@@ -47,6 +36,12 @@ export default function UploadPage() {
   const [newWorkTitle, setNewWorkTitle] = useState('')
   const [createMode, setCreateMode] = useState(false)
 
+  // 미리보기 모달
+  const [showPreviewModal, setShowPreviewModal] = useState(false)
+  const [themes, setThemes] = useState<Theme[]>([])
+  const [selectedThemeId, setSelectedThemeId] = useState('')
+  const [previewTheme, setPreviewTheme] = useState<AuthorTheme | null>(null)
+
   useEffect(() => {
     if (!loading && !user) router.push('/login')
   }, [user, loading, router])
@@ -63,9 +58,28 @@ export default function UploadPage() {
       .catch(() => {})
   }, [user])
 
+  // 작가 테마 목록 로드
+  useEffect(() => {
+    if (!user) return
+    api.getMyThemes().then(setThemes).catch(() => {})
+  }, [user])
+
+  // 테마 선택 시 상세 로드
+  useEffect(() => {
+    if (!selectedThemeId) {
+      setPreviewTheme(null)
+      return
+    }
+    api.getThemeById(selectedThemeId)
+      .then((data: any) => {
+        const overrides = data.overrides ?? data.theme ?? data
+        setPreviewTheme(overrides as AuthorTheme)
+      })
+      .catch(() => toast.error('테마를 불러올 수 없습니다'))
+  }, [selectedThemeId])
+
   // 파일 핸들러
   const handleFile = useCallback(async (file: File) => {
-    // 클라이언트 파일 크기 검증 — 서버 전송 전에 차단
     if (file.size > MAX_FILE_SIZE) {
       const sizeMB = (file.size / (1024 * 1024)).toFixed(1)
       setError(`파일 크기가 너무 큽니다 (${sizeMB}MB). 최대 10MB까지 업로드할 수 있습니다.`)
@@ -108,7 +122,7 @@ export default function UploadPage() {
     }
   }
 
-  // 미리보기
+  // 미리보기 — 파싱 후 모달 오픈
   const handlePreview = async () => {
     if (!content.trim() && !rawFile) { setError('내용을 입력하세요'); return }
     setError('')
@@ -116,17 +130,18 @@ export default function UploadPage() {
     try {
       let result
       if (rawFile) {
-        // DOCX/HWP → 서버 파일 업로드
         result = await api.uploadManuscriptFile(rawFile)
       } else {
         result = await api.parseManuscript(content)
       }
       setPreview(result.blocks || [])
 
-      // frontmatter에서 제목 추출
       if (result.frontmatter?.title && !title) {
         setTitle(result.frontmatter.title)
       }
+
+      // 파싱 성공 시 모달 자동 오픈
+      setShowPreviewModal(true)
     } catch (err: any) {
       setError(err.message || '파싱에 실패했습니다')
     } finally {
@@ -141,7 +156,6 @@ export default function UploadPage() {
 
     let workId = selectedWorkId
 
-    // 새 작품 생성
     if (createMode) {
       if (!newWorkTitle.trim()) { setError('작품 제목을 입력하세요'); return }
       setSaving(true)
@@ -171,7 +185,6 @@ export default function UploadPage() {
         sourceFormat: format === 'markdown' ? 'markdown' : format === 'html' ? 'html' : 'txt',
       })
       toast.success('에피소드가 등록됐습니다')
-      // 초기화
       setContent('')
       setTitle('')
       setFormat('')
@@ -186,11 +199,24 @@ export default function UploadPage() {
 
   if (loading || !user) return null
 
+  // 미리보기 모달용 기본 테마 (테마 미선택 시)
+  const fallbackTheme: AuthorTheme = {
+    bgPrimary: '#1a1a1a', bgSecondary: '#222', textPrimary: '#e0e0e0',
+    textMuted: '#888', textDim: '#666', textBright: '#fff',
+    accent: '#c9a96e', accent2: '#d4a574', border: '#333',
+    fontBody: 'serif', fontHeading: 'serif',
+    animation: 'typing', tone: 'dark',
+    episodeListLayout: 'series',
+    decorations: { dividerIcon: 'dot', dividerColor: '#888', headerIcon: 'dot', headerSubtitle: '', cardAccentPosition: 'left', footerText: '' },
+  }
+
+  const activeTheme = previewTheme ?? fallbackTheme
+
   return (
     <div className="min-h-screen bg-white">
       <PlatformNav />
 
-      <main className="max-w-4xl mx-auto px-6 py-8">
+      <main className="max-w-2xl mx-auto px-6 py-8">
         <h1 className="text-3xl font-black text-black mb-2">원고 업로드</h1>
         <p className="text-neutral-500 mb-6">
           MD, TXT, DOCX, HWP 파일을 업로드하거나 텍스트를 직접 붙여넣으세요.
@@ -244,122 +270,132 @@ export default function UploadPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* 왼쪽: 입력 */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-1">에피소드 제목</label>
-              <input
-                type="text"
-                value={title}
-                onChange={e => setTitle(e.target.value)}
-                className="w-full px-4 py-3 bg-[#f5f5f5] border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black transition"
-                placeholder="제 1화. 시작"
-              />
-            </div>
-
-            {/* 파일 드롭존 */}
-            <div
-              onDragOver={e => { e.preventDefault(); setDragOver(true) }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition ${
-                dragOver ? 'border-black bg-neutral-50' : 'border-neutral-300 hover:border-black'
-              }`}
-            >
-              {rawFile ? (
-                <div>
-                  <p className="text-black font-medium">{rawFile.name}</p>
-                  <p className="text-neutral-400 text-sm mt-1">{(rawFile.size / 1024).toFixed(1)} KB · {format}</p>
-                </div>
-              ) : (
-                <>
-                  <p className="text-neutral-500 mb-2">파일을 드래그하거나 클릭하여 업로드</p>
-                  <p className="text-neutral-400 text-sm">.md, .txt, .docx, .hwp · 최대 10MB</p>
-                </>
-              )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".md,.txt,.docx,.hwp,.html,.htm"
-                className="hidden"
-                onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
-              />
-            </div>
-
-            {/* 원칙: 직접 에디터를 제공하지 않음 — 파일 업로드만 허용 */}
-            <p className="text-xs text-neutral-400">
-              MD, TXT, DOCX, HWP 파일을 업로드하세요. 원고 수정은 작가 도구에서 한 후 다시 업로드합니다.
-            </p>
-
-            {format && (
-              <p className="text-sm text-neutral-400">
-                감지된 포맷: <span className="text-[#e53e3e]">{format}</span>
-              </p>
-            )}
-
-            <div className="flex gap-3">
-              <button
-                onClick={handlePreview}
-                disabled={parsing || (!content.trim() && !rawFile)}
-                className="flex-1 py-3 bg-neutral-200 hover:bg-neutral-300 disabled:bg-neutral-100 text-black font-medium rounded-lg transition"
-              >
-                {parsing ? '파싱 중...' : '미리보기'}
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving || preview.length === 0}
-                className="flex-1 py-3 bg-black hover:bg-neutral-800 disabled:bg-neutral-300 text-white font-medium rounded-lg transition"
-              >
-                {saving ? '저장 중...' : '에피소드 등록'}
-              </button>
-            </div>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-1">에피소드 제목</label>
+            <input
+              type="text"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              className="w-full px-4 py-3 bg-[#f5f5f5] border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black transition"
+              placeholder="제 1화. 시작"
+            />
           </div>
 
-          {/* 오른쪽: 미리보기 */}
-          <div className="bg-[#f5f5f5] border border-neutral-200 rounded-xl p-6 min-h-[400px]">
-            <h3 className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-4">미리보기</h3>
-            {preview.length === 0 ? (
-              <p className="text-neutral-400 text-center mt-20 text-sm">
-                왼쪽에서 원고를 입력하고 미리보기를 누르세요
-              </p>
-            ) : (
-              <div className="space-y-4 text-neutral-700">
-                {title && <h2 className="text-xl font-bold text-black">{title}</h2>}
-                {preview.map((block: any, i: number) => {
-                  if (block.type === 'heading-1') return <h2 key={i} className="text-xl font-bold mt-6">{block.title ?? block.text}</h2>
-                  if (block.type === 'heading-2') return <h3 key={i} className="text-lg font-medium italic text-neutral-500 mt-8 mb-4">{block.title ?? block.text}</h3>
-                  if (block.type === 'chapter') return (
-                    <div key={i} className="mt-8">
-                      {block.num && <p className="text-xs text-neutral-400 mb-1">{block.num}</p>}
-                      <h3 className="text-base font-medium italic text-[#e53e3e]">{block.title ?? block.text}</h3>
-                    </div>
-                  )
-                  if (block.type === 'paragraph') return <p key={i} className="leading-relaxed mb-3">{renderInline(block.text)}</p>
-                  if (block.type === 'italic') return <p key={i} className="italic text-neutral-500 mb-3">{renderInline(block.text)}</p>
-                  if (block.type === 'bold') return <p key={i} className="font-semibold mb-3">{renderInline(block.text)}</p>
-                  if (block.type === 'refrain') return <div key={i} className="italic text-[#e53e3e] border-l-2 border-[#e53e3e] pl-4 my-4">{renderInline(block.text)}</div>
-                  if (block.type === 'divider') return <div key={i} className="text-center text-neutral-300 my-6">· · ·</div>
-                  if (block.type === 'separator') return <hr key={i} className="border-neutral-300 my-8" />
-                  if (block.type === 'epilogue') return <p key={i} className="text-xs text-neutral-400 mt-8 mb-4 uppercase tracking-widest">에필로그</p>
-                  if (block.type === 'reviews-wrap') return (
-                    <div key={i} className="space-y-3 mt-4">
-                      {(block.children ?? []).map((r: any, j: number) => (
-                        <div key={j} className="border-l-2 border-neutral-300 pl-4 text-sm text-neutral-500 italic">
-                          <p>{r.text}</p>
-                          {r.author && <p className="text-xs text-neutral-400 mt-1">— {r.author}</p>}
-                        </div>
-                      ))}
-                    </div>
-                  )
-                  return <p key={i} className="mb-3">{block.text}</p>
-                })}
+          {/* 파일 드롭존 */}
+          <div
+            onDragOver={e => { e.preventDefault(); setDragOver(true) }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+            className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition ${
+              dragOver ? 'border-black bg-neutral-50' : 'border-neutral-300 hover:border-black'
+            }`}
+          >
+            {rawFile ? (
+              <div>
+                <p className="text-black font-medium">{rawFile.name}</p>
+                <p className="text-neutral-400 text-sm mt-1">{(rawFile.size / 1024).toFixed(1)} KB · {format}</p>
               </div>
+            ) : (
+              <>
+                <p className="text-neutral-500 mb-2">파일을 드래그하거나 클릭하여 업로드</p>
+                <p className="text-neutral-400 text-sm">.md, .txt, .docx, .hwp · 최대 10MB</p>
+              </>
             )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".md,.txt,.docx,.hwp,.html,.htm"
+              className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
+            />
+          </div>
+
+          <p className="text-xs text-neutral-400">
+            MD, TXT, DOCX, HWP 파일을 업로드하세요. 원고 수정은 작가 도구에서 한 후 다시 업로드합니다.
+          </p>
+
+          {format && (
+            <p className="text-sm text-neutral-400">
+              감지된 포맷: <span className="text-[#e53e3e]">{format}</span>
+            </p>
+          )}
+
+          <div className="flex gap-3">
+            <button
+              onClick={handlePreview}
+              disabled={parsing || (!content.trim() && !rawFile)}
+              className="flex-1 py-3 bg-neutral-200 hover:bg-neutral-300 disabled:bg-neutral-100 text-black font-medium rounded-lg transition"
+            >
+              {parsing ? '파싱 중...' : '미리보기'}
+            </button>
+            {preview.length > 0 && (
+              <button
+                onClick={() => setShowPreviewModal(true)}
+                className="py-3 px-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 font-medium rounded-lg transition text-sm"
+              >
+                다시 보기
+              </button>
+            )}
+            <button
+              onClick={handleSave}
+              disabled={saving || preview.length === 0}
+              className="flex-1 py-3 bg-black hover:bg-neutral-800 disabled:bg-neutral-300 text-white font-medium rounded-lg transition"
+            >
+              {saving ? '저장 중...' : '에피소드 등록'}
+            </button>
           </div>
         </div>
       </main>
+
+      {/* ── 풀스크린 미리보기 모달 ── */}
+      {showPreviewModal && preview.length > 0 && (
+        <div className="fixed inset-0 z-50 flex flex-col">
+          {/* 상단 바 */}
+          <div className="flex items-center justify-between px-4 py-3 bg-neutral-900 border-b border-neutral-800 shrink-0">
+            <div className="flex items-center gap-3">
+              <span className="text-neutral-400 text-xs uppercase tracking-widest">미리보기</span>
+              <select
+                value={selectedThemeId}
+                onChange={e => setSelectedThemeId(e.target.value)}
+                className="px-3 py-1.5 bg-neutral-800 border border-neutral-700 rounded text-sm text-white focus:outline-none"
+              >
+                <option value="">기본 테마</option>
+                {themes.map(t => (
+                  <option key={t.id} value={t.id}>{t.name}</option>
+                ))}
+              </select>
+            </div>
+            <button
+              onClick={() => setShowPreviewModal(false)}
+              className="text-neutral-400 hover:text-white transition text-sm px-3 py-1.5 border border-neutral-700 rounded"
+            >
+              닫기
+            </button>
+          </div>
+
+          {/* 본문 — ThemeProvider + EpisodeViewer (실제 뷰어와 동일) */}
+          <div className="flex-1 overflow-y-auto">
+            <ThemeProvider theme={activeTheme}>
+              <EpisodeViewer
+                meta={{
+                  slug: 'preview',
+                  type: 'episode',
+                  num: '01',
+                  title: title || '제목 없음',
+                }}
+                data={{
+                  slug: 'preview',
+                  title: title || '제목 없음',
+                  blocks: preview,
+                }}
+                authorName={user.name}
+              />
+            </ThemeProvider>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
