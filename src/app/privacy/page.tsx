@@ -56,7 +56,8 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-lg font-bold text-black">4. 쿠키 사용</h2>
             <ul className="list-disc pl-5 space-y-1">
-              <li><code>grimoire_token</code> — 로그인 인증 (HttpOnly, Secure, 7일)</li>
+              <li><code>grimoire_token</code> — 로그인 인증 (HttpOnly, Secure, 15분)</li>
+              <li><code>grimoire_refresh</code> — 토큰 갱신 (HttpOnly, Secure, 7일)</li>
               <li><code>grimoire_anon</code> — 비로그인 좋아요 중복 방지</li>
               <li>Google reCAPTCHA 쿠키 — 봇 방지</li>
             </ul>
