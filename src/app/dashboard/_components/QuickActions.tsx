@@ -1,6 +1,7 @@
 "use client"
 
 import Link from 'next/link'
+import { useAuth } from '@/features/auth'
 
 const quickActions = [
   { href: '/dashboard/upload', title: '원고 업로드', desc: 'MD, TXT, DOCX' },
@@ -14,13 +15,16 @@ const quickActions = [
 ]
 
 export function QuickActions() {
+  const { user } = useAuth()
+  const allActions = user ? [{ href: `/${user.slug}`, title: '내 작가 공간', desc: '독자에게 보이는 내 공간' }, ...quickActions] : quickActions
+
   return (
     <section className="mb-12">
       <div className="flex items-baseline gap-4 mb-2">
         <h2 className="text-2xl font-black text-black">빠른 액션</h2>
         <div className="flex-1 h-px bg-black" />
       </div>
-      {quickActions.map((action, i) => (
+      {allActions.map((action, i) => (
         <Link
           key={action.href}
           href={action.href}
