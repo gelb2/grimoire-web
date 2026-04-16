@@ -104,6 +104,17 @@ class ApiClient extends BaseApiClient {
     return this.fetch<{ themeId: string; isSlotted: boolean }>(`/themes/${themeId}/slot`, { method: 'DELETE' })
   }
 
+  async activateTheme(themeId: string) {
+    return this.fetch<{ themeId: string; name: string; activated: boolean }>(`/themes/${themeId}/activate`, { method: 'POST' })
+  }
+
+  async assignThemeToWork(workId: string, themeId: string | null) {
+    return this.fetch<{ workId: string; themeId: string | null; assigned: boolean }>(`/themes/works/${workId}/theme`, {
+      method: 'PATCH',
+      body: JSON.stringify({ themeId }),
+    })
+  }
+
   async getPlanInfo() {
     return this.fetch<{
       plan: string; planExpireAt: string | null; isExpired: boolean
