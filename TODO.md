@@ -11,7 +11,7 @@
 ## 중기
 
 - [ ] 커스텀 테마 에디터 고도화 (Color Picker 개별 필드 개선)
-- [ ] 플랫폼 페이지 디자인 리뉴얼 (login/explore/dashboard/library)
+- [ ] 플랫폼 페이지 디자인 리뉴얼 — 보류 (섣불리 건드리지 말 것, feedback_readymag_rollback 참조)
 - [ ] A24식 Artifacts UI
 
 ## 참조
