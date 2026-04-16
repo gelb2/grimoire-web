@@ -8,11 +8,12 @@ import { ColorField } from "./ColorField"
 import { SelectField } from "./SelectField"
 
 // 옵션 패널 (좌측) — 편집 전용
-export function OptionsPanel({ theme, onChange, onPresetChange, onSave, onGenerate, saving }: {
+export function OptionsPanel({ theme, onChange, onPresetChange, onSave, onActivate, onGenerate, saving }: {
   theme: AuthorTheme
   onChange: (partial: Partial<AuthorTheme>) => void
   onPresetChange: (preset: string) => void
   onSave: () => void
+  onActivate?: () => void
   onGenerate: (description: string) => void
   saving: boolean
 }) {
@@ -29,10 +30,17 @@ export function OptionsPanel({ theme, onChange, onPresetChange, onSave, onGenera
 
   return (
     <div className="w-80 shrink-0 bg-white border-r border-gray-200 overflow-y-auto h-screen p-4 space-y-6">
-      {/* 저장 버튼 */}
-      <button onClick={onSave} disabled={saving} className="w-full px-3 py-2 bg-gray-900 text-white text-sm rounded hover:bg-gray-700 disabled:opacity-50">
-        {saving ? "저장 중..." : "저장"}
-      </button>
+      {/* 저장 + 활성화 버튼 */}
+      <div className="space-y-2">
+        <button onClick={onSave} disabled={saving} className="w-full px-3 py-2 bg-gray-900 text-white text-sm rounded hover:bg-gray-700 disabled:opacity-50">
+          {saving ? "저장 중..." : "저장"}
+        </button>
+        {onActivate && (
+          <button onClick={onActivate} disabled={saving} className="w-full px-3 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-500 disabled:opacity-50">
+            {saving ? "처리 중..." : "내 공간에 적용"}
+          </button>
+        )}
+      </div>
 
       {/* AI 테마 생성 */}
       <section>

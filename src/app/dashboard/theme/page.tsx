@@ -88,6 +88,16 @@ function ThemeEditorInner() {
     setSaving(false)
   }, [themeId, theme])
 
+  const handleActivate = useCallback(async () => {
+    if (!themeId || !user) return
+    setSaving(true); setMessage("")
+    try {
+      await api.activateTheme(themeId)
+      setMessage("이 테마가 내 작가 공간의 기본 테마로 활성화되었습니다")
+    } catch (e: any) { setMessage(e.message || "활성화 실패") }
+    setSaving(false)
+  }, [themeId, user])
+
   const handleGenerate = useCallback(async (description: string) => {
     if (!user) return
     setSaving(true); setMessage("")
@@ -122,7 +132,7 @@ function ThemeEditorInner() {
   return (
     <div className="flex h-screen">
       <OptionsPanel theme={theme} onChange={handleChange} onPresetChange={handlePresetChange}
-        onSave={handleSave} onGenerate={handleGenerate} saving={saving} />
+        onSave={handleSave} onActivate={handleActivate} onGenerate={handleGenerate} saving={saving} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <PreviewTabBar current={previewTab} onTabChange={setPreviewTab} />
