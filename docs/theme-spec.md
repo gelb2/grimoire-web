@@ -9,7 +9,7 @@ Claude API가 생성하는 JSON의 스키마:
 
 ```typescript
 interface ThemeDecorations {
-  dividerIcon: "antler" | "flower" | "star" | "geometric" | "brush" | "leaf" | "camellia" | "umbrella" | "waterwheel" | "dot" | "line" | "none"
+  dividerIcon: "antler" | "flower" | "star" | "geometric" | "brush" | "leaf" | "camellia" | "umbrella" | "waterwheel" | "book" | "dot" | "line" | "none"
   dividerColor: string        // CSS 색상 (예: "#9a8060"), 빈 문자열이면 accent 사용
   headerIcon: "antler" | "quill" | "book" | "none"
   headerSubtitle: string      // 헤더 부제 (예: "Short Fiction Anthology")
@@ -177,6 +177,7 @@ interface AuthorTheme {
 | `camellia` | 동백꽃 |
 | `umbrella` | 우산 |
 | `waterwheel` | 물레방아 |
+| `book` | 펼친 책 |
 | `dot` | 점 3개 기본 구분선 |
 | `line` | 단순 수평선 |
 | `none` | 구분선 없음 |

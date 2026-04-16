@@ -62,9 +62,7 @@
 
 | 컴포넌트 | 설명 |
 |---------|------|
-| AuthorSpace | 작가 공간 컴포넌트 |
 | WorkCard | 작품 카드 |
-| WorkPage | 작품 페이지 |
 | PlatformNav | 플랫폼 네비게이션 |
 | ErrorPopup | 에러 팝업 |
 | HorizontalScroll | 가로 스크롤 컨테이너 (2행 그리드 + 인디케이터) |
@@ -73,6 +71,8 @@
 
 | 컴포넌트 | 설명 |
 |---------|------|
+| AuthorSpace | 작가 공간 메인 (레이아웃별 분기) |
+| WorkPage | 작품 페이지 (에피소드 목록) |
 | SeriesLanding | 에피소드 카드 그리드 + 번외/특수 페이지 섹션 |
 | SeriesNav | Sticky 상단 네비게이션 (브랜드 + 탭) |
 | EpisodeViewer | 에피소드 본문 읽기 뷰어 (히어로 + 블록 + 타이핑 이펙트) |

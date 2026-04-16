@@ -1,5 +1,21 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.27.0] - 2026-04-16
+
+### 시각 정본 버그 수정 + DividerIcons "book" + 문서 현행화
+
+#### Fixed
+- [CRITICAL] theme.css fs-caption/fs-label fallback 19px → 정본 값 (0.75rem/0.8125rem)
+- DividerIcons "book" 구분선 아이콘 추가 (Midnight 프리셋 dividerIcon 지원)
+
+#### Changed
+- DESIGN.md: 전체 u- 접두사 → g- 접두사 현행화
+- design-tokens.md: max-width-reader 680px → 700px, serif 폰트 스택에 EB Garamond 추가
+- SCREENS.md: AuthorSpace/WorkPage 컴포넌트 경로 수정 (components → features/reader/ui)
+- theme-spec.md: dividerIcon 유니온에 "book" 추가
+- TECH_STATUS: Reader/Social api.ts 연결 상태 ✅로 현행화
+- SYNC_STATUS: 원고 파일 업로드/읽기 기능 UI 연결 완료 반영
+
 ## [0.26.0] - 2026-04-12
 
 ### 테마 선택 화면 + 본문 크기 제어 + 관리자 14탭 + 정비

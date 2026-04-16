@@ -251,6 +251,35 @@ export function WaveDividerIcon({ size = 24, className }: DividerIconProps) {
   )
 }
 
+// ── book: 펼친 책 ──
+
+export function BookDividerIcon({ size = 24, className }: DividerIconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className={cn("text-g-accent", className)}
+      aria-hidden="true"
+    >
+      <path
+        d="M4 19.5V4.5C4 3.67 4.67 3 5.5 3H20V21H5.5C4.67 21 4 20.33 4 19.5Z"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M4 19.5C4 18.67 4.67 18 5.5 18H20"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
 // ── 아이콘 키 → 컴포넌트 매핑 ──
 
 export function getDividerIcon(
@@ -267,6 +296,7 @@ export function getDividerIcon(
     case "camellia": return <CamelliaDividerIcon size={size} />
     case "umbrella": return <UmbrellaDividerIcon size={size} />
     case "waterwheel": return <WaveDividerIcon size={size} />
+    case "book": return <BookDividerIcon size={size} />
     default: return null
   }
 }
