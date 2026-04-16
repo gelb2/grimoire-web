@@ -49,13 +49,13 @@
 | Work Management | ✅ 전체 사용 |
 | Content | ✅ 전체 사용 |
 | Manuscript | ✅ 업로드 페이지에서 사용 |
-| Reader (북마크/진행도) | ⚠️ 메서드 있음, 에피소드 뷰어 미연결 |
+| Reader (북마크/진행도) | ✅ EpisodeFooter에서 사용 |
 | Discovery | ✅ explore에서 사용 |
-| Social (좋아요/댓글) | ⚠️ 메서드 있음, 에피소드 뷰어 미연결 |
+| Social (좋아요/댓글) | ✅ EpisodeFooter에서 사용 |
 | Social (구독) | ✅ 프로필 페이지에서 사용 |
 | Payment (Polar) | ✅ 결제 페이지에서 사용 (KYC 전 test mode) |
 | Admin (28개) | ✅ 관리자 패널 10탭에서 사용 |
-| **Analysis** | ❌ api.ts 메서드 미구현 |
+| **Analysis** | ❌ api.ts 미구현 (Phase 5 대기) |
 
 ---
 
@@ -80,10 +80,9 @@
 
 ## 7. 다음 단계
 
-1. 에피소드 뷰어: 좋아요 + 북마크 + 댓글 UI 연결
-2. 크레딧 선물 UI (작가 프로필)
-3. Analysis UI (대시보드 분석 탭)
-4. 플랫폼 페이지 디자인 리뉴얼 (레디맥 참고)
+1. Analysis UI (대시보드 분석 탭) — Phase 5
+2. 플랫폼 페이지 디자인 리뉴얼 (레디맥 참고)
+3. AI 채팅 스트리밍 (SSE)
 
 ---
 
