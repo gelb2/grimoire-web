@@ -81,18 +81,23 @@ function ThemeEditorInner() {
   }, [])
 
   const handleSave = useCallback(async () => {
-    if (!themeId || !theme) return
+    if (!themeId || !theme || !user) return
     setSaving(true); setMessage("")
-    try { await api.updateTheme(themeId, theme as unknown as Record<string, unknown>); setMessage("저장 완료") }
-    catch { setMessage("저장 실패") }
+    try {
+      await api.updateTheme(themeId, theme as unknown as Record<string, unknown>)
+      // 저장 후 CSS 베이킹 (작가 공간에 바로 반영)
+      try { await api.publishTheme(user.slug) } catch { /* 베이킹 실패는 무시 — API 폴백 */ }
+      setMessage("저장 완료 — 작가 공간에 반영됩니다")
+    } catch { setMessage("저장 실패") }
     setSaving(false)
-  }, [themeId, theme])
+  }, [themeId, theme, user])
 
   const handleActivate = useCallback(async () => {
     if (!themeId || !user) return
     setSaving(true); setMessage("")
     try {
       await api.activateTheme(themeId)
+      try { await api.publishTheme(user.slug) } catch { /* 베이킹 실패 무시 */ }
       setMessage("이 테마가 내 작가 공간의 기본 테마로 활성화되었습니다")
     } catch (e: any) { setMessage(e.message || "활성화 실패") }
     setSaving(false)
