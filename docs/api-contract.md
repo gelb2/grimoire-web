@@ -71,6 +71,8 @@
 | DELETE | `/api/themes/:themeId/slot` | 테마를 슬롯에서 제거 (보관) | JWT |
 | GET | `/api/themes/slots/info` | 슬롯 현황 (플랜/슬롯수/테마목록) | JWT |
 | GET | `/api/themes/detail/:themeId` | 개별 테마 상세 조회 (소유권 확인) | JWT |
+| POST | `/api/themes/:themeId/activate` | 테마를 작가 공간 기본 테마로 활성화 (슬롯 자동배정) | JWT |
+| PATCH | `/api/themes/works/:workId/theme` | 작품에 테마 배정 (`{ themeId }`, null로 해제) | JWT |
 
 ### Plan
 
