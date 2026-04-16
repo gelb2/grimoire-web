@@ -1,5 +1,23 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.28.0] - 2026-04-17
+
+### 테마 시스템 UX 전면 개선 + 미리보기 버그 수정
+
+#### Added
+- 테마 에디터: "내 공간에 적용" 활성화 버튼
+- 테마 에디터: 이름 편집 필드
+- 대시보드: "내 작가 공간" 바로가기 (빠른 액션 01번)
+- 대시보드: 테마 "기본 적용" 버튼 + 현재 기본 테마 "기본" 뱃지
+- 미리보기 모달: 내 테마 ★ 슬롯 상태 표시
+- api.ts: activateTheme, assignThemeToWork 메서드
+- pre-push hook에 docs-sync 센서 연결
+
+#### Fixed
+- 미리보기 모달: 테마 변경 시 본문 사라지는 버그 (animation:'none' 오버라이드)
+- CSP: accounts.google.com + static.cloudflareinsights.com 추가
+- 테마 저장 시 자동 CSS 베이킹 (publishTheme 자동 호출)
+
 ## [0.27.0] - 2026-04-16
 
 ### 시각 정본 버그 수정 + DividerIcons "book" + 문서 현행화
