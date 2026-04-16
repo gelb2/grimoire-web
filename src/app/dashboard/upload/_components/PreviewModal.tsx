@@ -46,7 +46,7 @@ export function PreviewModal({
             </optgroup>}
             {themes.length > 0 && <optgroup label="내 테마">
               {themes.map(t => (
-                <option key={t.id} value={`theme:${t.id}`}>{t.name}</option>
+                <option key={t.id} value={`theme:${t.id}`}>{t.name}{t.isSlotted ? ' ★' : ''}</option>
               ))}
             </optgroup>}
           </select>
