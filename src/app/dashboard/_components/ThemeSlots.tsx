@@ -102,6 +102,7 @@ export function ThemeSlots({
             <span className="text-sm font-mono text-neutral-300">{String(i + 1).padStart(2, '0')}</span>
             <div>
               <span className="text-sm font-bold text-black">{t.name}</span>
+              {(slotInfo as any).defaultThemeId === t.id && <span className="ml-1 text-[10px] text-indigo-600 font-bold">기본</span>}
               <span className="ml-2 text-xs text-neutral-400">{t.source === 'ai' ? 'AI 생성' : t.source === 'system' ? '시스템' : '직접 편집'}</span>
             </div>
             <div className="flex items-center gap-2">
