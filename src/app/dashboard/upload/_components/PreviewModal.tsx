@@ -59,9 +59,9 @@ export function PreviewModal({
         </button>
       </div>
 
-      {/* 본문 — ThemeProvider + EpisodeViewer (실제 뷰어와 동일) */}
+      {/* 본문 — ThemeProvider + EpisodeViewer (미리보기: 애니메이션 스킵) */}
       <div className="flex-1 overflow-y-auto">
-        <ThemeProvider theme={activeTheme}>
+        <ThemeProvider theme={{ ...activeTheme, animation: 'none' }}>
           <EpisodeViewer
             key={`${selectedType}:${selectedThemeId}`}
             meta={{
