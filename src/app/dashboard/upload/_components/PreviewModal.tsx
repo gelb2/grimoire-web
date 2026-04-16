@@ -63,6 +63,7 @@ export function PreviewModal({
       <div className="flex-1 overflow-y-auto">
         <ThemeProvider theme={activeTheme}>
           <EpisodeViewer
+            key={`${selectedType}:${selectedThemeId}`}
             meta={{
               slug: 'preview',
               type: 'episode',
