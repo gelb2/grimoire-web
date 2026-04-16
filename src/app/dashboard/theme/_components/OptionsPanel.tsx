@@ -8,8 +8,10 @@ import { ColorField } from "./ColorField"
 import { SelectField } from "./SelectField"
 
 // 옵션 패널 (좌측) — 편집 전용
-export function OptionsPanel({ theme, onChange, onPresetChange, onSave, onActivate, onGenerate, saving }: {
+export function OptionsPanel({ theme, themeName, onNameChange, onChange, onPresetChange, onSave, onActivate, onGenerate, saving }: {
   theme: AuthorTheme
+  themeName?: string
+  onNameChange?: (name: string) => void
   onChange: (partial: Partial<AuthorTheme>) => void
   onPresetChange: (preset: string) => void
   onSave: () => void
@@ -30,6 +32,20 @@ export function OptionsPanel({ theme, onChange, onPresetChange, onSave, onActiva
 
   return (
     <div className="w-80 shrink-0 bg-white border-r border-gray-200 overflow-y-auto h-screen p-4 space-y-6">
+      {/* 테마 이름 */}
+      {onNameChange && (
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">테마 이름</label>
+          <input
+            type="text"
+            value={themeName ?? ''}
+            onChange={e => onNameChange(e.target.value)}
+            placeholder="내 테마"
+            className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-gray-900"
+          />
+        </div>
+      )}
+
       {/* 저장 + 활성화 버튼 */}
       <div className="space-y-2">
         <button onClick={onSave} disabled={saving} className="w-full px-3 py-2 bg-gray-900 text-white text-sm rounded hover:bg-gray-700 disabled:opacity-50">
