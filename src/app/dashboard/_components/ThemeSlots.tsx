@@ -125,14 +125,16 @@ export function ThemeSlots({
                 <button
                   onClick={async () => {
                     try {
+                      await api.activateTheme(t.id)
                       await api.publishTheme(userSlug)
-                      toast.success('퍼블리시 완료')
-                    } catch { toast.error('퍼블리시 실패') }
+                      onReloadSlotInfo()
+                      toast.success('기본 테마로 적용됨')
+                    } catch (e: any) { toast.error(e.message || '적용 실패') }
                   }}
                   disabled={slotInfo.isExpired}
-                  className="px-2 py-0.5 text-xs rounded bg-amber-100 text-amber-700 hover:bg-amber-200"
+                  className="px-2 py-0.5 text-xs rounded bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
                 >
-                  퍼블리시
+                  기본 적용
                 </button>
               )}
               {!t.isSlotted && t.source !== 'system' && (
