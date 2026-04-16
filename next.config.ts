@@ -26,6 +26,22 @@ const nextConfig: NextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()',
           },
+          {
+            // CSP — Next.js App Router는 인라인 스크립트 사용하므로 'unsafe-inline' 필요
+            // 향후 nonce 기반으로 전환 시 middleware.ts에서 nonce 생성 + 헤더 동적 설정
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://www.gstatic.com",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: blob: https:",
+              "font-src 'self' data:",
+              "connect-src 'self' https://api.grimoire-book.com https://dev-api.grimoire-book.com https://inhouse-api.grimoire-book.com https://polar.sh https://www.google.com",
+              "frame-src https://www.google.com https://polar.sh",
+              "base-uri 'self'",
+              "form-action 'self'",
+            ].join('; '),
+          },
         ],
       },
     ]
