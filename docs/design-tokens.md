@@ -65,7 +65,7 @@ Tailwind CSS 4의 opacity modifier(`bg-g-bg/50` 등)를 사용하려면 `@theme 
 
 | 유틸리티 클래스 | CSS 변수 (fallback) | 용도 |
 |---------------|-------------------|------|
-| `font-g-serif` | `--g-font-serif` (Noto Serif KR, Georgia, serif) | 세리프 본문 |
+| `font-g-serif` | `--g-font-serif` (EB Garamond, Noto Serif KR, Georgia, Batang, serif) | 세리프 본문 |
 | `font-g-sans` | `--g-font-sans` (Inter, system-ui, sans-serif) | 산세리프 본문 |
 | `font-ci` | — | 플랫폼 CI 폰트 |
 
