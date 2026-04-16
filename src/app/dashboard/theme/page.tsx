@@ -28,6 +28,7 @@ function ThemeEditorInner() {
   const [createMode, setCreateMode] = useState<'select' | 'ai' | 'preset' | 'editor'>(editThemeId ? 'editor' : 'select')
   const [theme, setTheme] = useState<AuthorTheme | null>(null)
   const [themeId, setThemeId] = useState<string | null>(null)
+  const [themeName, setThemeName] = useState("")
   const [previewData, setPreviewData] = useState<AuthorData | null>(null)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState("")
@@ -45,8 +46,8 @@ function ThemeEditorInner() {
         } else {
           themeData = await api.getTheme(user.slug)
         }
-        if (themeData.theme) { setTheme(themeData.theme); setThemeId(themeData.id) }
-        else if (themeData.overrides) { setTheme(themeData.overrides); setThemeId(themeData.id) }
+        if (themeData.theme) { setTheme(themeData.theme); setThemeId(themeData.id); setThemeName(themeData.name ?? '') }
+        else if (themeData.overrides) { setTheme(themeData.overrides); setThemeId(themeData.id); setThemeName(themeData.name ?? '') }
 
         const authorRes = await api.getAuthorSpace<any>(user.slug)
         const authorInfo = authorRes.author ?? authorRes
@@ -84,7 +85,7 @@ function ThemeEditorInner() {
     if (!themeId || !theme || !user) return
     setSaving(true); setMessage("")
     try {
-      await api.updateTheme(themeId, theme as unknown as Record<string, unknown>)
+      await api.updateTheme(themeId, theme as unknown as Record<string, unknown>, themeName || undefined)
       // 저장 후 CSS 베이킹 (작가 공간에 바로 반영)
       try { await api.publishTheme(user.slug) } catch { /* 베이킹 실패는 무시 — API 폴백 */ }
       setMessage("저장 완료 — 작가 공간에 반영됩니다")
@@ -136,7 +137,7 @@ function ThemeEditorInner() {
 
   return (
     <div className="flex h-screen">
-      <OptionsPanel theme={theme} onChange={handleChange} onPresetChange={handlePresetChange}
+      <OptionsPanel theme={theme} themeName={themeName} onNameChange={setThemeName} onChange={handleChange} onPresetChange={handlePresetChange}
         onSave={handleSave} onActivate={handleActivate} onGenerate={handleGenerate} saving={saving} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
