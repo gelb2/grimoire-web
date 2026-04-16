@@ -6,7 +6,6 @@
 
 ## 단기
 
-- [ ] Analysis UI 웹 연결 (Phase 5 — 서버 구현 완료, api.ts + UI 미구현)
 - [ ] AI 채팅 스트리밍 SSE
 
 ## 중기
