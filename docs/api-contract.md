@@ -175,7 +175,7 @@
 
 | Method | Path | 용도 | 인증 |
 |--------|------|------|------|
-| GET | `/api/works/:workId/stats` | 작품 조회수 통계 (소유자만) | JWT |
+| GET | `/api/stats/works/:workId` | 작품 조회수 통계 (소유자만). `/api/works/:authorSlug/:workSlug` 공개 라우트와 Express 라우트 shadowing 충돌을 피하려고 `/stats` 접두어 사용 | JWT |
 
 ### Admin (관리자 전용 — AdminGuard, reCAPTCHA 없음)
 
