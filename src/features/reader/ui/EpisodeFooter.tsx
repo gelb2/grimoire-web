@@ -30,6 +30,8 @@ interface CommentData {
 
 export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug, nextEpisodeSlug }: EpisodeFooterProps) {
   const { user } = useAuth()
+  // 본인 작가공간 에피소드에서는 자기 자신에게 응원 보내는 버튼을 숨긴다
+  const isOwner = user?.slug === authorSlug
   const [liked, setLiked] = useState(false)
   const [likeCount, setLikeCount] = useState(0)
   const [bookmarked, setBookmarked] = useState(false)
@@ -254,33 +256,35 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
           {bookmarked ? '★' : '☆'} 서재
         </button>
 
-        <div className="relative">
-          <button
-            onClick={() => setShowGiftPopup(!showGiftPopup)}
-            className="px-4 py-2 rounded-full border border-g-border text-sm text-g-text-muted transition hover:border-g-accent hover:text-g-accent"
-          >
-            응원 보내기
-          </button>
-          {showGiftPopup && (
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-3 rounded-xl border border-g-border bg-g-bg2 shadow-lg z-10">
-              <p className="text-xs text-g-text-muted mb-2 text-center whitespace-nowrap">크레딧 선물</p>
-              <div className="flex gap-2">
-                {[1, 3, 5].map(amount => (
-                  <button
-                    key={amount}
-                    onClick={() => handleGift(amount)}
-                    disabled={giftSending}
-                    className="px-3 py-1.5 rounded-lg text-sm border border-g-border text-g-text hover:bg-g-accent hover:text-g-bg transition disabled:opacity-30"
-                  >
-                    {amount}
-                  </button>
-                ))}
+        {!isOwner && (
+          <div className="relative">
+            <button
+              onClick={() => setShowGiftPopup(!showGiftPopup)}
+              className="px-4 py-2 rounded-full border border-g-border text-sm text-g-text-muted transition hover:border-g-accent hover:text-g-accent"
+            >
+              응원 보내기
+            </button>
+            {showGiftPopup && (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-3 rounded-xl border border-g-border bg-g-bg2 shadow-lg z-10">
+                <p className="text-xs text-g-text-muted mb-2 text-center whitespace-nowrap">크레딧 선물</p>
+                <div className="flex gap-2">
+                  {[1, 3, 5].map(amount => (
+                    <button
+                      key={amount}
+                      onClick={() => handleGift(amount)}
+                      disabled={giftSending}
+                      className="px-3 py-1.5 rounded-lg text-sm border border-g-border text-g-text hover:bg-g-accent hover:text-g-bg transition disabled:opacity-30"
+                    >
+                      {amount}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
-        {giftMessage && (
+        {!isOwner && giftMessage && (
           <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs text-g-accent whitespace-nowrap">
             {giftMessage}
           </span>
