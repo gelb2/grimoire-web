@@ -1,6 +1,7 @@
 "use client"
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
 
@@ -43,6 +44,7 @@ export function ThemeSlots({
   onCreateFromPreset,
   onReloadSlotInfo,
 }: ThemeSlotsProps) {
+  const router = useRouter()
   return (
     <section className="mb-12">
       <div className="flex items-baseline justify-between mb-2">
@@ -129,6 +131,8 @@ export function ThemeSlots({
                       await api.activateTheme(t.id)
                       await api.publishTheme(userSlug)
                       onReloadSlotInfo()
+                      // 작가공간 SSR 캐시를 강제로 재검증 — 플리커 방지
+                      router.refresh()
                       toast.success('기본 테마로 적용됨')
                     } catch (e: any) { toast.error(e.message || '적용 실패') }
                   }}
