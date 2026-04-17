@@ -33,6 +33,7 @@
 | **Server DB 호스트** | `grimoire-db-dev.postgres.database.azure.com` | `grimoire-db-inhouse.postgres.database.azure.com` | `grimoire-db-prod.postgres.database.azure.com` |
 | **Web → Server API_URL** | `https://grimoire-server-dev.{FQDN}/api` | `https://grimoire-server-inhouse.{FQDN}/api` | `https://grimoire-server-prod.{FQDN}/api` |
 | **CORS_ORIGIN** | `*` ⚠️ | `https://inhouse.grimoire-book.com` | `https://grimoire-book.com` |
+| **APP_ENV (server)** | `development` | `inhouse` | `production` |
 | **NODE_ENV (server)** | `development` | `production` | `production` |
 | **Web `NEXT_PUBLIC_APP_ENV` 빌드 인자** | `development` | `inhouse` | `production` |
 | **공개 웹 URL** | `https://dev.grimoire-book.com` | `https://inhouse.grimoire-book.com` | `https://grimoire-book.com` |
