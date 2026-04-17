@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, Suspense } from "react"
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { api } from "@/lib/api"
 import { useAuth } from "@/features/auth"
 import { ThemeProvider } from "@/features/theme"
@@ -22,6 +22,7 @@ import { DUMMY_META, DUMMY_EPISODE } from "./_components/previewData"
 // ── 메인 에디터 (useSearchParams 사용) ──
 function ThemeEditorInner() {
   const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
   const searchParams = useSearchParams()
   const editThemeId = searchParams.get("id")
 
@@ -88,10 +89,12 @@ function ThemeEditorInner() {
       await api.updateTheme(themeId, theme as unknown as Record<string, unknown>, themeName || undefined)
       // 저장 후 CSS 베이킹 (작가 공간에 바로 반영)
       try { await api.publishTheme(user.slug) } catch { /* 베이킹 실패는 무시 — API 폴백 */ }
+      // 작가공간 SSR 캐시 재검증 — 현재 편집 중인 테마가 활성 테마면 즉시 반영
+      router.refresh()
       setMessage("저장 완료 — 작가 공간에 반영됩니다")
     } catch { setMessage("저장 실패") }
     setSaving(false)
-  }, [themeId, theme, user])
+  }, [themeId, theme, themeName, user, router])
 
   const handleActivate = useCallback(async () => {
     if (!themeId || !user) return
@@ -99,10 +102,12 @@ function ThemeEditorInner() {
     try {
       await api.activateTheme(themeId)
       try { await api.publishTheme(user.slug) } catch { /* 베이킹 실패 무시 */ }
+      // 작가공간 SSR 캐시 재검증 — defaultThemeId 변경 즉시 반영
+      router.refresh()
       setMessage("이 테마가 내 작가 공간의 기본 테마로 활성화되었습니다")
     } catch (e: any) { setMessage(e.message || "활성화 실패") }
     setSaving(false)
-  }, [themeId, user])
+  }, [themeId, user, router])
 
   const handleGenerate = useCallback(async (description: string) => {
     if (!user) return
