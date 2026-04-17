@@ -40,11 +40,18 @@
 ### grimoire-server
 ```
 # 필수
-NODE_ENV=localhost|development|inhouse|production
+APP_ENV=localhost|development|inhouse|production   # 애플리케이션 환경 구분자 (코드 내 분기용)
+NODE_ENV=development|production                     # Node/Express 표준값 (라이브러리 최적화용, inhouse는 production)
 PORT=3000
 DATABASE_URL=postgresql://...
 JWT_SECRET=...
 CORS_ORIGIN={환경별 Web URL}
+
+# NODE_ENV vs APP_ENV 분리 이유:
+# - NODE_ENV는 Node/Express/NestJS 생태계의 표준값. 'production' 시 라이브러리들이 최적화 모드로 동작.
+#   inhouse도 실서비스급으로 동작해야 하므로 NODE_ENV=production.
+# - 코드 내 환경 분기 (예: inhouse는 스택 트레이스 노출, prod는 숨김)는 APP_ENV로만 판단.
+# - 관련 헬퍼: src/infrastructure/config/app-env.ts (getAppEnv / isRemoteEnv / isProduction)
 
 # 선택 (없으면 해당 기능 비활성화)
 ANTHROPIC_API_KEY=sk-ant-...
