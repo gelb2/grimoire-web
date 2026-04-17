@@ -28,8 +28,9 @@ const notoSerifKR = Noto_Serif_KR({
 async function loadTheme(authorSlug: string): Promise<{ theme: AuthorTheme | null; bakedCssUrl: string | null }> {
   try {
     const apiUrl = process.env.API_URL || 'http://localhost:3000/api'
+    // force-dynamic 경로 + 테마 변경 즉시 반영 — 캐시 금지
     const res = await fetch(`${apiUrl}/themes/${authorSlug}`, {
-      next: { revalidate: 60 },
+      cache: 'no-store',
       signal: AbortSignal.timeout(3000),
     })
     if (res.ok) {
