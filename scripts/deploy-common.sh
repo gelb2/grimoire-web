@@ -251,11 +251,13 @@ action_post_deploy_healthcheck() {
   local url="https://${fqdn}/"
   info "  GET $url"
 
+  # Next.js는 인증 필요 페이지에 대해 307로 /login 리다이렉트하며, 미들웨어 결과에 따라 301/308도 반환 가능.
+  # HTTP 응답이 왔다는 것 자체가 앱이 기동한 증거이므로 200/3xx 리다이렉트 계열을 성공으로 간주한다.
   local i=0 status=""
   while [ "$i" -lt 12 ]; do
     status=$(curl -s -o /dev/null -w "%{http_code}" "$url" 2>/dev/null || echo "000")
     case "$status" in
-      200|302|301)
+      200|301|302|307|308)
         ok "$status ($(date +%H:%M:%S))"
         return 0
         ;;
