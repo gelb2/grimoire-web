@@ -413,9 +413,9 @@ class ApiClient extends BaseApiClient {
     }>('/reader/library')
   }
 
-  // 조회수 통계
+  // 조회수 통계 (서버 stats.controller.ts와 ContentController 간 라우트 shadowing을 피하려고 /stats 접두어 사용)
   async getWorkStats(workId: string) {
-    return this.fetch<{ dates: string[]; counts: number[]; totalViews: number }>(`/works/${workId}/stats`)
+    return this.fetch<{ dates: string[]; counts: number[]; totalViews: number }>(`/stats/works/${workId}`)
   }
 
   // 커버 이미지 업로드
