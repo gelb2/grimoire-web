@@ -1,5 +1,4 @@
 import type { ReactNode } from "react"
-import { EB_Garamond, Noto_Serif_KR } from "next/font/google"
 import { CardTransitionProvider } from "@/features/reader/ui/CardTransition"
 import { ThemeProvider } from "@/features/theme"
 import type { AuthorTheme } from "@/features/theme"
@@ -9,20 +8,8 @@ import { SeriesNav } from "@/features/reader/ui/SeriesNav"
 // 완전 동적 — SSR on every request
 export const dynamic = "force-dynamic"
 
-const garamond = EB_Garamond({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  style: ["normal", "italic"],
-  variable: "--fn-garamond",
-  display: "swap",
-})
-
-const notoSerifKR = Noto_Serif_KR({
-  subsets: ["latin"],
-  weight: ["300", "400", "500"],
-  variable: "--fn-noto-serif-kr",
-  display: "swap",
-})
+// 폰트 variable(--fn-garamond / --fn-noto-serif-kr)은 root layout이 body에 주입.
+// 이 레이아웃은 wrapper className을 걸지 않고 그대로 상속받는다.
 
 // API에서 테마를 로드한다. 백엔드가 완전한 테마를 반환 (시스템 테마 폴백 포함).
 async function loadTheme(authorSlug: string): Promise<{ theme: AuthorTheme | null; bakedCssUrl: string | null }> {
@@ -152,7 +139,6 @@ export default async function AuthorLayout({ params, children }: Props) {
       {/* 모바일: status bar + body 배경색을 테마와 통일 (safe-area 틈 방지) */}
       <meta name="theme-color" content={theme?.bgPrimary ?? '#08080e'} />
       <style>{`html, body { background-color: ${theme?.bgPrimary ?? '#08080e'}; }`}</style>
-      <div className={`${garamond.variable} ${notoSerifKR.variable}`}>
       <AuthProvider>
         <ThemeProvider theme={theme ?? {} as AuthorTheme}>
           <CardTransitionProvider>
@@ -167,7 +153,6 @@ export default async function AuthorLayout({ params, children }: Props) {
           </CardTransitionProvider>
         </ThemeProvider>
       </AuthProvider>
-    </div>
     </>
   )
 }
