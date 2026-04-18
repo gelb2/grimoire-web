@@ -384,10 +384,17 @@ class ApiClient extends BaseApiClient {
     })
   }
 
-  async analyzeEpisode(workId: string, newEpisodeText: string, types?: ('consistency' | 'tone' | 'character')[]) {
+  async analyzeEpisode(
+    workId: string,
+    newEpisodeText: string,
+    types?: ('consistency' | 'tone' | 'character')[],
+    // 기존 인덱싱된 에피소드를 재분석할 때 전달. 해당 episodeId의 청크가
+    // RAG 컨텍스트에서 제외되어 self-reference 환각이 방지됨.
+    episodeId?: string,
+  ) {
     return this.fetch<AnalysisResult[]>('/analysis/check', {
       method: 'POST',
-      body: JSON.stringify({ workId, newEpisodeText, types }),
+      body: JSON.stringify({ workId, newEpisodeText, types, episodeId }),
       signal: AbortSignal.timeout(60000),
     })
   }
