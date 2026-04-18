@@ -17,8 +17,12 @@ interface ThemeProviderProps {
   children: ReactNode
 }
 
+// ⚠ font chain에 "Noto Serif KR" 을 넣지 말 것 — next/font/google 은 korean
+// subset 을 지원 안 해서 라틴 글리프만 포함된 Noto Serif KR 이 로드되면
+// 브라우저가 한글을 자모 단위로 해체 렌더한다.
+// 한글은 시스템 세리프 (Apple SD Gothic Neo / Batang / serif) 에 맡긴다.
 const fontFamilyMap: Record<string, string> = {
-  serif: "var(--fn-garamond), var(--fn-noto-serif-kr), Georgia, 'Batang', serif",
+  serif: "var(--fn-garamond), Georgia, 'Apple SD Gothic Neo', 'Batang', serif",
   "sans-serif": "system-ui, -apple-system, sans-serif",
   monospace: "'JetBrains Mono', 'Fira Code', monospace",
 }
