@@ -354,18 +354,40 @@ Request:
 { "mdText": "---\nslug: ep1\ntype: episode\n---\n# 제목\n본문..." }
 
 Response 200 (episode/bonus):
-{ "frontmatter": Frontmatter, "title": "제목", "blocks": Block[] }
+{ "frontmatter": Frontmatter, "title": "제목", "normalizedTitle": "제목", "blocks": Block[] }
 
 Response 200 (preface):
-{ "frontmatter": Frontmatter, "title": "일러두기", "paragraphs": string[], "lastLine": "..." }
+{ "frontmatter": Frontmatter, "title": "일러두기", "normalizedTitle": "일러두기", "paragraphs": string[], "lastLine": "..." }
 
 Response 200 (afterword):
-{ "frontmatter": Frontmatter, "title": "후기", "glitchText": "...", "footnote": "..." }
+{ "frontmatter": Frontmatter, "title": "후기", "normalizedTitle": "후기", "glitchText": "...", "footnote": "..." }
 
 Error 400: MD 텍스트 비어있음 / frontmatter 누락
 ```
 
 Block 타입은 `docs/glossary.md` 참조.
+
+`normalizedTitle`은 저장/렌더링 안전 형태로 정규화된 제목 (언더스코어 → 공백, 연속 공백 단일화, trim).
+클라이언트는 이 값을 title input에 채우면 미리보기와 DB 저장 결과가 일치한다 — Safari `italic + Noto Serif KR faux synthesis` 조합에서 발생하는 한글 자모 분해 회피.
+최종 저장 시 서버가 `createEpisode`/`updateWork` 등에서 `normalizeTitle()`을 다시 적용해 DB 무결성을 보장하므로 클라이언트가 정규화되지 않은 값을 보내도 안전.
+
+### POST /api/manuscripts/upload
+
+파일 업로드 (DOCX/HWP/HWPX/TXT/MD) 서버사이드 파싱.
+
+```
+Headers: Authorization: Bearer <token>
+Request: multipart/form-data — file
+
+Response 200:
+{ "frontmatter": Frontmatter, "title": "파일명(확장자 제거)", "normalizedTitle": "파일명 정규화본", "blocks": Block[] }
+
+Error 400: 지원하지 않는 포맷 / 빈 파일
+Error 413: 파일 크기 초과 (10MB)
+```
+
+`title`: 파일명에서 확장자만 제거한 원본 (예: `사슴악마_ep9_도리안그레이의초상_초고`).
+`normalizedTitle`: 정규화 적용 결과 (예: `사슴악마 ep9 도리안그레이의초상 초고`).
 
 ### POST /api/works
 

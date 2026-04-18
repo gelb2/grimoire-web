@@ -21,6 +21,9 @@ export function useUploadPage() {
   const [title, setTitle] = useState('')
   const [format, setFormat] = useState<string>('')
   const [rawFile, setRawFile] = useState<File | null>(null)
+  // 업로드된 파일의 확장자 제거 이름. rawFile은 MD/TXT 파싱 후 null이 되므로
+  // title input의 "자동 채움값"을 별도 state로 추적해야 handlePreview가 사용자 편집 여부를 판별할 수 있다.
+  const [autoFilledTitle, setAutoFilledTitle] = useState('')
   const [preview, setPreview] = useState<any[]>([])
   const [parsing, setParsing] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -92,13 +95,18 @@ export function useUploadPage() {
     }
 
     const ext = file.name.split('.').pop()?.toLowerCase()
-    const nameWithoutExt = file.name.replace(/\.(md|txt|docx|hwp|html?)$/i, '')
+    const nameWithoutExt = file.name.replace(/\.(md|txt|docx|hwp|hwpx|html?)$/i, '')
     setTitle(nameWithoutExt)
+    setAutoFilledTitle(nameWithoutExt)
     setRawFile(file)
     setPreview([])
     setError('')
 
-    if (ext === 'docx' || ext === 'hwp') {
+    // 파일명 기반 정규화가 필요한 포맷(txt/docx/hwp/hwpx)은 rawFile 유지 →
+    // handlePreview가 uploadManuscriptFile 경로로 서버 normalizedTitle을 받아옴.
+    // MD는 본문 `# 헤딩`에서 제목 추출하는 기존 로직이 중요하므로 parseManuscript 경로 유지
+    // (서버가 MD 경로에서도 finalTitle을 normalize해 normalizedTitle 반환).
+    if (ext === 'docx' || ext === 'hwp' || ext === 'hwpx' || ext === 'txt') {
       setFormat(ext.toUpperCase())
       setContent(`[${ext.toUpperCase()} 파일 — 미리보기 시 서버에서 파싱합니다]`)
     } else {
@@ -106,7 +114,6 @@ export function useUploadPage() {
       setContent(text)
       setRawFile(null)
       if (ext === 'md') setFormat('markdown')
-      else if (ext === 'txt') setFormat('txt')
       else if (ext === 'html' || ext === 'htm') setFormat('html')
       else setFormat('자동 감지')
     }
@@ -141,8 +148,14 @@ export function useUploadPage() {
       }
       setPreview(result.blocks || [])
 
-      if (result.frontmatter?.title && !title) {
-        setTitle(result.frontmatter.title)
+      // 제목 업데이트 전략: 사용자가 직접 편집하지 않은 상태면 서버 응답으로 교체.
+      // 현재 title이 handleFile에서 채운 파일명 그대로면 "편집 안 한 상태"로 간주 →
+      // MD frontmatter.title > normalizedTitle 우선으로 미리보기/저장 결과와 일치시킨다.
+      // 정규화는 서버 domain layer가 단일 진실 공급원 — 웹은 응답 소비만.
+      const userEdited = title !== '' && title !== autoFilledTitle
+      if (!userEdited) {
+        const next = result.frontmatter?.title || result.normalizedTitle
+        if (next) setTitle(next)
       }
 
       setShowPreviewModal(true)
