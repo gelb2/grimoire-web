@@ -141,8 +141,17 @@ export function useUploadPage() {
       }
       setPreview(result.blocks || [])
 
-      if (result.frontmatter?.title && !title) {
-        setTitle(result.frontmatter.title)
+      // 제목 업데이트 전략: 사용자가 직접 편집하지 않은 상태면 서버 응답으로 교체.
+      // 파일명 자동 세팅값이면 "편집 안 한 상태"로 간주 — 서버 정규화본(normalizedTitle)
+      // 또는 MD frontmatter.title을 우선 사용해 미리보기/저장 결과와 일치시킨다.
+      // 정규화는 서버 domain layer가 단일 진실 공급원 — 웹은 응답 소비만.
+      const autoFilled = rawFile
+        ? rawFile.name.replace(/\.(md|txt|docx|hwp|hwpx|html?)$/i, '')
+        : ''
+      const userEdited = title !== '' && title !== autoFilled
+      if (!userEdited) {
+        const next = result.frontmatter?.title || result.normalizedTitle
+        if (next) setTitle(next)
       }
 
       setShowPreviewModal(true)
