@@ -7,7 +7,7 @@
 
 ## 1. 현재 버전
 
-최신 버전은 `CHANGELOG.md` 참조. (현재 v0.28.0)
+최신 버전은 `CHANGELOG.md` 참조.
 
 ---
 
@@ -31,7 +31,7 @@
 | 프로필 편집 | `/dashboard/profile` | 구현 완료 | updateBio |
 | AI 채팅 | `/dashboard/chat` | 구현 완료 | listChatSessions, createChatSession, sendChatMessage, getChatMessages |
 | 관리자 로그인 | `/admin/login` | 구현 완료 | adminLogin (독립 인증, reCAPTCHA 없음) |
-| 관리자 패널 | `/admin` | 구현 완료 (10탭) | 통계/사용자/콘텐츠/제재/신고/댓글/결제/접근로그/설정/감사로그 |
+| 관리자 패널 | `/admin` | 구현 완료 | 통계/사용자/콘텐츠/제재/신고/댓글/결제/접근로그/설정/감사로그 |
 
 ---
 
@@ -54,14 +54,14 @@
 | Social (좋아요/댓글) | ✅ EpisodeFooter에서 사용 |
 | Social (구독) | ✅ 프로필 페이지에서 사용 |
 | Payment (Polar) | ✅ 결제 페이지에서 사용 (KYC 전 test mode) |
-| Admin (28개) | ✅ 관리자 패널 10탭에서 사용 |
+| Admin | ✅ 관리자 패널 전체 탭에서 사용 (엔드포인트 수는 `docs/api-contract.md` 참조) |
 | **Analysis** | ❌ api.ts 미구현 (Phase 5 대기) |
 
 ---
 
 ## 5. 테스트
 
-- 유닛 테스트: `npm test` 실행으로 확인 (현재 113개)
+- 유닛 테스트: `npm test` 실행으로 확인 (하드코딩 금지)
 - E2E 테스트: `npm run test:e2e` 실행으로 확인 (admin 포함)
 - 커버리지: `npm run test:coverage` (목표 55%)
 
