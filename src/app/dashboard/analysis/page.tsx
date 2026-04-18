@@ -10,6 +10,7 @@ import { PlatformNav } from '@/components/PlatformNav'
 import type { AnalysisResult, IndexStatus } from '@/types/api'
 
 interface Work { id: string; slug: string; title: string }
+interface EpisodeLite { id: string; slug: string; title: string; orderNum?: number }
 
 const TYPE_LABELS: Record<string, string> = {
   consistency: '설정 일관성',
@@ -27,6 +28,11 @@ export default function AnalysisPage() {
   const router = useRouter()
   const [works, setWorks] = useState<Work[]>([])
   const [selectedWorkId, setSelectedWorkId] = useState('')
+  const [selectedWorkSlug, setSelectedWorkSlug] = useState('')
+  const [episodes, setEpisodes] = useState<EpisodeLite[]>([])
+  // 기존 인덱싱된 에피소드의 개정판을 분석하는 경우, 선택 시 해당 episodeId의 청크가
+  // RAG 컨텍스트에서 제외되어 self-reference 환각을 방지한다 (선택 사항).
+  const [selectedEpisodeId, setSelectedEpisodeId] = useState('')
   const [indexStatus, setIndexStatus] = useState<IndexStatus | null>(null)
   const [newText, setNewText] = useState('')
   const [analyzing, setAnalyzing] = useState(false)
@@ -39,7 +45,10 @@ export default function AnalysisPage() {
       api.getAuthorSpace<{ works: Work[] }>(user.slug)
         .then(data => {
           setWorks(data.works || [])
-          if (data.works?.length > 0) setSelectedWorkId(data.works[0].id)
+          if (data.works?.length > 0) {
+            setSelectedWorkId(data.works[0].id)
+            setSelectedWorkSlug(data.works[0].slug)
+          }
         })
         .catch(() => {})
     }
@@ -52,6 +61,22 @@ export default function AnalysisPage() {
       .catch(() => setIndexStatus(null))
   }, [selectedWorkId])
 
+  // 작품 바뀌면 해당 작품의 에피소드 목록 로드 (재분석 에피소드 선택용)
+  useEffect(() => {
+    if (!user || !selectedWorkSlug) {
+      setEpisodes([])
+      setSelectedEpisodeId('')
+      return
+    }
+    api.getWork<{ episodes?: EpisodeLite[]; work?: { episodes?: EpisodeLite[] } }>(user.slug, selectedWorkSlug)
+      .then(data => {
+        const eps = data.episodes ?? data.work?.episodes ?? []
+        setEpisodes(eps)
+        setSelectedEpisodeId('')
+      })
+      .catch(() => setEpisodes([]))
+  }, [user, selectedWorkSlug])
+
   const handleAnalyze = async () => {
     if (!selectedWorkId || !newText.trim() || analyzing) return
     if (newText.length < 10) { toast.error('텍스트는 최소 10자 이상이어야 합니다'); return }
@@ -59,7 +84,12 @@ export default function AnalysisPage() {
     setResults([])
     try {
       const types = Array.from(selectedTypes) as ('consistency' | 'tone' | 'character')[]
-      const data = await api.analyzeEpisode(selectedWorkId, newText, types)
+      const data = await api.analyzeEpisode(
+        selectedWorkId,
+        newText,
+        types,
+        selectedEpisodeId || undefined,
+      )
       setResults(data)
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : '분석에 실패했습니다')
@@ -96,13 +126,40 @@ export default function AnalysisPage() {
           ) : (
             <select
               value={selectedWorkId}
-              onChange={e => setSelectedWorkId(e.target.value)}
+              onChange={e => {
+                const id = e.target.value
+                setSelectedWorkId(id)
+                const w = works.find(x => x.id === id)
+                setSelectedWorkSlug(w?.slug ?? '')
+              }}
               className="w-full px-4 py-3 bg-[#f5f5f5] border border-neutral-300 rounded-lg text-black focus:outline-none focus:border-black transition"
             >
               {works.map(w => <option key={w.id} value={w.id}>{w.title}</option>)}
             </select>
           )}
         </div>
+
+        {/* 재분석할 기존 에피소드 (선택 사항) — 자기 자신 청크 제외 */}
+        {episodes.length > 0 && (
+          <div className="mb-6">
+            <label className="block text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-1">재분석할 기존 에피소드 (선택 사항)</label>
+            <select
+              value={selectedEpisodeId}
+              onChange={e => setSelectedEpisodeId(e.target.value)}
+              className="w-full px-4 py-3 bg-[#f5f5f5] border border-neutral-300 rounded-lg text-black focus:outline-none focus:border-black transition"
+            >
+              <option value="">선택 안 함 (완전히 새 에피소드)</option>
+              {episodes.map(ep => (
+                <option key={ep.id} value={ep.id}>
+                  {ep.orderNum != null ? `${String(ep.orderNum).padStart(2, '0')}화 · ` : ''}{ep.title}
+                </option>
+              ))}
+            </select>
+            <p className="text-[11px] text-neutral-400 mt-1">
+              이미 인덱싱된 에피소드의 개정판을 분석하는 경우 선택하세요. 해당 에피소드 자기 자신 청크가 참고 컨텍스트에서 제외되어 분석이 정확해집니다.
+            </p>
+          </div>
+        )}
 
         {/* 인덱싱 상태 */}
         {indexStatus && (
