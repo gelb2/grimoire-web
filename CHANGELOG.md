@@ -1,5 +1,23 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.29.0] - 2026-04-19
+
+### 업로드 미리보기 제목 정규화 (Safari 자모 분해 버그 회피)
+
+#### Changed
+- `useUploadPage.handlePreview` — 서버 응답의 `normalizedTitle` 소비. 사용자가 직접 편집하지 않은 상태면 `frontmatter.title` > `normalizedTitle` 우선순위로 title input 갱신
+- `api.ts` `parseManuscript` / `uploadManuscriptFile` 타입에 `title?` + `normalizedTitle?` 필드 추가
+
+#### Docs Sync
+- `docs/api-contract.md` — 서버 정본과 동기화 (`normalizedTitle` 필드 명세)
+- `docs/glossary.md` — Title Normalization / normalizedTitle 용어 정의 동기화
+
+#### Rationale
+- 서버 domain layer가 단일 진실 공급원 (grimoire-server `normalizeTitle()`).
+  웹은 응답을 소비할 뿐 자체 정규화 로직 없음 → Two Sources of Truth 안티패턴 회피
+- Safari의 `italic + Noto Serif KR faux synthesis` 조합에서 파일명 기반 title이 자모 분해되는 버그 회피
+- 미리보기와 DB 저장 결과가 일치 → 원고공간 렌더링과 미리보기 렌더링 일관성 확보
+
 ## [0.28.0] - 2026-04-17
 
 ### 테마 시스템 UX 전면 개선 + 미리보기 버그 수정
