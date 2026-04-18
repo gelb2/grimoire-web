@@ -241,7 +241,7 @@ Phase 1 파라미터가 추가되면 프롬프트도 확장해야 한다.
 
 ## 7. 참조 문서
 
-- `PROPOSAL_DIGITAL_SHOWROOM.md` — 디지털 쇼룸 기획 제안 (이 리서치의 상위 문서)
+- 루트 `research/PROPOSAL_DIGITAL_SHOWROOM.md` — 디지털 쇼룸 기획 제안 (이 리서치의 상위 문서)
 - `grimoire-web/DESIGN.md` — UI 디자인 시스템 (이 리서치 결과 반영 대상)
 - `docs/theme-spec.md` — 테마 파라미터 명세 (Phase 1 파라미터 추가 시 업데이트)
 - `PLANNING_GRIMOIRE.md` — 최상위 기획서

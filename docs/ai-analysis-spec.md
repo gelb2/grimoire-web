@@ -284,6 +284,6 @@ src/
 | 이 문서 | `docs/ai-analysis-spec.md` (서버 정본) | AI 기능 전체 명세 |
 | 시맨틱 캐싱 리뷰 | `docs/TECH_REVIEW_SEMANTIC_CACHING.md` | 기술 검토 |
 | 채팅 연구 | `docs/CHAT_FEATURE_RESEARCH.md` | 채팅 UI/UX 연구 |
-| AI 분석 콘셉 | `docs/FEATURE_AI_ANALYSIS.md` (루트) | 비즈니스 콘셉 + 로드맵 |
+| AI 분석 콘셉 | 루트 `research/FEATURE_AI_ANALYSIS.md` | 비즈니스 콘셉 + 로드맵 |
 | 파서 규격 | `PARSER.md` | rawMd 생성 규칙 |
-| 데이터 브로커리지 | `docs/PROPOSAL_DATA_BROKERAGE.md` (루트) | B2B 데이터 제안 |
+| 데이터 브로커리지 | 루트 `research/PROPOSAL_DATA_BROKERAGE.md` | B2B 데이터 제안 |
