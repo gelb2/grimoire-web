@@ -13,19 +13,6 @@ const garamondLogo = EB_Garamond({
   display: "swap",
 })
 
-// 작가공간/대시보드/미리보기 공용 본문·제목 세리프 폰트 (라틴 전용).
-// next/font/google 의 Noto_Serif_KR 은 `subsets: ['korean']` 을 지원하지 않아
-// 한글 글리프가 포함되지 않음 → font-family 에 "Noto Serif KR" 을 지정하면
-// 브라우저가 한글을 자모 단위로 해체 렌더하는 치명적 버그를 유발한다.
-// 한글은 브라우저 시스템 세리프 폴백(Batang / Apple SD Gothic Neo / serif)에 맡긴다.
-const garamond = EB_Garamond({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  style: ["normal", "italic"],
-  variable: "--fn-garamond",
-  display: "swap",
-})
-
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -68,7 +55,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ko">
-      <body className={`${garamondLogo.variable} ${garamond.variable}`}>
+      <body className={garamondLogo.variable}>
         {children}
         <Toaster theme="dark" position="bottom-center" richColors />
       </body>
