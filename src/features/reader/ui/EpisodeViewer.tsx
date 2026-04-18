@@ -263,7 +263,7 @@ export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", de
           )}
         </div>
 
-        <h1 className={`text-2xl md:text-4xl font-normal leading-[1.3] text-g-text-bright mb-2.5 min-h-[1.3em] ${subtitleStyle === 'italic' ? 'italic' : ''}`} style={{ fontWeight: 'var(--g-title-weight, 400)', letterSpacing: 'var(--g-letter-spacing, 0)' }}>
+        <h1 className={`font-g-heading text-2xl md:text-4xl font-normal leading-[1.3] text-g-text-bright mb-2.5 min-h-[1.3em] ${subtitleStyle === 'italic' ? 'italic' : ''}`} style={{ fontWeight: 'var(--g-title-weight, 400)', letterSpacing: 'var(--g-letter-spacing, 0)' }}>
           {showImmediately || animationType !== "typing" ? meta.title : stage >= 2 && (
             <TypeWriter
               text={meta.title}
