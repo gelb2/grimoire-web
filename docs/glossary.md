@@ -33,6 +33,8 @@
 | isIndexed | 에피소드 RAG 벡터 인덱싱 완료 여부. 인덱싱된 원고만 AI 채팅에서 참조 |
 | RAG | Retrieval-Augmented Generation — 소설 분석/채팅용 벡터 검색 |
 | Vector/Embedding | 텍스트의 의미를 수치화한 벡터 표현 (소설 분석/채팅용) |
+| Title Normalization | 에피소드/작품 제목의 안전 형태 변환 규칙. 언더스코어→공백, 연속 공백→단일 공백, trim. 단일 진실 공급원은 `grimoire-server/src/domain/model/title-normalizer.ts`. Safari `italic + Noto Serif KR faux synthesis` 조합에서 발생하는 한글 자모 분해 회피를 위해 DB 저장 경로의 모든 title에 강제 적용 |
+| normalizedTitle | `/api/manuscripts/parse` 및 `/api/manuscripts/upload` 응답의 보조 필드. 클라이언트가 title input을 채울 때 권장 값. DB 저장 시 서버가 재정규화하므로 단순 힌트가 아니라 실제 저장 결과와 일치 |
 
 ## Block 타입 (DeerDevil 기반)
 

@@ -249,7 +249,12 @@ class ApiClient extends BaseApiClient {
 
   // 원고 파싱 (텍스트)
   async parseManuscript(rawText: string) {
-    return this.fetch<{ frontmatter: Record<string, string>; blocks: Record<string, unknown>[] }>('/manuscripts/parse', {
+    return this.fetch<{
+      frontmatter: Record<string, string>
+      title?: string
+      normalizedTitle?: string
+      blocks: Record<string, unknown>[]
+    }>('/manuscripts/parse', {
       method: 'POST',
       body: JSON.stringify({ mdText: rawText }),
     })
@@ -268,7 +273,12 @@ class ApiClient extends BaseApiClient {
       const body = await res.json().catch(() => ({}))
       throw new Error(body.message || `업로드 오류: ${res.status}`)
     }
-    return res.json() as Promise<{ frontmatter: Record<string, string>; blocks: Record<string, unknown>[] }>
+    return res.json() as Promise<{
+      frontmatter: Record<string, string>
+      title?: string
+      normalizedTitle?: string
+      blocks: Record<string, unknown>[]
+    }>
   }
 
   // 북마크
