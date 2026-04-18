@@ -36,8 +36,13 @@ async function loadTheme(authorSlug: string): Promise<{ theme: AuthorTheme | nul
     if (res.ok) {
       const data = await res.json()
       const theme = (data.theme ?? data.overrides ?? null) as AuthorTheme | null
-      // CDN URL이면 <link>로 로드 (Blob Storage URL)
-      const bakedCssUrl = data.bakedCssUrl?.startsWith('http') ? data.bakedCssUrl : null
+      // bakedCssUrl은 절대 URL(Blob Storage CDN) 또는 상대 URL(`/api/themes/css/{slug}`)
+      // 두 형태 모두 <link rel=stylesheet>로 로드 가능. ThemeProvider 인라인과 함께
+      // 중복 적용되더라도 CSS 변수 값이 같아 렌더링에는 영향 없음 (ThemeProvider가
+      // inline style로 강제 우선).
+      const bakedCssUrl = typeof data.bakedCssUrl === 'string' && data.bakedCssUrl.length > 0
+        ? data.bakedCssUrl
+        : null
       return { theme, bakedCssUrl }
     }
   } catch {
