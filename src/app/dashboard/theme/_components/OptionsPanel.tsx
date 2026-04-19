@@ -13,7 +13,7 @@ export function OptionsPanel({ theme, themeName, onNameChange, onChange, onPrese
   themeName?: string
   onNameChange?: (name: string) => void
   onChange: (partial: Partial<AuthorTheme>) => void
-  onPresetChange: (preset: string) => void
+  onPresetChange: (preset: string, label?: string) => void
   onSave: () => void
   onActivate?: () => void
   onGenerate: (description: string) => void
@@ -79,7 +79,10 @@ export function OptionsPanel({ theme, themeName, onNameChange, onChange, onPrese
       {/* 프리셋 선택 */}
       <section>
         <h3 className="text-sm font-bold text-gray-900 mb-2">프리셋</h3>
-        <select onChange={e => onPresetChange(e.target.value)} className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm bg-white">
+        <select onChange={e => {
+          const selected = apiPresets.find(p => p.name === e.target.value)
+          onPresetChange(e.target.value, selected?.label)
+        }} className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm bg-white">
           <option value="">현재 설정 유지</option>
           {apiPresets.length > 0
             ? apiPresets.map(p => <option key={p.name} value={p.name}>{p.label}</option>)
