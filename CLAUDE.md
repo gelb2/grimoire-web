@@ -169,7 +169,6 @@ API_URL=http://localhost:3000/api
 |------|---------|-----|
 | localhost | localhost:3000 | localhost:3001 |
 | development | dev-api.grimoire-book.com | dev.grimoire-book.com |
-| inhouse | inhouse-api.grimoire-book.com | inhouse.grimoire-book.com |
 | production | api.grimoire-book.com | grimoire-book.com |
 
 상세: `docs/environments.md` 참조.

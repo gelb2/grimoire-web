@@ -1,5 +1,18 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.30.0] - 2026-04-19
+
+### F1/F2/F3 — 크레딧 가격 인상 + 분석 3 크레딧 안내
+
+#### Changed
+- `dashboard/credits/page.tsx` — fallback 상품 `credit-5` 가격 ₩1,000→₩2,000 (개당 ₩200→₩400). 크레딧 사용 안내에 "AI 작품 분석: 3 크레딧" 라인 추가
+- `dashboard/analysis/page.tsx` — 분석 버튼 캡션 "분석 시작 (3 크레딧)" + 차감/환불 안내 문구 추가
+- `docs/ai-analysis-spec.md` — 서버 정본에서 복사 (Sonnet/Haiku 양 기준 병기 + 크레딧 차감 정책 표)
+
+#### Rationale
+- 서버 `/payments/products` API가 F1 인상 반영된 가격을 리턴 → 대시보드는 이를 소비할 뿐 (fallback은 서버 미연결 상황 안전망)
+- 분석 페이지가 3 크레딧 차감 정책을 사용자에게 명시적으로 노출 → 예기치 못한 차감 방지
+
 ## [0.29.0] - 2026-04-19
 
 ### 업로드 미리보기 제목 정규화 (Safari 자모 분해 버그 회피)
