@@ -77,9 +77,11 @@ function ThemeEditorInner() {
     }
   }, [autoSwitchTab, resetManualSwitch])
 
-  const handlePresetChange = useCallback((presetName: string) => {
+  const handlePresetChange = useCallback((presetName: string, label?: string) => {
     if (!presetName || !themePresets[presetName as keyof typeof themePresets]) return
     setTheme(themePresets[presetName as keyof typeof themePresets])
+    // 프리셋 선택 시 이름도 자동 동기 (사용자 요청). 서버 label(한글 표시명) 우선.
+    if (label) setThemeName(label)
   }, [])
 
   const handleSave = useCallback(async () => {

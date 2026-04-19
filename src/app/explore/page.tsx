@@ -30,12 +30,23 @@ export default function ExplorePage() {
 
   const [initialLoading, setInitialLoading] = useState(!loaded)
 
+  // cold start(min-replicas=0) 대응: 첫 요청이 타임아웃 나도 2회 더 재시도.
+  // 컨테이너가 깨어나는 동안 500/타임아웃이 나도 두 번째 요청 때는 warm.
+  const fetchWithRetry = useCallback(async <T,>(fn: () => Promise<T>, retries = 3, delayMs = 2000): Promise<T | null> => {
+    for (let i = 0; i < retries; i++) {
+      try { return await fn() } catch {
+        if (i < retries - 1) await new Promise(r => setTimeout(r, delayMs))
+      }
+    }
+    return null
+  }, [])
+
   const fetchInitialData = useCallback(async () => {
     setInitialLoading(true)
     const [popularRes, recentRes, giftedRes] = await Promise.all([
-      api.getPopularWorksPaginated(1, PAGE_SIZE).catch(() => null),
-      api.getRecentWorksPaginated(1, PAGE_SIZE).catch(() => null),
-      api.getMostGiftedAuthors(8).catch(() => []),
+      fetchWithRetry(() => api.getPopularWorksPaginated(1, PAGE_SIZE)),
+      fetchWithRetry(() => api.getRecentWorksPaginated(1, PAGE_SIZE)),
+      fetchWithRetry(() => api.getMostGiftedAuthors(8)).then(r => r ?? []),
     ])
     setGiftedAuthors(giftedRes)
     if (popularRes) {
