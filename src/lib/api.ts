@@ -16,6 +16,11 @@ export interface PaginatedWorksResponse {
 
 class ApiClient extends BaseApiClient {
 
+  /** Health check — cold start warm-up 용도. 응답을 기다리거나 결과 사용 안 해도 됨. */
+  async getHealth() {
+    return this.fetch<{ status: string; timestamp: string }>('/health')
+  }
+
   // ─── 인증 ───
   async register(data: { email: string; password: string; name: string; slug: string; recaptchaToken?: string }) {
     return this.fetch<AuthResponse>('/auth/register', {

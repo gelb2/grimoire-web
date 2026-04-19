@@ -30,12 +30,25 @@ export default function ExplorePage() {
 
   const [initialLoading, setInitialLoading] = useState(!loaded)
 
+  // cold start(min-replicas=0) 대응: rawFetch 타임아웃 15초 × 재시도 4회 × 2.5초 간격 = 최대 ~70초 커버.
+  // Azure Container Apps가 간헐적으로 30~60초 걸려 깨어나는 경우까지 감내.
+  const fetchWithRetry = useCallback(async <T,>(fn: () => Promise<T>, retries = 4, delayMs = 2500): Promise<T | null> => {
+    for (let i = 0; i < retries; i++) {
+      try { return await fn() } catch {
+        if (i < retries - 1) await new Promise(r => setTimeout(r, delayMs))
+      }
+    }
+    return null
+  }, [])
+
   const fetchInitialData = useCallback(async () => {
     setInitialLoading(true)
+    // Warm-up ping (fire-and-forget). cold start 중인 컨테이너를 본 요청과 병렬로 깨워 첫 timeout 확률을 낮춘다.
+    api.getHealth().catch(() => {})
     const [popularRes, recentRes, giftedRes] = await Promise.all([
-      api.getPopularWorksPaginated(1, PAGE_SIZE).catch(() => null),
-      api.getRecentWorksPaginated(1, PAGE_SIZE).catch(() => null),
-      api.getMostGiftedAuthors(8).catch(() => []),
+      fetchWithRetry(() => api.getPopularWorksPaginated(1, PAGE_SIZE)),
+      fetchWithRetry(() => api.getRecentWorksPaginated(1, PAGE_SIZE)),
+      fetchWithRetry(() => api.getMostGiftedAuthors(8)).then(r => r ?? []),
     ])
     setGiftedAuthors(giftedRes)
     if (popularRes) {

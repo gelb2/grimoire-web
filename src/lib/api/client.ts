@@ -41,7 +41,10 @@ export class BaseApiClient {
       ...((options?.headers as Record<string, string>) || {}),
     }
 
-    const timeout = typeof window === 'undefined' ? 5000 : 10000
+    // Azure Container Apps min-replicas=0 cold start가 최장 60초까지 걸릴 수 있음.
+    // 브라우저 기본값을 15초로 늘려 1회 요청은 일반 케이스를 커버하고,
+    // 호출자는 options.signal로 더 긴 타임아웃을 명시 지정할 수 있음.
+    const timeout = typeof window === 'undefined' ? 5000 : 15000
     const signal = options?.signal ?? AbortSignal.timeout(timeout)
 
     return fetch(`${getApiBase()}${path}`, {
