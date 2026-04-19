@@ -73,8 +73,9 @@
 |------|------|-----|
 | localhost | 로컬 개발 | localhost:3001 |
 | development | 배포 완료 | dev.grimoire-book.com |
-| inhouse | 배포 완료 | inhouse.grimoire-book.com |
 | production | 배포 완료 | grimoire-book.com |
+
+> 2026-04-19: inhouse 환경 제거 (3환경 → 2환경). QA는 dev에서 develop 브랜치로 수행.
 
 ---
 
