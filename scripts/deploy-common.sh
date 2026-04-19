@@ -43,17 +43,17 @@ step() { printf "\n%s▶ %s%s\n" "$C_BOLD" "$*" "$C_OFF"; }
 # ─────────────────────────────────────────────────────────────
 # 환경 매트릭스
 # ─────────────────────────────────────────────────────────────
+# 유효한 ENV인지 검증 (2026-04-19 inhouse 제거 — 2환경만 유지)
 validate_env() {
   case "${1:-}" in
-    dev|inhouse|prod) return 0 ;;
-    *) fail "ENV must be one of: dev, inhouse, prod (got: '${1:-}')" ;;
+    dev|prod) return 0 ;;
+    *) fail "ENV must be one of: dev, prod (got: '${1:-}')" ;;
   esac
 }
 
 env_to_branch() {
   case "$1" in
     dev) echo "develop" ;;
-    inhouse) echo "inhouse" ;;
     prod) echo "main" ;;
     *) return 1 ;;
   esac
@@ -62,7 +62,6 @@ env_to_branch() {
 env_to_app_name() {
   case "$1" in
     dev) echo "grimoire-web-dev" ;;
-    inhouse) echo "grimoire-web-inhouse" ;;
     prod) echo "grimoire-web-prod" ;;
     *) return 1 ;;
   esac
@@ -71,7 +70,6 @@ env_to_app_name() {
 env_to_fqdn() {
   case "$1" in
     dev) echo "grimoire-web-dev.${FQDN_SUFFIX}" ;;
-    inhouse) echo "grimoire-web-inhouse.${FQDN_SUFFIX}" ;;
     prod) echo "grimoire-web-prod.${FQDN_SUFFIX}" ;;
     *) return 1 ;;
   esac
@@ -80,18 +78,16 @@ env_to_fqdn() {
 env_to_public_url() {
   case "$1" in
     dev) echo "https://dev.grimoire-book.com" ;;
-    inhouse) echo "https://inhouse.grimoire-book.com" ;;
     prod) echo "https://grimoire-book.com" ;;
     *) return 1 ;;
   esac
 }
 
 # web 전용: NEXT_PUBLIC_APP_ENV 빌드 인자 값
-# dev → development, inhouse → inhouse, prod → production
+# dev → development, prod → production
 env_to_app_env_buildarg() {
   case "$1" in
     dev) echo "development" ;;
-    inhouse) echo "inhouse" ;;
     prod) echo "production" ;;
     *) return 1 ;;
   esac
@@ -100,7 +96,6 @@ env_to_app_env_buildarg() {
 env_to_tag_prefix() {
   case "$1" in
     dev) echo "dev" ;;
-    inhouse) echo "inhouse" ;;
     prod) echo "prod" ;;
     *) return 1 ;;
   esac
@@ -110,7 +105,6 @@ env_to_tag_prefix() {
 env_to_expected_api_url() {
   case "$1" in
     dev) echo "https://grimoire-server-dev.${FQDN_SUFFIX}/api" ;;
-    inhouse) echo "https://grimoire-server-inhouse.${FQDN_SUFFIX}/api" ;;
     prod) echo "https://grimoire-server-prod.${FQDN_SUFFIX}/api" ;;
     *) return 1 ;;
   esac

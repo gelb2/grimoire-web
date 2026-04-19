@@ -1,7 +1,7 @@
 # Makefile — grimoire-web 수동 배포 진입점
 # 정본: ../grimoire-server/docs/DEPLOY.md
 
-.PHONY: help preflight deploy-dev deploy-inhouse deploy-prod logs rollback \
+.PHONY: help preflight deploy-dev deploy-prod logs rollback \
         image-list dev-local test test-e2e build
 
 SHELL := /usr/bin/env bash
@@ -9,17 +9,16 @@ SHELL := /usr/bin/env bash
 help:
 	@echo "grimoire-web Makefile — 수동 배포 진입점 (../grimoire-server/docs/DEPLOY.md)"
 	@echo ""
-	@echo "배포 타겟:"
+	@echo "배포 타겟 (2환경 — 2026-04-19 inhouse 제거):"
 	@echo "  make preflight ENV=dev           배포 전수검사만"
-	@echo "  make preflight ENV=inhouse"
 	@echo "  make preflight ENV=prod          (interactive 확인 포함)"
 	@echo ""
 	@echo "  make deploy-dev                  dev 배포"
-	@echo "  make deploy-inhouse              inhouse 배포"
 	@echo "  make deploy-prod                 prod 배포 (interactive 확인 필수)"
 	@echo ""
 	@echo "운영 타겟:"
 	@echo "  make logs ENV=dev                Container App 로그 tail"
+	@echo "  make logs ENV=prod"
 	@echo "  make rollback ENV=prod SHA=abc1234...   특정 SHA로 되돌림"
 	@echo "  make image-list ENV=dev          해당 환경 이미지 태그 목록"
 	@echo ""
@@ -30,20 +29,17 @@ help:
 	@echo "  make dev-local                   npm run dev (포트 3001)"
 
 preflight:
-	@if [ -z "$(ENV)" ]; then echo "ENV 필수 (dev|inhouse|prod)"; exit 1; fi
+	@if [ -z "$(ENV)" ]; then echo "ENV 필수 (dev|prod)"; exit 1; fi
 	@bash scripts/preflight.sh $(ENV)
 
 deploy-dev:
 	@bash scripts/deploy-dev.sh
 
-deploy-inhouse:
-	@bash scripts/deploy-inhouse.sh
-
 deploy-prod:
 	@bash scripts/deploy-prod.sh
 
 logs:
-	@if [ -z "$(ENV)" ]; then echo "ENV 필수 (dev|inhouse|prod)"; exit 1; fi
+	@if [ -z "$(ENV)" ]; then echo "ENV 필수 (dev|prod)"; exit 1; fi
 	@az containerapp logs show \
 		--name grimoire-web-$(ENV) \
 		--resource-group zenith-rg \
@@ -67,7 +63,7 @@ rollback:
 	echo "[ OK ] 롤백 완료 → $$TAG"
 
 image-list:
-	@if [ -z "$(ENV)" ]; then echo "ENV 필수 (dev|inhouse|prod)"; exit 1; fi
+	@if [ -z "$(ENV)" ]; then echo "ENV 필수 (dev|prod)"; exit 1; fi
 	@az acr repository show-tags \
 		--name grimoireacr \
 		--repository grimoire-web \
