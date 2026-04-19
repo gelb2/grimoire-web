@@ -3,10 +3,12 @@
 > GitHub Actions가 빌링 이슈 등으로 차단된 경우의 **1차 배포 수단**.
 > 평시에도 긴급 패치/롤백에 사용.
 > 정본: 이 문서. INFRASTRUCTURE.md §6이 참조한다.
+>
+> **2026-04-19: `inhouse` 환경 제거 (3환경 → 2환경).** QA는 dev에서 develop 브랜치로 수행.
 
 ---
 
-## 1. 환경 매트릭스 (2026-04-18 실측 기준)
+## 1. 환경 매트릭스 (2026-04-19 실측 기준)
 
 > **이 표의 값은 절대 변경 금지**. 변경이 필요하면 이 문서를 먼저 수정하고 스크립트를 수정한다.
 
@@ -21,29 +23,30 @@
 | FQDN suffix | `salmonsmoke-9e462011.koreacentral.azurecontainerapps.io` |
 | 빌드 플랫폼 | `linux/amd64` |
 | 이미지 유지 개수 | 환경별 prefix당 최근 5개 |
+| Container App 스케일 | `min-replicas=0, max-replicas=1, cpu=0.25, memory=0.5Gi` (2026-04-19 복원) |
 
 ### 환경별 매트릭스
 
-| 항목 | dev | inhouse | prod |
-|------|-----|---------|------|
-| **브랜치** | `develop` | `inhouse` | `main` |
-| **이미지 태그** | `dev-{SHA}` + `dev-latest` | `inhouse-{SHA}` + `inhouse-latest` | `prod-{SHA}` + `prod-latest` |
-| **Server Container App** | `grimoire-server-dev` | `grimoire-server-inhouse` | `grimoire-server-prod` |
-| **Web Container App** | `grimoire-web-dev` | `grimoire-web-inhouse` | `grimoire-web-prod` |
-| **Server DB 호스트** | `grimoire-db-dev.postgres.database.azure.com` | `grimoire-db-inhouse.postgres.database.azure.com` | `grimoire-db-prod.postgres.database.azure.com` |
-| **Web → Server API_URL** | `https://grimoire-server-dev.{FQDN}/api` | `https://grimoire-server-inhouse.{FQDN}/api` | `https://grimoire-server-prod.{FQDN}/api` |
-| **CORS_ORIGIN** | `*` ⚠️ | `https://inhouse.grimoire-book.com` | `https://grimoire-book.com` |
-| **APP_ENV (server)** | `development` | `inhouse` | `production` |
-| **NODE_ENV (server)** | `development` | `production` | `production` |
-| **Web `NEXT_PUBLIC_APP_ENV` 빌드 인자** | `development` | `inhouse` | `production` |
-| **공개 웹 URL** | `https://dev.grimoire-book.com` | `https://inhouse.grimoire-book.com` | `https://grimoire-book.com` |
-| **공개 API URL** | `https://dev-api.grimoire-book.com` | `https://inhouse-api.grimoire-book.com` | `https://api.grimoire-book.com` |
+| 항목 | dev | prod |
+|------|-----|------|
+| **브랜치** | `develop` | `main` |
+| **이미지 태그** | `dev-{SHA}` + `dev-latest` | `prod-{SHA}` + `prod-latest` |
+| **Server Container App** | `grimoire-server-dev` | `grimoire-server-prod` |
+| **Web Container App** | `grimoire-web-dev` | `grimoire-web-prod` |
+| **Server DB 호스트** | `grimoire-db-dev.postgres.database.azure.com` | `grimoire-db-prod.postgres.database.azure.com` |
+| **Web → Server API_URL** | `https://grimoire-server-dev.{FQDN}/api` | `https://grimoire-server-prod.{FQDN}/api` |
+| **CORS_ORIGIN** | `*` ⚠️ | `https://grimoire-book.com` |
+| **APP_ENV (server)** | `development` | `production` |
+| **NODE_ENV (server)** | `development` | `production` |
+| **Web `NEXT_PUBLIC_APP_ENV` 빌드 인자** | `development` | `production` |
+| **공개 웹 URL** | `https://dev.grimoire-book.com` | `https://grimoire-book.com` |
+| **공개 API URL** | `https://dev-api.grimoire-book.com` | `https://api.grimoire-book.com` |
 
 > ⚠️ **dev CORS `*`**: 의도된 느슨한 설정이지만 CLAUDE.md §11 전수검사 기준으론 경고. 별도 이슈 참조.
 
 ### Polar 주의사항
 
-- `POLAR_SERVER=production`은 **3환경 모두 동일**. Polar는 organization 단위로 토큰이 발급되어 환경별 분리 불가. `memory/feedback_polar_coupon_ops.md` 참조.
+- `POLAR_SERVER=production`은 **2환경 모두 동일**. Polar는 organization 단위로 토큰이 발급되어 환경별 분리 불가. `memory/feedback_polar_coupon_ops.md` 참조.
 - Polar 관련 환경변수는 `POLAR_ACCESS_TOKEN`, `POLAR_WEBHOOK_SECRET`, `POLAR_ORGANIZATION_ID`, `POLAR_PRODUCT_BASIC`, `POLAR_PRODUCT_POPULAR`, `POLAR_PRODUCT_BEST`.
 
 ---
@@ -61,9 +64,9 @@ grimoireacr.azurecr.io/grimoire-web:{env}-latest
 - `{env}-latest`는 편의 태그 — 배포 대상은 **반드시 `{env}-{SHA}` 태그**를 사용해야 Container App revision이 내용 기반으로 생성된다.
 - 롤백: 과거 `{env}-{SHA}` 태그로 Container App `--image`를 되돌린다.
 
-### ⚠️ `:latest` 태그 금지 (현재 수정 대상)
+### ⚠️ `:latest` 태그 금지
 
-실측상 Container App 6개 모두 `:latest` 태그로 배포되어 있다. 이는 과거 수동 배포의 잔재이며, **이번 스크립트화 이후부터 금지**한다. 새 스크립트로 배포 시 자동으로 `{env}-{SHA}` 태그가 설정된다.
+실측상 Container App이 `:latest` 태그로 배포되어 있으면 revision이 내용 기반으로 생성되지 않아 사실상 업데이트가 안 될 수 있다. 새 스크립트로 배포 시 자동으로 `{env}-{SHA}` 태그가 설정된다.
 
 ---
 
@@ -76,7 +79,6 @@ grimoire-server/
     ├── deploy-common.sh            # 공통 상수/함수 (source로 로드)
     ├── preflight.sh                # 배포 전 전수검사
     ├── deploy-dev.sh
-    ├── deploy-inhouse.sh
     └── deploy-prod.sh
 
 grimoire-web/
@@ -85,7 +87,6 @@ grimoire-web/
     ├── deploy-common.sh
     ├── preflight.sh
     ├── deploy-dev.sh
-    ├── deploy-inhouse.sh
     └── deploy-prod.sh
 ```
 
@@ -93,15 +94,12 @@ grimoire-web/
 
 ```bash
 make preflight ENV=dev         # 배포 전수검사만 (배포 안 함)
-make preflight ENV=inhouse
 make preflight ENV=prod
 
 make deploy-dev                # preflight + 이미지 빌드 + 푸시 + Container App 업데이트 + purge
-make deploy-inhouse
 make deploy-prod
 
 make logs ENV=dev              # Container App 로그 tail
-make logs ENV=inhouse
 make logs ENV=prod
 
 make rollback ENV=prod SHA=<sha>   # 특정 SHA로 되돌림
@@ -112,7 +110,7 @@ make rollback ENV=prod SHA=<sha>   # 특정 SHA로 되돌림
 배포 스크립트는 실행 시작 시 `preflight.sh`를 **반드시 호출**한다. 하나라도 실패하면 배포는 `exit 1`로 중단된다.
 
 1. **git 상태 검증**
-   - 현재 브랜치가 배포 대상 브랜치(`develop`/`inhouse`/`main`)와 일치
+   - 현재 브랜치가 배포 대상 브랜치(`develop`/`main`)와 일치
    - 워킹 트리에 스테이지/언스테이지된 변경 없음 (`git status --porcelain`이 비어 있음)
    - 로컬 HEAD가 `origin/{브랜치}` HEAD와 일치 (앞섰거나 밀렸으면 거부)
 
@@ -165,26 +163,12 @@ curl -I https://dev-api.grimoire-book.com/api/health   # 200 기대
 open https://dev.grimoire-book.com                     # 수동 UI 검증
 ```
 
-### 4.2 inhouse 승격
+### 4.2 prod 승격 (develop → main 직결)
+
 ```bash
 # 2개 레포 각각
-cd grimoire-server   && git checkout inhouse && git merge develop --no-ff -m "merge: develop → inhouse" && git push origin inhouse && git checkout develop
-cd grimoire-web      && git checkout inhouse && git merge develop --no-ff -m "merge: develop → inhouse" && git push origin inhouse && git checkout develop
-
-# 배포
-cd grimoire-server && make deploy-inhouse
-cd grimoire-web    && make deploy-inhouse
-
-# 검증
-curl -I https://inhouse-api.grimoire-book.com/api/health
-open https://inhouse.grimoire-book.com
-```
-
-### 4.3 prod 승격
-```bash
-# 2개 레포 각각
-cd grimoire-server && git checkout main && git merge inhouse --no-ff -m "merge: inhouse → main" && git push origin main && git checkout develop
-cd grimoire-web    && git checkout main && git merge inhouse --no-ff -m "merge: inhouse → main" && git push origin main && git checkout develop
+cd grimoire-server && git checkout main && git merge develop --no-ff -m "merge: develop → main" && git push origin main && git checkout develop
+cd grimoire-web    && git checkout main && git merge develop --no-ff -m "merge: develop → main" && git push origin main && git checkout develop
 
 # 배포 (interactive 확인 필수)
 cd grimoire-server && make deploy-prod
@@ -194,6 +178,8 @@ cd grimoire-web    && make deploy-prod
 curl -I https://api.grimoire-book.com/api/health
 open https://grimoire-book.com
 ```
+
+> QA는 `develop` 브랜치에서 `make deploy-dev` 후 dev URL로 진행한다. (기존 inhouse 흡수)
 
 ---
 
