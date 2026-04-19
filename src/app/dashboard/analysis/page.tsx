@@ -210,7 +210,7 @@ export default function AnalysisPage() {
         </div>
 
         <p className="text-xs text-neutral-500 mb-2">
-          분석 1회당 <span className="text-[#e53e3e] font-semibold">3 크레딧</span>이 차감됩니다. 분석 실패 시 자동 환불됩니다.
+          분석 1회당 <span className="text-[#e53e3e] font-semibold">3 크레딧</span>이 차감됩니다. 서버가 분석을 실패로 확정한 경우 자동 환불되며, 진행 중 중단이면 잔액을 크레딧 페이지에서 확인해주세요.
         </p>
         <button
           onClick={handleAnalyze}

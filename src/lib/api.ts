@@ -417,7 +417,7 @@ class ApiClient extends BaseApiClient {
       })
     } catch (err) {
       if (err instanceof Error && (err.name === 'AbortError' || err.name === 'TimeoutError')) {
-        throw new Error('분석 시간이 초과되었습니다 (최대 2분). 텍스트 길이를 줄이거나 분석 항목 수를 줄여 다시 시도해주세요. 차감된 크레딧은 서버에서 자동 환불됩니다.')
+        throw new Error('분석 시간이 초과되었습니다 (최대 2분). 텍스트 길이를 줄이거나 분석 항목 수를 줄여 다시 시도해주세요. 서버가 내부적으로 실패로 확정한 경우 크레딧이 자동 환불되지만, 서버 처리 자체는 이미 성공해서 결과만 네트워크상에서 누락된 경우는 차감이 유지될 수 있어 크레딧 페이지에서 잔액을 확인해주세요.')
       }
       throw err
     }
