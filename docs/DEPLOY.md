@@ -70,7 +70,62 @@ grimoireacr.azurecr.io/grimoire-web:{env}-latest
 
 ---
 
-## 3. 배포 스크립트 구조
+## 3. 로컬 배포 머신 사전 세팅 (최초 1회)
+
+`make deploy-*` 실행 전 로컬 머신에서 **반드시 1회** 수행해야 하는 준비 작업. 누락 시 배포 중 사용자 상호작용이 필요해지므로 자동화가 깨진다.
+
+### 3.1 Docker credential store — `osxkeychain` 강제
+
+**증상**: `make deploy-*` 실행 → `az acr login` 단계에서 다음 macOS 시스템 다이얼로그가 매 실행마다 뜸.
+
+> `python3.13`이(가) 다른 앱의 데이터에 접근하려고 합니다. [허용 안 함] [허용]
+
+**원인**:
+- Docker Desktop 4.x 설치 시 `~/.docker/config.json`의 `credsStore` 기본값이 `"desktop"`으로 설정됨.
+- 이 값이면 `docker login`/`az acr login`이 자격증명을 Docker Desktop 샌드박스 영역(`~/Library/Containers/com.docker.docker/`)에 저장.
+- macOS Sequoia+ TCC가 Azure CLI의 python3.13이 **다른 앱(Docker Desktop)의 데이터에 접근**하는 것으로 감지 → 매번 권한 다이얼로그.
+
+**해결 (최초 1회)**:
+
+```bash
+# 1) ~/.docker/config.json 의 credsStore 값 변경
+#    "credsStore": "desktop"      ← 변경 전
+#    "credsStore": "osxkeychain"  ← 변경 후
+
+# 2) 자격증명을 macOS Keychain에 재저장
+az acr login --name grimoireacr
+# → "Login Succeeded" 확인
+
+# 3) Keychain 저장 확인
+echo "grimoireacr.azurecr.io" | docker-credential-osxkeychain get
+# → JWT 토큰 JSON이 출력되면 정상
+```
+
+이후 `make deploy-*` 실행 시 TCC 다이얼로그 뜨지 않는다. Keychain 접근은 macOS 표준 자격증명 저장소라 Azure CLI python이 접근해도 "다른 앱" 판정이 뜨지 않는다.
+
+**금지**: `credsStore` 항목을 삭제하지 말 것. 삭제 시 `auths`에 base64 평문 자격증명이 저장되어 보안 사고 위험.
+
+### 3.2 az CLI 로그인 유지
+
+```bash
+az login                          # 계정 선택 브라우저 창
+az account show --query user.name # "rainmaker8492@gmail.com" 확인
+```
+
+`preflight.sh`가 이 사용자와 일치하는지 검증한다.
+
+### 3.3 Docker Desktop 기동
+
+`make deploy-*` 시 `docker info`가 실패하면 배포 중단된다. Docker Desktop 앱이 실행 상태여야 함.
+
+```bash
+open -a Docker   # 기동 후 약 10~30초 대기
+docker info      # 정상이면 ServerVersion 출력
+```
+
+---
+
+## 4. 배포 스크립트 구조
 
 ```
 grimoire-server/
@@ -146,7 +201,7 @@ make rollback ENV=prod SHA=<sha>   # 특정 SHA로 되돌림
 
 ---
 
-## 4. 배포 절차 (권장)
+## 5. 배포 절차 (권장)
 
 ### 4.1 dev 배포
 ```bash
@@ -183,7 +238,7 @@ open https://grimoire-book.com
 
 ---
 
-## 5. 롤백
+## 6. 롤백
 
 ```bash
 # ACR에 쌓인 이미지 목록
@@ -197,7 +252,7 @@ make rollback ENV=prod SHA=abc1234...
 
 ---
 
-## 6. 환경변수 추가/변경
+## 7. 환경변수 추가/변경
 
 > **스크립트는 이미지 배포만 담당한다**. 환경변수 변경은 별도 명령으로 수행한다.
 
@@ -217,7 +272,7 @@ az containerapp update --name grimoire-server-dev --resource-group zenith-rg \
 
 ---
 
-## 7. 보안 주의
+## 8. 보안 주의
 
 이 문서와 스크립트는 **비밀값 자체를 커밋에 포함하지 않는다**. 모든 자격증명은:
 
@@ -229,7 +284,7 @@ az containerapp update --name grimoire-server-dev --resource-group zenith-rg \
 
 ---
 
-## 8. CI 복원 시
+## 9. CI 복원 시
 
 GitHub Actions 빌링이 복구되면 자동 배포가 다시 작동한다. 그 경우에도:
 
@@ -239,7 +294,7 @@ GitHub Actions 빌링이 복구되면 자동 배포가 다시 작동한다. 그 
 
 ---
 
-## 9. 참조 문서
+## 10. 참조 문서
 
 - `INFRASTRUCTURE.md` — Azure 인프라 구성
 - `SECURITY.md` — 보안 정책 + 배포 전 체크리스트
