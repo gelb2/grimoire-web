@@ -24,7 +24,7 @@ function ScoreBadge({ score }: { score: number }) {
 }
 
 export default function AnalysisPage() {
-  const { user, loading } = useAuth()
+  const { user, loading, refreshUser } = useAuth()
   const router = useRouter()
   const [works, setWorks] = useState<Work[]>([])
   const [selectedWorkId, setSelectedWorkId] = useState('')
@@ -80,6 +80,7 @@ export default function AnalysisPage() {
   const handleAnalyze = async () => {
     if (!selectedWorkId || !newText.trim() || analyzing) return
     if (newText.length < 10) { toast.error('텍스트는 최소 10자 이상이어야 합니다'); return }
+    if (selectedTypes.size === 0) { toast.error('분석 항목을 최소 1개 이상 선택해주세요'); return }
     setAnalyzing(true)
     setResults([])
     try {
@@ -91,8 +92,12 @@ export default function AnalysisPage() {
         selectedEpisodeId || undefined,
       )
       setResults(data)
+      // 분석 성공 시 크레딧 잔액 UI 갱신 (3 크레딧 차감 반영)
+      refreshUser().catch(() => {})
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : '분석에 실패했습니다')
+      // 실패 시에도 서버가 자동 환불했을 수 있으므로 재조회로 동기화
+      refreshUser().catch(() => {})
     } finally {
       setAnalyzing(false)
     }
@@ -205,14 +210,14 @@ export default function AnalysisPage() {
         </div>
 
         <p className="text-xs text-neutral-500 mb-2">
-          분석 1회당 <span className="text-[#e53e3e] font-semibold">3 크레딧</span>이 차감됩니다. 분석 실패 시 자동 환불됩니다.
+          분석 1회당 <span className="text-[#e53e3e] font-semibold">3 크레딧</span>이 차감됩니다. 서버가 분석을 실패로 확정한 경우 자동 환불되며, 진행 중 중단이면 잔액을 크레딧 페이지에서 확인해주세요.
         </p>
         <button
           onClick={handleAnalyze}
           disabled={analyzing || !selectedWorkId || newText.length < 10}
           className="w-full py-3 bg-black hover:bg-neutral-800 disabled:bg-neutral-300 text-white font-medium rounded-lg transition mb-8"
         >
-          {analyzing ? '분석 중... (최대 1분 소요)' : '분석 시작 (3 크레딧)'}
+          {analyzing ? '분석 중... (최대 2분 소요)' : '분석 시작 (3 크레딧)'}
         </button>
 
         {/* 결과 */}
