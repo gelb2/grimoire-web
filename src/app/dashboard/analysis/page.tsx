@@ -204,12 +204,15 @@ export default function AnalysisPage() {
           <p className="text-neutral-400 text-xs mt-1 text-right">{newText.length.toLocaleString()}/50,000</p>
         </div>
 
+        <p className="text-xs text-neutral-500 mb-2">
+          분석 1회당 <span className="text-[#e53e3e] font-semibold">3 크레딧</span>이 차감됩니다. 분석 실패 시 자동 환불됩니다.
+        </p>
         <button
           onClick={handleAnalyze}
           disabled={analyzing || !selectedWorkId || newText.length < 10}
           className="w-full py-3 bg-black hover:bg-neutral-800 disabled:bg-neutral-300 text-white font-medium rounded-lg transition mb-8"
         >
-          {analyzing ? '분석 중... (최대 1분 소요)' : '분석 시작'}
+          {analyzing ? '분석 중... (최대 1분 소요)' : '분석 시작 (3 크레딧)'}
         </button>
 
         {/* 결과 */}

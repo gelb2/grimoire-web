@@ -56,9 +56,9 @@ export default function CreditsPage() {
 
   useEffect(() => {
     api.getProducts().then(setProducts).catch(() => {
-      // 서버 미연결 시 기본값
+      // 서버 미연결 시 기본값 (PLANNING §8 정본, F1 2026-04-19 인상 반영)
       setProducts([
-        { id: 'credit-5', credits: 5, price: 1000, pricePerCredit: 200 },
+        { id: 'credit-5', credits: 5, price: 2000, pricePerCredit: 400 },
         { id: 'credit-20', credits: 20, price: 3000, pricePerCredit: 150 },
         { id: 'credit-50', credits: 50, price: 5000, pricePerCredit: 100 },
       ])
@@ -129,6 +129,7 @@ export default function CreditsPage() {
           <h3 className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-3">크레딧 사용 안내</h3>
           <div className="space-y-2 text-sm text-neutral-500">
             <p>· 테마 AI 생성: <span className="text-[#e53e3e]">1 크레딧</span></p>
+            <p>· AI 작품 분석 (설정/톤/캐릭터): <span className="text-[#e53e3e]">3 크레딧</span></p>
             <p>· 수동 테마 수정 (Color Picker): <span className="text-green-500">무료</span></p>
             <p>· 에피소드 퍼블리시: <span className="text-green-500">무료</span></p>
             <p>· 공간 유지: <span className="text-green-500">무료</span></p>
