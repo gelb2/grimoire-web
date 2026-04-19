@@ -40,11 +40,14 @@ async function proxyRequest(
   const authorization = request.headers.get('authorization')
   if (authorization) headers['Authorization'] = authorization
 
-  // 요청 옵션
+  // 요청 옵션 — 클라이언트의 AbortSignal을 백엔드로 전파해 서버측에서도 요청을 중단.
+  // 전파하지 않으면 클라 timeout 후에도 백엔드가 Claude/OpenAI 호출을 계속 진행해
+  // 불필요한 토큰 비용 + DB 트랜잭션 지속. signal 전파로 전체 경로에서 동일 시점 취소.
   const fetchOptions: RequestInit = {
     method,
     headers,
     cache: 'no-store',
+    signal: request.signal,
   }
 
   // GET/HEAD 외에는 body 전달

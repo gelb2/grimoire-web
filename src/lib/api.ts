@@ -407,11 +407,20 @@ class ApiClient extends BaseApiClient {
     // RAG 컨텍스트에서 제외되어 self-reference 환각이 방지됨.
     episodeId?: string,
   ) {
-    return this.fetch<AnalysisResult[]>('/analysis/check', {
-      method: 'POST',
-      body: JSON.stringify({ workId, newEpisodeText, types, episodeId }),
-      signal: AbortSignal.timeout(60000),
-    })
+    try {
+      return await this.fetch<AnalysisResult[]>('/analysis/check', {
+        method: 'POST',
+        body: JSON.stringify({ workId, newEpisodeText, types, episodeId }),
+        // 서버측은 RAG 검색 + Claude Sonnet 4 3종 병렬 호출 + 환각 검증을 수행.
+        // cold start까지 겹치면 60s는 초과할 수 있어 120s로 상향.
+        signal: AbortSignal.timeout(120000),
+      })
+    } catch (err) {
+      if (err instanceof Error && (err.name === 'AbortError' || err.name === 'TimeoutError')) {
+        throw new Error('분석 시간이 초과되었습니다 (최대 2분). 텍스트 길이를 줄이거나 분석 항목 수를 줄여 다시 시도해주세요. 차감된 크레딧은 서버에서 자동 환불됩니다.')
+      }
+      throw err
+    }
   }
 
   async getAnalysisStatus(workId: string) {
