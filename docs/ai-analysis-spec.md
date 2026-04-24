@@ -46,6 +46,29 @@ novel_chunks (pgvector 테이블 — Prisma 외부)
 └── embedding: vector(1536)
 ```
 
+### 3-1-2. 분석 리포트 (Prisma, 2026-04-24 F4)
+
+`AnalysisReport` — 작가가 실행한 분석 결과를 영구 저장. 대시보드 히스토리에서 재조회.
+
+```prisma
+model AnalysisReport {
+  id             String   @id @default(uuid())
+  authorId       String   @map("author_id")
+  workId         String   @map("work_id")
+  episodeId      String   @map("episode_id")
+  workTitle      String   @map("work_title")        // 스냅샷 — 작품 삭제 후에도 식별 가능
+  episodeTitle   String   @map("episode_title")     // 스냅샷
+  types          String[]                            // consistency/tone/character 조합
+  results        Json                                // AnalysisResult[] 전체
+  creditsCharged Int      @default(3) @map("credits_charged")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([authorId, createdAt(sort: Desc)])
+  @@index([episodeId])
+  @@map("analysis_reports")
+}
+```
+
 ### 3-2. 채팅용 (구현 예정)
 
 ```prisma
@@ -137,10 +160,17 @@ POST /analysis/check { episodeId, types? }
   → 4. Claude Sonnet 4.6 분석 (3유형 병렬, AbortSignal 전파)
   → 5. 환각 검증 (issues 인용이 원문에 존재하는지 후처리)
   → 6. 실패(AbortError 포함) 시 전액 환불
+  → 7. 성공 시 AnalysisReport DB에 저장 (히스토리, 저장 실패해도 결과 반환)
   → [{ type, score, summary, issues, suggestions }]
 
 GET /analysis/status/:workId
   → { chunkCount, isIndexed }
+
+GET /analysis/reports
+  → 본인 분석 히스토리 (최신순 50건, scores 요약만)
+
+GET /analysis/reports/:id
+  → 분석 리포트 단건 상세 (results 포함, 소유권 검증)
 ```
 
 ### 5-2. 분석 유형

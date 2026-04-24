@@ -1,5 +1,39 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.32.0] - 2026-04-24
+
+### F4 보강 — Alert 컴포넌트 + 분석 기록 화면 + 원고 관리(덮어쓰기·삭제)
+
+#### Added
+- `src/components/Alert.tsx` — 그리모어 톤앤매너 기본 모달 얼럿 (default/info/warning/success tone, locked 모드, cancel/confirm 개별 숨김 지원)
+- `src/app/dashboard/analysis/_components/AnalysisResultCards.tsx` — 결과 카드 3종 렌더러 (분석 페이지와 히스토리 모달 공용)
+- `src/app/dashboard/analysis/history/page.tsx` — 분석 기록 리스트 + 상세 모달 (서버 `GET /analysis/reports`, `GET /analysis/reports/:id`)
+- `src/app/dashboard/episodes/page.tsx` — 원고 관리 화면 (작품 선택 → 회차 리스트 → 파일 덮어쓰기 / 삭제). 본문 복붙 UI 없음 (서비스 원칙 준수)
+- `api.getAnalysisReports()`, `api.getAnalysisReport(id)`, `api.reuploadEpisode(id, data)` — 신규 API 메서드
+- `AnalysisReport`, `AnalysisReportSummary` 타입 (`src/types/api.ts`)
+
+#### Changed
+- `dashboard/analysis/page.tsx` — 재작성:
+  - 결과를 이 화면에서 직접 렌더링하지 않음 → 분석 완료 시 `/dashboard/analysis/history`로 라우팅
+  - 분석 시작 전 `Alert` 확인 모달 (소요 시간 + 크레딧 차감 안내)
+  - 분석 중 `Alert locked` 모달로 진행 상태 고정 표시
+  - **버그 수정**: useEffect 의존성을 `user` → `user.slug` (primitive)로 변경 → `refreshUser()`로 user 참조만 바뀌어도 재로딩 루프 차단. 결과 사라짐 증상 근본 원인
+- `dashboard/_components/QuickActions.tsx` — "원고 관리", "분석 기록" 항목 추가
+- `dashboard/analysis/page.tsx` 상단에 "분석 기록 보기 →" 링크 추가
+
+#### Tests
+- 119 vitest 전부 통과 (기존)
+
+#### Docs Sync
+- `docs/ai-analysis-spec.md`, `docs/api-contract.md`, `docs/data-model.md` — 서버 정본에서 복사
+
+#### Rationale
+- 사용자 버그 3건 근본 원인 + 해결:
+  1. 분석 후 결과가 사라짐 → `user` 의존 useEffect가 `refreshUser` 호출 시 재실행되어 `setResults([])` 트리거. 해결: 결과 자체를 DB 저장 + 히스토리 화면 분리, 의존성을 slug로 제한
+  2. 두 번째 분석 동작 안함 → 결과 렌더링 상태가 꼬여있던 것으로 추정. 결과 UI 제거 + 완료 시 라우팅으로 상태 격리
+  3. 다른 작품 분석 5분 무응답 → 프론트 AbortSignal.timeout(120s)은 그대로. `Alert locked` 진행 모달로 사용자가 "무응답"으로 오인하지 않도록 시각화
+- 원고 수정/삭제 신규 기능 — 서버 `/episodes/:id/reupload`, `DELETE /episodes/:id`는 이미 존재했으나 웹 UI 미연결이었음. 기존 서비스 원칙(복붙 금지) 준수 위해 파일 업로드 경로로만 구현
+
 ## [0.31.0] - 2026-04-24
 
 ### F4 — AI 일관성 분석 Q1=(a) 에피소드 ID 모드 (벤치마크 정합)

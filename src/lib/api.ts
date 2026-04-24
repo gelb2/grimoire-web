@@ -1,4 +1,7 @@
-import type { AuthResponse, AuthUser, Theme, GiftedAuthor, WorkStats, Product, AnalysisResult, IndexStatus } from "@/types/api"
+import type {
+  AuthResponse, AuthUser, Theme, GiftedAuthor, WorkStats, Product,
+  AnalysisResult, IndexStatus, AnalysisReport, AnalysisReportSummary,
+} from "@/types/api"
 import { BaseApiClient, getApiBaseUrl } from "./api/client"
 
 /** 페이지네이션 작품 응답 타입 */
@@ -234,6 +237,18 @@ class ApiClient extends BaseApiClient {
     return this.fetch<void>(`/episodes/${id}`, { method: 'DELETE' })
   }
 
+  /**
+   * 에피소드 재업로드 (파일 덮어쓰기 — 2026-04-24)
+   * 서비스 원칙: 본문 복붙/타이핑 금지 → 파일 업로드로만 교체.
+   * 서버가 블록 재파싱 + RAG 재인덱싱까지 자동 수행.
+   */
+  async reuploadEpisode(episodeId: string, data: { title?: string; rawContent: string; sourceFormat?: string }) {
+    return this.fetch<Record<string, unknown>>(`/episodes/${episodeId}/reupload`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  }
+
   async updateEpisodeStatus(workId: string, episodeId: string, status: 'upload' | 'public' | 'nonPublic') {
     return this.fetch<{ status: string }>(`/works/${workId}/episodes/${episodeId}/status`, {
       method: 'PATCH',
@@ -428,6 +443,16 @@ class ApiClient extends BaseApiClient {
 
   async getAnalysisStatus(workId: string) {
     return this.fetch<IndexStatus>(`/analysis/status/${workId}`)
+  }
+
+  /** 분석 히스토리 목록 (본인, 최신순 50건) */
+  async getAnalysisReports() {
+    return this.fetch<AnalysisReportSummary[]>('/analysis/reports')
+  }
+
+  /** 분석 리포트 단건 상세 (results 포함, 소유권 검증) */
+  async getAnalysisReport(id: string) {
+    return this.fetch<AnalysisReport>(`/analysis/reports/${id}`)
   }
 
   // 서재
