@@ -132,3 +132,30 @@ export interface IndexStatus {
   chunkCount: number
   isIndexed: boolean
 }
+
+/** 분석 히스토리 목록 항목 (GET /analysis/reports 응답, 2026-04-24 F4) */
+export interface AnalysisReportSummary {
+  id: string
+  workId: string
+  episodeId: string
+  workTitle: string
+  episodeTitle: string
+  types: ('consistency' | 'tone' | 'character')[]
+  scores: { type: 'consistency' | 'tone' | 'character'; score: number }[]
+  creditsCharged: number
+  createdAt: string
+}
+
+/** 분석 리포트 상세 (GET /analysis/reports/:id 응답) */
+export interface AnalysisReport {
+  id: string
+  authorId: string
+  workId: string
+  episodeId: string
+  workTitle: string
+  episodeTitle: string
+  types: ('consistency' | 'tone' | 'character')[]
+  results: AnalysisResult[]
+  creditsCharged: number
+  createdAt: string
+}

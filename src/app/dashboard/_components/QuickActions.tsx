@@ -5,9 +5,11 @@ import { useAuth } from '@/features/auth'
 
 const quickActions = [
   { href: '/dashboard/upload', title: '원고 업로드', desc: 'MD, TXT, DOCX' },
+  { href: '/dashboard/episodes', title: '원고 관리', desc: '파일 덮어쓰기 · 삭제' },
   { href: '/dashboard/theme', title: '테마 에디터', desc: '작가공간 디자인' },
   { href: '/dashboard/chat', title: 'AI 어시스턴트', desc: '원고 분석·캐릭터·문체' },
   { href: '/dashboard/analysis', title: 'AI 일관성 분석', desc: '설정·문체·캐릭터 검증' },
+  { href: '/dashboard/analysis/history', title: '분석 기록', desc: '과거 분석 결과 열람' },
   { href: '/dashboard/analytics', title: '작품 통계', desc: '조회수·좋아요·구독' },
   { href: '/dashboard/credits', title: '크레딧 충전', desc: '크레딧 관리' },
   { href: '/dashboard/profile', title: '프로필 설정', desc: '작가 정보 수정' },

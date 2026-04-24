@@ -227,6 +227,8 @@
 | POST | `/api/analysis/index` | 작품 벡터 인덱싱 | JWT |
 | POST | `/api/analysis/check` | 업로드된 회차의 설정 일관성 검사 (Q1=(a) 모드) | JWT, 크레딧 3 |
 | GET | `/api/analysis/status/:workId` | 인덱싱 상태 조회 | JWT |
+| GET | `/api/analysis/reports` | 분석 히스토리 목록 (본인, 최신순 50건) | JWT |
+| GET | `/api/analysis/reports/:id` | 분석 리포트 단건 상세 (소유권 검증) | JWT |
 
 ---
 
@@ -742,6 +744,34 @@ Request:
 
 Response 200: AnalysisResult[]
 Error 400: 'episodeId가 필요합니다' / '에피소드를 찾을 수 없습니다' / '본인 작품의 에피소드만 분석할 수 있습니다' / 'AI 분석은 3 크레딧이 필요합니다'
+```
+
+### GET /api/analysis/reports
+
+본인이 실행한 분석의 히스토리(최신순). results 미포함, 점수 요약만.
+
+```
+Headers: Authorization: Bearer <token>
+Response 200: AnalysisReportSummary[]
+  [{
+    id, workId, episodeId, workTitle, episodeTitle,
+    types, scores: [{ type, score }], creditsCharged, createdAt
+  }, ...]
+```
+
+### GET /api/analysis/reports/:id
+
+분석 리포트 단건 상세. 소유권 검증(타인 리포트는 403).
+
+```
+Headers: Authorization: Bearer <token>
+Response 200: AnalysisReport
+  {
+    id, authorId, workId, episodeId, workTitle, episodeTitle,
+    types, results: AnalysisResult[], creditsCharged, createdAt
+  }
+Error 404: 리포트 없음
+Error 403: 본인의 분석 리포트만 조회 가능
 ```
 
 ### POST /api/chat/sessions
