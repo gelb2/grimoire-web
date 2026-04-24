@@ -118,16 +118,25 @@ semantic_cache (pgvector 테이블)
 
 ## 5. AI 작품 분석 (레이어 2)
 
-### 5-1. 흐름
+### 5-1. 흐름 (Q1=(a) 모드, 2026-04-24)
+
+> Claude Projects 벤치마크(§6-1) 정합 — 분석 화면에서 본문 재입력 금지.
+> 작가는 회차 업로드만으로 분석 가능 (서버가 DB의 Episode.rawMd 사용).
 
 ```
 POST /analysis/index { episodeId, workId, rawText }
   → 청킹 → 임베딩(배치) → pgvector 저장
   → { chunkCount, tokensUsed }
+  ※ 회차 업로드 시 자동 호출 (작가 직접 호출 불필요)
 
-POST /analysis/check { workId, newEpisodeText, types? }
-  → 새 텍스트 첫 2000자 임베딩 → pgvector 유사 검색(top 20)
-  → 상위 15 청크를 맥락으로 Claude 분석 (3유형)
+POST /analysis/check { episodeId, types? }
+  → 0. Episode 로드 + 소유권 검증 (Episode.workId → Work.authorId === JWT sub)
+  → 1. 3 크레딧 차감 (F2 2026-04-19, 실패 시 BadRequest)
+  → 2. Episode.rawMd 첫 2000자 임베딩 → pgvector 유사 검색(top 30)
+  → 3. 자기 자신 청크 자동 제외 (self-reference 환각 방지) → top 15 사용
+  → 4. Claude Sonnet 4.6 분석 (3유형 병렬, AbortSignal 전파)
+  → 5. 환각 검증 (issues 인용이 원문에 존재하는지 후처리)
+  → 6. 실패(AbortError 포함) 시 전액 환불
   → [{ type, score, summary, issues, suggestions }]
 
 GET /analysis/status/:workId
