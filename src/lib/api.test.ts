@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
-// api.ts의 analyzeEpisode 엣지 케이스 테스트.
-// AbortError/TimeoutError 사용자 친화 메시지 변환 + episodeId undefined 직렬화 + 타임아웃 설정.
+// api.ts의 analyzeEpisode 엣지 케이스 테스트 (Q1=(a) 모드, 2026-04-24).
+// 회차 ID + types만 보내는 신규 시그니처. AbortError/TimeoutError 사용자 친화 메시지 변환 + 120초 타임아웃.
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 
-describe("api.analyzeEpisode", () => {
+describe("api.analyzeEpisode (Q1=(a) 에피소드 ID 모드)", () => {
   beforeEach(() => {
     vi.resetModules()
   })
@@ -21,7 +21,7 @@ describe("api.analyzeEpisode", () => {
 
     const { api } = await import("./api")
     await expect(
-      api.analyzeEpisode("work-1", "a".repeat(50), ["consistency"]),
+      api.analyzeEpisode("ep-1", ["consistency"]),
     ).rejects.toThrow(/2분|자동 환불/)
   })
 
@@ -32,7 +32,7 @@ describe("api.analyzeEpisode", () => {
 
     const { api } = await import("./api")
     await expect(
-      api.analyzeEpisode("work-1", "a".repeat(50), ["consistency"]),
+      api.analyzeEpisode("ep-1", ["consistency"]),
     ).rejects.toThrow(/2분/)
   })
 
@@ -42,11 +42,11 @@ describe("api.analyzeEpisode", () => {
 
     const { api } = await import("./api")
     await expect(
-      api.analyzeEpisode("work-1", "a".repeat(50), ["consistency"]),
+      api.analyzeEpisode("ep-1", ["consistency"]),
     ).rejects.toThrow("분석 실패 — 인덱싱이 완료되지 않았습니다")
   })
 
-  it("episodeId 미지정 시 body에서 episodeId 키가 자연스럽게 제외된다", async () => {
+  it("body에 episodeId + types만 포함된다 (workId/newEpisodeText는 보내지 않음)", async () => {
     const mockFetch = vi.fn().mockResolvedValue(
       new Response(JSON.stringify([]), {
         status: 200,
@@ -56,16 +56,18 @@ describe("api.analyzeEpisode", () => {
     vi.stubGlobal("fetch", mockFetch)
 
     const { api } = await import("./api")
-    await api.analyzeEpisode("work-1", "a".repeat(50), ["consistency"])
+    await api.analyzeEpisode("episode-42", ["consistency", "tone"])
 
     expect(mockFetch).toHaveBeenCalled()
     const [, init] = mockFetch.mock.calls[0]
     const parsed = JSON.parse(init.body)
-    expect(parsed).toMatchObject({ workId: "work-1", types: ["consistency"] })
-    expect(parsed).not.toHaveProperty("episodeId")
+    expect(parsed.episodeId).toBe("episode-42")
+    expect(parsed.types).toEqual(["consistency", "tone"])
+    expect(parsed).not.toHaveProperty("workId")
+    expect(parsed).not.toHaveProperty("newEpisodeText")
   })
 
-  it("episodeId 지정 시 body에 포함된다 (재분석 경로 — self-reference RAG 제외용)", async () => {
+  it("types 미지정 시 body에서 types 키가 자연스럽게 제외된다 (서버 기본값 위임)", async () => {
     const mockFetch = vi.fn().mockResolvedValue(
       new Response(JSON.stringify([]), {
         status: 200,
@@ -75,17 +77,12 @@ describe("api.analyzeEpisode", () => {
     vi.stubGlobal("fetch", mockFetch)
 
     const { api } = await import("./api")
-    await api.analyzeEpisode(
-      "work-1",
-      "a".repeat(50),
-      ["consistency", "tone"],
-      "episode-42",
-    )
+    await api.analyzeEpisode("ep-1")
 
     const [, init] = mockFetch.mock.calls[0]
     const parsed = JSON.parse(init.body)
-    expect(parsed.episodeId).toBe("episode-42")
-    expect(parsed.types).toEqual(["consistency", "tone"])
+    expect(parsed.episodeId).toBe("ep-1")
+    expect(parsed).not.toHaveProperty("types")
   })
 
   it("AbortSignal이 설정되어 있어 120초 타임아웃이 동작한다", async () => {
@@ -98,7 +95,7 @@ describe("api.analyzeEpisode", () => {
     vi.stubGlobal("fetch", mockFetch)
 
     const { api } = await import("./api")
-    await api.analyzeEpisode("work-1", "a".repeat(50), ["consistency"])
+    await api.analyzeEpisode("ep-1", ["consistency"])
 
     const [, init] = mockFetch.mock.calls[0]
     expect(init.signal).toBeDefined()

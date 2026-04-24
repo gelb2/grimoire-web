@@ -1,5 +1,30 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.31.0] - 2026-04-24
+
+### F4 — AI 일관성 분석 Q1=(a) 에피소드 ID 모드 (벤치마크 정합)
+
+#### Changed
+- `dashboard/analysis/page.tsx` 전면 재작성 — Claude Projects 벤치마크 정합 (`docs/ai-analysis-spec.md §6-1`)
+  - **textarea(본문 복붙) 완전 제거** — 작가가 회차 업로드 시점에 본문 제공 완료 → 분석 화면 재입력 강제는 벤치마크 위반
+  - 작품 + 회차 선택만으로 분석 (선택 회차 본문은 서버가 DB에서 로드)
+  - 첫 회차 자동 선택, 작품 변경 시 이전 결과 비움
+  - 회차 0개 시 안내 + 대시보드 업로드 링크
+  - "재분석할 기존 에피소드 (선택 사항)" 별도 드롭다운 제거 — self-reference 청크 제외는 RAG 내부 사정이라 작가에게 노출 불필요 (벤치마크 정합)
+- `lib/api.ts` `analyzeEpisode(episodeId, types?)` — 인자 4개 → 2개로 축소. body는 `{ episodeId, types }`만 전송 (workId/newEpisodeText 제거)
+
+#### Docs Sync
+- `docs/ai-analysis-spec.md` — 서버 정본에서 복사 (§5-1 흐름 0~6단계)
+- `docs/api-contract.md` — 서버 정본에서 복사 (크레딧 3 정정 + 새 body)
+
+#### Test Updates
+- `lib/api.test.ts` — 신규 시그니처 6 케이스 (Abort/Timeout 메시지 변환, body 형식, types 미지정, 120s 타임아웃)
+- 119 vitest 전부 통과
+
+#### Rationale
+- 사용자 피드백: "Claude 채팅 프로젝트 개념"이 정본 벤치마크. 작가가 자기 원고를 다시 복붙해야 하는 UX는 벤치마크 위반 + 본질 가치(이미 올린 회차들 사이 자동 일관성 감사) 작동 불가
+- `research/FEATURE_AI_ANALYSIS.md §1` + `ai-analysis-spec.md §6-1` 정본 명시 — 분석 화면도 채팅처럼 작가는 회차 업로드만으로 끝나야 함
+
 ## [0.30.0] - 2026-04-19
 
 ### F1/F2/F3 — 크레딧 가격 인상 + 분석 3 크레딧 안내

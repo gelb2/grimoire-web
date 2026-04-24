@@ -399,25 +399,28 @@ class ApiClient extends BaseApiClient {
     })
   }
 
+  /**
+   * AI 일관성 분석 (Q1=(a) 모드, 2026-04-24)
+   *
+   * Claude Projects 벤치마크(`docs/ai-analysis-spec.md §6-1`) 정합:
+   * - 작가는 회차 업로드 시점에 본문 제공 완료 → 분석 화면에서 본문 재입력 금지
+   * - 회차 ID만 보내면 서버가 DB의 Episode.rawMd로 분석 + 자기 자신 청크 자동 제외
+   */
   async analyzeEpisode(
-    workId: string,
-    newEpisodeText: string,
+    episodeId: string,
     types?: ('consistency' | 'tone' | 'character')[],
-    // 기존 인덱싱된 에피소드를 재분석할 때 전달. 해당 episodeId의 청크가
-    // RAG 컨텍스트에서 제외되어 self-reference 환각이 방지됨.
-    episodeId?: string,
   ) {
     try {
       return await this.fetch<AnalysisResult[]>('/analysis/check', {
         method: 'POST',
-        body: JSON.stringify({ workId, newEpisodeText, types, episodeId }),
+        body: JSON.stringify({ episodeId, types }),
         // 서버측은 RAG 검색 + Claude Sonnet 4 3종 병렬 호출 + 환각 검증을 수행.
         // cold start까지 겹치면 60s는 초과할 수 있어 120s로 상향.
         signal: AbortSignal.timeout(120000),
       })
     } catch (err) {
       if (err instanceof Error && (err.name === 'AbortError' || err.name === 'TimeoutError')) {
-        throw new Error('분석 시간이 초과되었습니다 (최대 2분). 텍스트 길이를 줄이거나 분석 항목 수를 줄여 다시 시도해주세요. 서버가 내부적으로 실패로 확정한 경우 크레딧이 자동 환불되지만, 서버 처리 자체는 이미 성공해서 결과만 네트워크상에서 누락된 경우는 차감이 유지될 수 있어 크레딧 페이지에서 잔액을 확인해주세요.')
+        throw new Error('분석 시간이 초과되었습니다 (최대 2분). 분석 항목 수를 줄여 다시 시도해주세요. 서버가 내부적으로 실패로 확정한 경우 크레딧이 자동 환불되지만, 서버 처리 자체는 이미 성공해서 결과만 네트워크상에서 누락된 경우는 차감이 유지될 수 있어 크레딧 페이지에서 잔액을 확인해주세요.')
       }
       throw err
     }
