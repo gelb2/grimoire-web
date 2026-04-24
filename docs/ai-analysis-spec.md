@@ -46,6 +46,29 @@ novel_chunks (pgvector 테이블 — Prisma 외부)
 └── embedding: vector(1536)
 ```
 
+### 3-1-2. 분석 리포트 (Prisma, 2026-04-24 F4)
+
+`AnalysisReport` — 작가가 실행한 분석 결과를 영구 저장. 대시보드 히스토리에서 재조회.
+
+```prisma
+model AnalysisReport {
+  id             String   @id @default(uuid())
+  authorId       String   @map("author_id")
+  workId         String   @map("work_id")
+  episodeId      String   @map("episode_id")
+  workTitle      String   @map("work_title")        // 스냅샷 — 작품 삭제 후에도 식별 가능
+  episodeTitle   String   @map("episode_title")     // 스냅샷
+  types          String[]                            // consistency/tone/character 조합
+  results        Json                                // AnalysisResult[] 전체
+  creditsCharged Int      @default(3) @map("credits_charged")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([authorId, createdAt(sort: Desc)])
+  @@index([episodeId])
+  @@map("analysis_reports")
+}
+```
+
 ### 3-2. 채팅용 (구현 예정)
 
 ```prisma
@@ -118,20 +141,36 @@ semantic_cache (pgvector 테이블)
 
 ## 5. AI 작품 분석 (레이어 2)
 
-### 5-1. 흐름
+### 5-1. 흐름 (Q1=(a) 모드, 2026-04-24)
+
+> Claude Projects 벤치마크(§6-1) 정합 — 분석 화면에서 본문 재입력 금지.
+> 작가는 회차 업로드만으로 분석 가능 (서버가 DB의 Episode.rawMd 사용).
 
 ```
 POST /analysis/index { episodeId, workId, rawText }
   → 청킹 → 임베딩(배치) → pgvector 저장
   → { chunkCount, tokensUsed }
+  ※ 회차 업로드 시 자동 호출 (작가 직접 호출 불필요)
 
-POST /analysis/check { workId, newEpisodeText, types? }
-  → 새 텍스트 첫 2000자 임베딩 → pgvector 유사 검색(top 20)
-  → 상위 15 청크를 맥락으로 Claude 분석 (3유형)
+POST /analysis/check { episodeId, types? }
+  → 0. Episode 로드 + 소유권 검증 (Episode.workId → Work.authorId === JWT sub)
+  → 1. 3 크레딧 차감 (F2 2026-04-19, 실패 시 BadRequest)
+  → 2. Episode.rawMd 첫 2000자 임베딩 → pgvector 유사 검색(top 30)
+  → 3. 자기 자신 청크 자동 제외 (self-reference 환각 방지) → top 15 사용
+  → 4. Claude Sonnet 4.6 분석 (3유형 병렬, AbortSignal 전파)
+  → 5. 환각 검증 (issues 인용이 원문에 존재하는지 후처리)
+  → 6. 실패(AbortError 포함) 시 전액 환불
+  → 7. 성공 시 AnalysisReport DB에 저장 (히스토리, 저장 실패해도 결과 반환)
   → [{ type, score, summary, issues, suggestions }]
 
 GET /analysis/status/:workId
   → { chunkCount, isIndexed }
+
+GET /analysis/reports
+  → 본인 분석 히스토리 (최신순 50건, scores 요약만)
+
+GET /analysis/reports/:id
+  → 분석 리포트 단건 상세 (results 포함, 소유권 검증)
 ```
 
 ### 5-2. 분석 유형

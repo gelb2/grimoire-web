@@ -225,8 +225,10 @@
 | Method | Path | 용도 | 인증 |
 |--------|------|------|------|
 | POST | `/api/analysis/index` | 작품 벡터 인덱싱 | JWT |
-| POST | `/api/analysis/check` | 설정 일관성 검사 | JWT, 크레딧 1 |
+| POST | `/api/analysis/check` | 업로드된 회차의 설정 일관성 검사 (Q1=(a) 모드) | JWT, 크레딧 3 |
 | GET | `/api/analysis/status/:workId` | 인덱싱 상태 조회 | JWT |
+| GET | `/api/analysis/reports` | 분석 히스토리 목록 (본인, 최신순 50건) | JWT |
+| GET | `/api/analysis/reports/:id` | 분석 리포트 단건 상세 (소유권 검증) | JWT |
 
 ---
 
@@ -725,16 +727,51 @@ Response 200: { "indexed": true }
 
 ### POST /api/analysis/check
 
+업로드된 에피소드를 같은 작품의 다른 회차와 비교해 설정·문체·캐릭터 일관성을 분석한다.
+Claude Projects 벤치마크(`docs/ai-analysis-spec.md §6-1`) 정합 — 본문 재입력(복붙) 금지, 회차 ID만 받는다.
+서버가 DB의 `Episode.rawMd`로 분석 + 자기 자신 청크 자동 RAG 제외.
+
+소유권 검증: Episode → workId → Work.authorId === JWT sub (IDOR 방지).
+크레딧: 분석 1회 = 3 크레딧 (F2 2026-04-19 확정). 실패 시 자동 환불.
+
 ```
 Headers: Authorization: Bearer <token>
 Request:
 {
-  "workId": "uuid",
-  "newEpisodeText": "새 에피소드 본문...",
-  "types": ["consistency", "tone", "character"]
+  "episodeId": "uuid",
+  "types": ["consistency", "tone", "character"]   // 선택, 미지정 시 3종 전부
 }
 
-Response 200: AnalysisResult
+Response 200: AnalysisResult[]
+Error 400: 'episodeId가 필요합니다' / '에피소드를 찾을 수 없습니다' / '본인 작품의 에피소드만 분석할 수 있습니다' / 'AI 분석은 3 크레딧이 필요합니다'
+```
+
+### GET /api/analysis/reports
+
+본인이 실행한 분석의 히스토리(최신순). results 미포함, 점수 요약만.
+
+```
+Headers: Authorization: Bearer <token>
+Response 200: AnalysisReportSummary[]
+  [{
+    id, workId, episodeId, workTitle, episodeTitle,
+    types, scores: [{ type, score }], creditsCharged, createdAt
+  }, ...]
+```
+
+### GET /api/analysis/reports/:id
+
+분석 리포트 단건 상세. 소유권 검증(타인 리포트는 403).
+
+```
+Headers: Authorization: Bearer <token>
+Response 200: AnalysisReport
+  {
+    id, authorId, workId, episodeId, workTitle, episodeTitle,
+    types, results: AnalysisResult[], creditsCharged, createdAt
+  }
+Error 404: 리포트 없음
+Error 403: 본인의 분석 리포트만 조회 가능
 ```
 
 ### POST /api/chat/sessions

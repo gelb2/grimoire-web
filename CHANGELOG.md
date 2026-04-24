@@ -1,5 +1,81 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.32.1] - 2026-04-24
+
+### Hotfix — AI 분석을 fire-and-forget으로 전환 (사용자 UX 의도 정합)
+
+#### Changed
+- `dashboard/analysis/page.tsx`:
+  - `runAnalyze`를 `await` 제거 — 요청은 시작하고 백그라운드에서 진행 (브라우저가 SPA 내내 요청 유지)
+  - "분석 진행 중 locked" Alert 제거 → "분석을 시작했어요" 안내 Alert로 교체
+  - 안내 Alert 확인 누르면 `router.push('/dashboard')`로 대시보드 복귀
+  - 분석 완료/실패는 백그라운드에서 toast로 알림 + `refreshUser()` 호출 (AuthProvider 공유 상태라 다른 화면에서도 크레딧 갱신됨)
+  - state명 `analyzing` → `submitting` (요청 송신 중 의미로 명확화)
+
+#### Rationale
+- 사용자 의도 재확인: Alert는 "**나가지 말고 기다리세요**"가 아니라 "**나가서 다른 작업 하셔도 됩니다**" 안내용
+- AI 분석이 1~2분 걸리는 동안 사용자를 화면에 묶어두는 것은 UX 낭비. 백그라운드 실행 + 완료 시 분석 기록에 자동 저장 + toast 알림으로 충분
+- 결과 자체는 0.32.0에서 도입한 AnalysisReport DB 영구 저장 + `/dashboard/analysis/history` 화면으로 언제든 조회 가능
+
+## [0.32.0] - 2026-04-24
+
+### F4 보강 — Alert 컴포넌트 + 분석 기록 화면 + 원고 관리(덮어쓰기·삭제)
+
+#### Added
+- `src/components/Alert.tsx` — 그리모어 톤앤매너 기본 모달 얼럿 (default/info/warning/success tone, locked 모드, cancel/confirm 개별 숨김 지원)
+- `src/app/dashboard/analysis/_components/AnalysisResultCards.tsx` — 결과 카드 3종 렌더러 (분석 페이지와 히스토리 모달 공용)
+- `src/app/dashboard/analysis/history/page.tsx` — 분석 기록 리스트 + 상세 모달 (서버 `GET /analysis/reports`, `GET /analysis/reports/:id`)
+- `src/app/dashboard/episodes/page.tsx` — 원고 관리 화면 (작품 선택 → 회차 리스트 → 파일 덮어쓰기 / 삭제). 본문 복붙 UI 없음 (서비스 원칙 준수)
+- `api.getAnalysisReports()`, `api.getAnalysisReport(id)`, `api.reuploadEpisode(id, data)` — 신규 API 메서드
+- `AnalysisReport`, `AnalysisReportSummary` 타입 (`src/types/api.ts`)
+
+#### Changed
+- `dashboard/analysis/page.tsx` — 재작성:
+  - 결과를 이 화면에서 직접 렌더링하지 않음 → 분석 완료 시 `/dashboard/analysis/history`로 라우팅
+  - 분석 시작 전 `Alert` 확인 모달 (소요 시간 + 크레딧 차감 안내)
+  - 분석 중 `Alert locked` 모달로 진행 상태 고정 표시
+  - **버그 수정**: useEffect 의존성을 `user` → `user.slug` (primitive)로 변경 → `refreshUser()`로 user 참조만 바뀌어도 재로딩 루프 차단. 결과 사라짐 증상 근본 원인
+- `dashboard/_components/QuickActions.tsx` — "원고 관리", "분석 기록" 항목 추가
+- `dashboard/analysis/page.tsx` 상단에 "분석 기록 보기 →" 링크 추가
+
+#### Tests
+- 119 vitest 전부 통과 (기존)
+
+#### Docs Sync
+- `docs/ai-analysis-spec.md`, `docs/api-contract.md`, `docs/data-model.md` — 서버 정본에서 복사
+
+#### Rationale
+- 사용자 버그 3건 근본 원인 + 해결:
+  1. 분석 후 결과가 사라짐 → `user` 의존 useEffect가 `refreshUser` 호출 시 재실행되어 `setResults([])` 트리거. 해결: 결과 자체를 DB 저장 + 히스토리 화면 분리, 의존성을 slug로 제한
+  2. 두 번째 분석 동작 안함 → 결과 렌더링 상태가 꼬여있던 것으로 추정. 결과 UI 제거 + 완료 시 라우팅으로 상태 격리
+  3. 다른 작품 분석 5분 무응답 → 프론트 AbortSignal.timeout(120s)은 그대로. `Alert locked` 진행 모달로 사용자가 "무응답"으로 오인하지 않도록 시각화
+- 원고 수정/삭제 신규 기능 — 서버 `/episodes/:id/reupload`, `DELETE /episodes/:id`는 이미 존재했으나 웹 UI 미연결이었음. 기존 서비스 원칙(복붙 금지) 준수 위해 파일 업로드 경로로만 구현
+
+## [0.31.0] - 2026-04-24
+
+### F4 — AI 일관성 분석 Q1=(a) 에피소드 ID 모드 (벤치마크 정합)
+
+#### Changed
+- `dashboard/analysis/page.tsx` 전면 재작성 — Claude Projects 벤치마크 정합 (`docs/ai-analysis-spec.md §6-1`)
+  - **textarea(본문 복붙) 완전 제거** — 작가가 회차 업로드 시점에 본문 제공 완료 → 분석 화면 재입력 강제는 벤치마크 위반
+  - 작품 + 회차 선택만으로 분석 (선택 회차 본문은 서버가 DB에서 로드)
+  - 첫 회차 자동 선택, 작품 변경 시 이전 결과 비움
+  - 회차 0개 시 안내 + 대시보드 업로드 링크
+  - "재분석할 기존 에피소드 (선택 사항)" 별도 드롭다운 제거 — self-reference 청크 제외는 RAG 내부 사정이라 작가에게 노출 불필요 (벤치마크 정합)
+- `lib/api.ts` `analyzeEpisode(episodeId, types?)` — 인자 4개 → 2개로 축소. body는 `{ episodeId, types }`만 전송 (workId/newEpisodeText 제거)
+
+#### Docs Sync
+- `docs/ai-analysis-spec.md` — 서버 정본에서 복사 (§5-1 흐름 0~6단계)
+- `docs/api-contract.md` — 서버 정본에서 복사 (크레딧 3 정정 + 새 body)
+
+#### Test Updates
+- `lib/api.test.ts` — 신규 시그니처 6 케이스 (Abort/Timeout 메시지 변환, body 형식, types 미지정, 120s 타임아웃)
+- 119 vitest 전부 통과
+
+#### Rationale
+- 사용자 피드백: "Claude 채팅 프로젝트 개념"이 정본 벤치마크. 작가가 자기 원고를 다시 복붙해야 하는 UX는 벤치마크 위반 + 본질 가치(이미 올린 회차들 사이 자동 일관성 감사) 작동 불가
+- `research/FEATURE_AI_ANALYSIS.md §1` + `ai-analysis-spec.md §6-1` 정본 명시 — 분석 화면도 채팅처럼 작가는 회차 업로드만으로 끝나야 함
+
 ## [0.30.0] - 2026-04-19
 
 ### F1/F2/F3 — 크레딧 가격 인상 + 분석 3 크레딧 안내

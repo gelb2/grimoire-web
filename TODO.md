@@ -8,6 +8,19 @@
 
 - [ ] AI 채팅 스트리밍 SSE
 
+### Claude Code harness 강화 (2026-04-19 도입 필요)
+
+> 상세 마스터 목록: `../grimoire-server/TODO.md` "Claude Code harness 강화" 섹션 참조.
+
+**web 단독 P0**
+- [ ] `grimoire-web/.githooks/pre-push` 설치 — tsc + vitest + build + docs 동기화 검증 (server에는 있으나 web 없음)
+- [ ] `src/app/login/page.tsx`의 "테스트 계정으로 채우기" 하드코딩 이메일 교체 — 현재 `test@grimoire.app`이나 dev DB에 없음. 실측된 dev 계정으로 변경 또는 비활성화
+
+**web 공유 참여 (루트 `.claude/` 작업 시 함께)**
+- [ ] PostToolUse hook에서 web 파일 `.tsx/.ts` 수정 시 `npx tsc --noEmit` 자동 트리거
+- [ ] Skill `claude-in-chrome-recovery` — Chrome MCP extension 미연결 시 3회 재시도 규정
+- [ ] Slash command `/dev-login-smoke` — db-sync --mask-pii 회귀 감지
+
 ## 중기
 
 - [ ] 커스텀 테마 에디터 고도화 (Color Picker 개별 필드 개선)

@@ -235,7 +235,25 @@ Report (콘텐츠 신고 큐)
 SystemSetting (동적 설정값)
 AccessLog (보안 접근 로그)
 AdminAuditLog (관리자 감사 로그)
+AnalysisReport (AI 일관성 분석 리포트, 2026-04-24 F4)
 ```
+
+### analysis_reports
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 리포트 식별자 |
+| author_id | text | not null | 분석 실행자 (소유권) |
+| work_id | text | not null | 분석 대상 작품 |
+| episode_id | text | not null | 분석 대상 에피소드 |
+| work_title | text | not null | 작품 제목 스냅샷 (작품 삭제 후에도 식별 가능) |
+| episode_title | text | not null | 에피소드 제목 스냅샷 |
+| types | text[] | not null | 실행된 분석 타입 (consistency/tone/character 조합) |
+| results | jsonb | not null | AnalysisResult[] 전체 (점수/요약/이슈/제안) |
+| credits_charged | integer | default 3 | 실제 차감된 크레딧 |
+| created_at | timestamptz | default now | 실행 시각 |
+
+인덱스: `(author_id, created_at DESC)`, `(episode_id)`
 
 ---
 

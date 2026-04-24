@@ -1,16 +1,17 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '@/features/auth'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import { PlatformNav } from '@/components/PlatformNav'
-import type { AnalysisResult, IndexStatus } from '@/types/api'
+import { Alert } from '@/components/Alert'
+import type { IndexStatus } from '@/types/api'
 
 interface Work { id: string; slug: string; title: string }
-interface EpisodeLite { id: string; slug: string; title: string; orderNum?: number }
+interface EpisodeLite { id: string; slug: string; title: string; orderNum?: number; type?: string }
 
 const TYPE_LABELS: Record<string, string> = {
   consistency: '설정 일관성',
@@ -18,41 +19,51 @@ const TYPE_LABELS: Record<string, string> = {
   character: '캐릭터 분석',
 }
 
-function ScoreBadge({ score }: { score: number }) {
-  const color = score >= 80 ? 'text-green-700 bg-green-50' : score >= 60 ? 'text-yellow-700 bg-yellow-50' : 'text-red-700 bg-red-50'
-  return <span className={`px-2 py-0.5 rounded text-xs font-bold ${color}`}>{score}점</span>
-}
-
+/**
+ * AI 일관성 분석 화면 — Q1=(a) 모드 + 결과 히스토리 분리 (2026-04-24 F4)
+ *
+ * 원칙 (docs/ai-analysis-spec.md §6-1 Claude Projects 벤치마크):
+ *  - 본문 복붙/타이핑 금지 → 작품 + 회차 선택만으로 분석 실행
+ *  - 결과는 DB에 저장되며 이 화면에서는 직접 렌더링하지 않음 → 히스토리 화면에서 조회
+ *  - 분석 시작 전 기본 Alert 컴포넌트로 소요 시간 안내
+ *  - refreshUser 부작용(useEffect 재실행)을 막기 위해 user 의존성 대신 user.slug/id 고정
+ */
 export default function AnalysisPage() {
   const { user, loading, refreshUser } = useAuth()
   const router = useRouter()
+  const userSlug = user?.slug  // refreshUser 후에도 동일하면 effect 재실행 방지
+
   const [works, setWorks] = useState<Work[]>([])
   const [selectedWorkId, setSelectedWorkId] = useState('')
   const [selectedWorkSlug, setSelectedWorkSlug] = useState('')
   const [episodes, setEpisodes] = useState<EpisodeLite[]>([])
-  // 기존 인덱싱된 에피소드의 개정판을 분석하는 경우, 선택 시 해당 episodeId의 청크가
-  // RAG 컨텍스트에서 제외되어 self-reference 환각을 방지한다 (선택 사항).
   const [selectedEpisodeId, setSelectedEpisodeId] = useState('')
   const [indexStatus, setIndexStatus] = useState<IndexStatus | null>(null)
-  const [newText, setNewText] = useState('')
-  const [analyzing, setAnalyzing] = useState(false)
-  const [results, setResults] = useState<AnalysisResult[]>([])
+  const [submitting, setSubmitting] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  // "분석 시작됐어요" 안내 Alert — 확인 누르면 대시보드로 라우팅.
+  // 분석 자체는 백그라운드로 계속 진행되고, 완료 시 DB에 저장되어 분석 기록에서 열람.
+  const [startedOpen, setStartedOpen] = useState(false)
   const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set(['consistency', 'tone', 'character']))
 
   useEffect(() => {
     if (!loading && !user) router.push('/login')
-    if (user) {
-      api.getAuthorSpace<{ works: Work[] }>(user.slug)
-        .then(data => {
-          setWorks(data.works || [])
-          if (data.works?.length > 0) {
-            setSelectedWorkId(data.works[0].id)
-            setSelectedWorkSlug(data.works[0].slug)
-          }
-        })
-        .catch(() => {})
-    }
-  }, [user, loading, router])
+  }, [loading, user, router])
+
+  // 작품 목록 — userSlug 기반 (refreshUser로 user 참조만 바뀌어도 재실행되지 않음)
+  useEffect(() => {
+    if (!userSlug) return
+    api.getAuthorSpace<{ works: Work[] }>(userSlug)
+      .then(data => {
+        const list = data.works ?? []
+        setWorks(list)
+        if (list.length > 0) {
+          setSelectedWorkId(prev => prev || list[0].id)
+          setSelectedWorkSlug(prev => prev || list[0].slug)
+        }
+      })
+      .catch(() => {})
+  }, [userSlug])
 
   useEffect(() => {
     if (!selectedWorkId) return
@@ -61,46 +72,70 @@ export default function AnalysisPage() {
       .catch(() => setIndexStatus(null))
   }, [selectedWorkId])
 
-  // 작품 바뀌면 해당 작품의 에피소드 목록 로드 (재분석 에피소드 선택용)
   useEffect(() => {
-    if (!user || !selectedWorkSlug) {
+    if (!userSlug || !selectedWorkSlug) {
       setEpisodes([])
       setSelectedEpisodeId('')
       return
     }
-    api.getWork<{ episodes?: EpisodeLite[]; work?: { episodes?: EpisodeLite[] } }>(user.slug, selectedWorkSlug)
+    api.getWork<{ episodes?: EpisodeLite[]; work?: { episodes?: EpisodeLite[] } }>(userSlug, selectedWorkSlug)
       .then(data => {
         const eps = data.episodes ?? data.work?.episodes ?? []
         setEpisodes(eps)
-        setSelectedEpisodeId('')
+        setSelectedEpisodeId(eps[0]?.id ?? '')
       })
       .catch(() => setEpisodes([]))
-  }, [user, selectedWorkSlug])
+  }, [userSlug, selectedWorkSlug])
 
-  const handleAnalyze = async () => {
-    if (!selectedWorkId || !newText.trim() || analyzing) return
-    if (newText.length < 10) { toast.error('텍스트는 최소 10자 이상이어야 합니다'); return }
-    if (selectedTypes.size === 0) { toast.error('분석 항목을 최소 1개 이상 선택해주세요'); return }
-    setAnalyzing(true)
-    setResults([])
-    try {
-      const types = Array.from(selectedTypes) as ('consistency' | 'tone' | 'character')[]
-      const data = await api.analyzeEpisode(
-        selectedWorkId,
-        newText,
-        types,
-        selectedEpisodeId || undefined,
-      )
-      setResults(data)
-      // 분석 성공 시 크레딧 잔액 UI 갱신 (3 크레딧 차감 반영)
-      refreshUser().catch(() => {})
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : '분석에 실패했습니다')
-      // 실패 시에도 서버가 자동 환불했을 수 있으므로 재조회로 동기화
-      refreshUser().catch(() => {})
-    } finally {
-      setAnalyzing(false)
+  const selectedEpisode = useMemo(
+    () => episodes.find(ep => ep.id === selectedEpisodeId),
+    [episodes, selectedEpisodeId],
+  )
+
+  /**
+   * Fire-and-forget 분석 실행.
+   * - 요청은 보내고 이 화면에서 await 하지 않음 → 사용자는 대시보드/다른 화면에서 작업 가능
+   * - 요청 자체는 브라우저가 유지 (SPA 이동 내내 살아있음). 서버가 끝나면 AnalysisReport DB에 저장됨
+   * - 결과 확인: 사용자가 `/dashboard/analysis/history`에서 열람
+   * - refreshUser는 최종 응답 시 재호출해 크레딧 UI 갱신 (성공·실패 양쪽에서)
+   */
+  const runAnalyze = () => {
+    if (!selectedEpisodeId || submitting) return
+    if (selectedTypes.size === 0) {
+      toast.error('분석 항목을 최소 1개 이상 선택해주세요')
+      return
     }
+    const types = Array.from(selectedTypes) as ('consistency' | 'tone' | 'character')[]
+    setSubmitting(true)
+
+    // 백그라운드 실행 — 화면을 벗어나도 브라우저가 요청 유지
+    api.analyzeEpisode(selectedEpisodeId, types)
+      .then(() => {
+        // 완료 시 크레딧 UI 동기화 (사용자가 다른 화면에 있어도 AuthProvider user 상태는 공유됨)
+        refreshUser().catch(() => {})
+        toast.success('AI 분석이 완료됐어요. 분석 기록에서 확인하세요.')
+      })
+      .catch((err: unknown) => {
+        refreshUser().catch(() => {})
+        // 실패는 toast로만 — 이미 사용자는 다른 작업 중일 수 있으므로 화면 전환 강제 X
+        toast.error(err instanceof Error ? err.message : 'AI 분석에 실패했어요. 크레딧 잔액을 확인해주세요.')
+      })
+
+    // 사용자에게 즉시 "시작됐다" 안내 (Alert에서 확인 누르면 대시보드로 이동)
+    setConfirmOpen(false)
+    setStartedOpen(true)
+  }
+
+  const handleStart = () => {
+    if (!selectedEpisodeId) {
+      toast.error('분석할 회차를 선택하세요')
+      return
+    }
+    if (selectedTypes.size === 0) {
+      toast.error('분석 항목을 최소 1개 이상 선택해주세요')
+      return
+    }
+    setConfirmOpen(true)
   }
 
   const toggleType = (type: string) => {
@@ -114,14 +149,35 @@ export default function AnalysisPage() {
 
   if (loading || !user) return null
 
+  const formatEpisodeOption = (ep: EpisodeLite) => {
+    if (ep.orderNum != null && ep.type === 'episode') return `${String(ep.orderNum).padStart(2, '0')}화 · ${ep.title}`
+    if (ep.type === 'preface') return `일러두기 · ${ep.title}`
+    if (ep.type === 'afterword') return `후기 · ${ep.title}`
+    if (ep.type === 'bonus') return `번외 · ${ep.title}`
+    return ep.title
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <PlatformNav />
 
       <main className="max-w-3xl mx-auto px-6 py-8">
         <Link href="/dashboard" className="text-sm text-neutral-400 hover:text-neutral-800 transition mb-6 inline-block">&larr; 대시보드</Link>
-        <h1 className="text-3xl font-black text-black mb-2">AI 일관성 분석</h1>
-        <p className="text-sm text-neutral-500 mb-8">새 에피소드를 기존 작품과 비교하여 설정, 문체, 캐릭터 일관성을 검증합니다.</p>
+
+        <div className="flex items-start justify-between gap-4 mb-2">
+          <h1 className="text-3xl font-black text-black">AI 일관성 분석</h1>
+          <Link
+            href="/dashboard/analysis/history"
+            className="text-sm font-medium border border-neutral-300 px-3 py-1.5 rounded-lg text-neutral-600 hover:border-black hover:text-black transition whitespace-nowrap"
+          >
+            분석 기록 보기 →
+          </Link>
+        </div>
+
+        <p className="text-sm text-neutral-500 mb-8">
+          이미 업로드한 회차를 선택하면 같은 작품의 다른 회차들과 비교하여 설정·문체·캐릭터 일관성을 검증합니다.
+          본문 복붙 없이 작품 → 회차 선택만으로 분석합니다. 완료 후 결과는 <span className="text-black font-semibold">분석 기록</span> 화면에서 언제든 다시 확인할 수 있어요.
+        </p>
 
         {/* 작품 선택 */}
         <div className="mb-6">
@@ -144,27 +200,30 @@ export default function AnalysisPage() {
           )}
         </div>
 
-        {/* 재분석할 기존 에피소드 (선택 사항) — 자기 자신 청크 제외 */}
-        {episodes.length > 0 && (
-          <div className="mb-6">
-            <label className="block text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-1">재분석할 기존 에피소드 (선택 사항)</label>
-            <select
-              value={selectedEpisodeId}
-              onChange={e => setSelectedEpisodeId(e.target.value)}
-              className="w-full px-4 py-3 bg-[#f5f5f5] border border-neutral-300 rounded-lg text-black focus:outline-none focus:border-black transition"
-            >
-              <option value="">선택 안 함 (완전히 새 에피소드)</option>
-              {episodes.map(ep => (
-                <option key={ep.id} value={ep.id}>
-                  {ep.orderNum != null ? `${String(ep.orderNum).padStart(2, '0')}화 · ` : ''}{ep.title}
-                </option>
-              ))}
-            </select>
-            <p className="text-[11px] text-neutral-400 mt-1">
-              이미 인덱싱된 에피소드의 개정판을 분석하는 경우 선택하세요. 해당 에피소드 자기 자신 청크가 참고 컨텍스트에서 제외되어 분석이 정확해집니다.
+        {/* 분석할 회차 선택 */}
+        <div className="mb-6">
+          <label className="block text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-1">분석할 회차</label>
+          {episodes.length === 0 ? (
+            <p className="text-sm text-neutral-400">
+              이 작품에 회차가 없습니다. <Link href="/dashboard" className="text-[#e53e3e] underline">대시보드에서 회차를 먼저 업로드해주세요.</Link>
             </p>
-          </div>
-        )}
+          ) : (
+            <>
+              <select
+                value={selectedEpisodeId}
+                onChange={e => setSelectedEpisodeId(e.target.value)}
+                className="w-full px-4 py-3 bg-[#f5f5f5] border border-neutral-300 rounded-lg text-black focus:outline-none focus:border-black transition"
+              >
+                {episodes.map(ep => (
+                  <option key={ep.id} value={ep.id}>{formatEpisodeOption(ep)}</option>
+                ))}
+              </select>
+              <p className="text-[11px] text-neutral-400 mt-1">
+                선택한 회차의 본문이 같은 작품 내 다른 회차들과 비교됩니다. 자기 자신 청크는 RAG 컨텍스트에서 자동 제외됩니다.
+              </p>
+            </>
+          )}
+        </div>
 
         {/* 인덱싱 상태 */}
         {indexStatus && (
@@ -173,7 +232,7 @@ export default function AnalysisPage() {
               인덱싱 상태: {indexStatus.isIndexed ? (
                 <span className="text-green-700 font-medium">완료 ({indexStatus.chunkCount}개 청크)</span>
               ) : (
-                <span className="text-neutral-500">미인덱싱 — 기존 에피소드를 업로드하면 자동 인덱싱됩니다</span>
+                <span className="text-neutral-500">미인덱싱 — 회차 업로드 시 자동 인덱싱됩니다. 회차가 1개뿐이거나 인덱싱 진행 중이면 비교할 다른 회차가 없을 수 있습니다.</span>
               )}
             </p>
           </div>
@@ -195,74 +254,57 @@ export default function AnalysisPage() {
           </div>
         </div>
 
-        {/* 텍스트 입력 */}
-        <div className="mb-6">
-          <label className="block text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-1">새 에피소드 텍스트</label>
-          <textarea
-            value={newText}
-            onChange={e => setNewText(e.target.value)}
-            rows={10}
-            maxLength={50000}
-            placeholder="분석할 에피소드 텍스트를 붙여넣으세요 (10~50,000자)"
-            className="w-full px-4 py-3 bg-[#f5f5f5] border border-neutral-300 rounded-lg text-black text-sm leading-relaxed focus:outline-none focus:border-black transition resize-none"
-          />
-          <p className="text-neutral-400 text-xs mt-1 text-right">{newText.length.toLocaleString()}/50,000</p>
-        </div>
-
         <p className="text-xs text-neutral-500 mb-2">
           분석 1회당 <span className="text-[#e53e3e] font-semibold">3 크레딧</span>이 차감됩니다. 서버가 분석을 실패로 확정한 경우 자동 환불되며, 진행 중 중단이면 잔액을 크레딧 페이지에서 확인해주세요.
         </p>
         <button
-          onClick={handleAnalyze}
-          disabled={analyzing || !selectedWorkId || newText.length < 10}
+          onClick={handleStart}
+          disabled={submitting || !selectedEpisodeId}
           className="w-full py-3 bg-black hover:bg-neutral-800 disabled:bg-neutral-300 text-white font-medium rounded-lg transition mb-8"
         >
-          {analyzing ? '분석 중... (최대 2분 소요)' : '분석 시작 (3 크레딧)'}
+          {submitting ? '분석 요청 중...' : '분석 시작 (3 크레딧)'}
         </button>
-
-        {/* 결과 */}
-        {results.length > 0 && (
-          <div className="space-y-6">
-            <div className="flex items-baseline gap-4">
-              <h2 className="text-2xl font-black text-black">분석 결과</h2>
-              <div className="flex-1 h-px bg-black" />
-            </div>
-
-            {results.map(result => (
-              <div key={result.type} className="border border-neutral-200 rounded-lg p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-base font-bold text-black">{TYPE_LABELS[result.type]}</h3>
-                  <ScoreBadge score={result.score} />
-                </div>
-
-                <p className="text-sm text-neutral-700 mb-4">{result.summary}</p>
-
-                {result.issues.length > 0 && (
-                  <div className="mb-3">
-                    <p className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-1">발견된 문제</p>
-                    <ul className="space-y-1">
-                      {result.issues.map((issue, i) => (
-                        <li key={i} className="text-sm text-red-700 pl-3 border-l-2 border-red-200">{issue}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {result.suggestions.length > 0 && (
-                  <div>
-                    <p className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-1">제안</p>
-                    <ul className="space-y-1">
-                      {result.suggestions.map((suggestion, i) => (
-                        <li key={i} className="text-sm text-neutral-600 pl-3 border-l-2 border-neutral-200">{suggestion}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
       </main>
+
+      {/* 분석 시작 전 확인 Alert — 소요 시간 + 백그라운드 안내 */}
+      <Alert
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title="분석을 시작할까요?"
+        body={
+          <div className="space-y-2">
+            <p>
+              <span className="font-semibold text-black">{selectedEpisode ? formatEpisodeOption(selectedEpisode) : '선택한 회차'}</span> 를 같은 작품의 다른 회차들과 비교합니다.
+            </p>
+            <p>분석은 <span className="font-semibold text-black">최소 1~2분</span>, 경우에 따라 더 소요될 수 있어요. 시작 후에는 대시보드로 돌아가 <span className="font-semibold text-black">다른 작업을 이어가셔도 됩니다</span>. 완료되면 결과가 <span className="font-semibold text-black">분석 기록</span>에 저장돼요.</p>
+            <p className="text-[#e53e3e] font-semibold">지금 3 크레딧이 차감됩니다. (실패 시 자동 환불)</p>
+          </div>
+        }
+        cancelLabel="취소"
+        confirmLabel="확인하고 분석 시작"
+        onConfirm={runAnalyze}
+      />
+
+      {/* 분석 시작 안내 Alert — 확인 누르면 대시보드로 이동, 분석은 백그라운드에서 계속 */}
+      <Alert
+        open={startedOpen}
+        onClose={() => { setStartedOpen(false); router.push('/dashboard') }}
+        tone="info"
+        title="분석을 시작했어요"
+        body={
+          <div className="space-y-2">
+            <p>
+              선택하신 회차의 AI 일관성 분석이 백그라운드에서 실행 중입니다.
+              <span className="font-semibold text-black"> 최대 2분</span> 정도 걸릴 수 있어요.
+            </p>
+            <p>이 페이지를 떠나 다른 작업을 이어가셔도 괜찮습니다. 완료되면 결과가 <span className="font-semibold text-black">분석 기록</span>에 자동으로 저장돼요.</p>
+            <p className="text-neutral-500 text-xs">확인을 누르면 대시보드로 돌아갑니다.</p>
+          </div>
+        }
+        cancelLabel={null}
+        confirmLabel="확인 (대시보드로)"
+        onConfirm={() => { setStartedOpen(false); router.push('/dashboard') }}
+      />
     </div>
   )
 }
