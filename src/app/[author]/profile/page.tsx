@@ -40,7 +40,7 @@ export default function AuthorProfilePage() {
   const params = useParams()
   const authorSlug = params.author as string
   const theme = useTheme()
-  const { user } = useAuth()
+  const { user, refreshUser } = useAuth()
   // 본인 작가공간에서는 자기 자신을 구독/응원하는 버튼을 숨긴다
   const isOwner = user?.slug === authorSlug
 
@@ -199,6 +199,8 @@ export default function AuthorProfilePage() {
                             setGiftMsg(`${amount} 크레딧을 선물했습니다!`)
                             setShowGift(false)
                             setTimeout(() => setGiftMsg(''), 3000)
+                            // 본인 크레딧 차감분 네비바 동기화
+                            refreshUser().catch(() => {})
                           } catch { setGiftMsg('선물 실패 (로그인 필요)'); setTimeout(() => setGiftMsg(''), 3000) }
                         }}
                           className="px-3 py-1.5 bg-g-accent/20 text-g-accent text-sm rounded-lg hover:bg-g-accent/30 transition">
