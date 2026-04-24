@@ -39,9 +39,11 @@ export default function AnalysisPage() {
   const [episodes, setEpisodes] = useState<EpisodeLite[]>([])
   const [selectedEpisodeId, setSelectedEpisodeId] = useState('')
   const [indexStatus, setIndexStatus] = useState<IndexStatus | null>(null)
-  const [analyzing, setAnalyzing] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
-  const [progressOpen, setProgressOpen] = useState(false)
+  // "분석 시작됐어요" 안내 Alert — 확인 누르면 대시보드로 라우팅.
+  // 분석 자체는 백그라운드로 계속 진행되고, 완료 시 DB에 저장되어 분석 기록에서 열람.
+  const [startedOpen, setStartedOpen] = useState(false)
   const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set(['consistency', 'tone', 'character']))
 
   useEffect(() => {
@@ -90,28 +92,38 @@ export default function AnalysisPage() {
     [episodes, selectedEpisodeId],
   )
 
-  const runAnalyze = async () => {
-    if (!selectedEpisodeId || analyzing) return
+  /**
+   * Fire-and-forget 분석 실행.
+   * - 요청은 보내고 이 화면에서 await 하지 않음 → 사용자는 대시보드/다른 화면에서 작업 가능
+   * - 요청 자체는 브라우저가 유지 (SPA 이동 내내 살아있음). 서버가 끝나면 AnalysisReport DB에 저장됨
+   * - 결과 확인: 사용자가 `/dashboard/analysis/history`에서 열람
+   * - refreshUser는 최종 응답 시 재호출해 크레딧 UI 갱신 (성공·실패 양쪽에서)
+   */
+  const runAnalyze = () => {
+    if (!selectedEpisodeId || submitting) return
     if (selectedTypes.size === 0) {
       toast.error('분석 항목을 최소 1개 이상 선택해주세요')
       return
     }
-    setAnalyzing(true)
-    setProgressOpen(true)
-    try {
-      const types = Array.from(selectedTypes) as ('consistency' | 'tone' | 'character')[]
-      await api.analyzeEpisode(selectedEpisodeId, types)
-      refreshUser().catch(() => {})
-      setProgressOpen(false)
-      toast.success('분석이 완료됐어요. 결과를 히스토리에서 확인하세요.')
-      router.push('/dashboard/analysis/history')
-    } catch (err: unknown) {
-      setProgressOpen(false)
-      toast.error(err instanceof Error ? err.message : '분석에 실패했습니다')
-      refreshUser().catch(() => {})
-    } finally {
-      setAnalyzing(false)
-    }
+    const types = Array.from(selectedTypes) as ('consistency' | 'tone' | 'character')[]
+    setSubmitting(true)
+
+    // 백그라운드 실행 — 화면을 벗어나도 브라우저가 요청 유지
+    api.analyzeEpisode(selectedEpisodeId, types)
+      .then(() => {
+        // 완료 시 크레딧 UI 동기화 (사용자가 다른 화면에 있어도 AuthProvider user 상태는 공유됨)
+        refreshUser().catch(() => {})
+        toast.success('AI 분석이 완료됐어요. 분석 기록에서 확인하세요.')
+      })
+      .catch((err: unknown) => {
+        refreshUser().catch(() => {})
+        // 실패는 toast로만 — 이미 사용자는 다른 작업 중일 수 있으므로 화면 전환 강제 X
+        toast.error(err instanceof Error ? err.message : 'AI 분석에 실패했어요. 크레딧 잔액을 확인해주세요.')
+      })
+
+    // 사용자에게 즉시 "시작됐다" 안내 (Alert에서 확인 누르면 대시보드로 이동)
+    setConfirmOpen(false)
+    setStartedOpen(true)
   }
 
   const handleStart = () => {
@@ -247,14 +259,14 @@ export default function AnalysisPage() {
         </p>
         <button
           onClick={handleStart}
-          disabled={analyzing || !selectedEpisodeId}
+          disabled={submitting || !selectedEpisodeId}
           className="w-full py-3 bg-black hover:bg-neutral-800 disabled:bg-neutral-300 text-white font-medium rounded-lg transition mb-8"
         >
-          {analyzing ? '분석 중... (최대 2분 소요)' : '분석 시작 (3 크레딧)'}
+          {submitting ? '분석 요청 중...' : '분석 시작 (3 크레딧)'}
         </button>
       </main>
 
-      {/* 분석 시작 전 확인 Alert — 소요 시간 안내 */}
+      {/* 분석 시작 전 확인 Alert — 소요 시간 + 백그라운드 안내 */}
       <Alert
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
@@ -264,30 +276,34 @@ export default function AnalysisPage() {
             <p>
               <span className="font-semibold text-black">{selectedEpisode ? formatEpisodeOption(selectedEpisode) : '선택한 회차'}</span> 를 같은 작품의 다른 회차들과 비교합니다.
             </p>
-            <p>분석은 <span className="font-semibold text-black">최소 1~2분</span>, 경우에 따라 더 소요될 수 있어요. 완료 후 결과는 <span className="font-semibold text-black">분석 기록</span> 화면에서 언제든 다시 확인할 수 있습니다.</p>
+            <p>분석은 <span className="font-semibold text-black">최소 1~2분</span>, 경우에 따라 더 소요될 수 있어요. 시작 후에는 대시보드로 돌아가 <span className="font-semibold text-black">다른 작업을 이어가셔도 됩니다</span>. 완료되면 결과가 <span className="font-semibold text-black">분석 기록</span>에 저장돼요.</p>
             <p className="text-[#e53e3e] font-semibold">지금 3 크레딧이 차감됩니다. (실패 시 자동 환불)</p>
           </div>
         }
         cancelLabel="취소"
         confirmLabel="확인하고 분석 시작"
-        onConfirm={() => { setConfirmOpen(false); void runAnalyze() }}
+        onConfirm={runAnalyze}
       />
 
-      {/* 분석 진행 중 Alert — locked 되어 있어 임의로 닫을 수 없음 */}
+      {/* 분석 시작 안내 Alert — 확인 누르면 대시보드로 이동, 분석은 백그라운드에서 계속 */}
       <Alert
-        open={progressOpen}
-        onClose={() => {}}
-        locked
+        open={startedOpen}
+        onClose={() => { setStartedOpen(false); router.push('/dashboard') }}
         tone="info"
-        title="분석 진행 중이에요"
+        title="분석을 시작했어요"
         body={
           <div className="space-y-2">
-            <p>AI가 같은 작품 다른 회차들과 교차 검증하며 분석 중입니다. 이 창을 닫지 말고 <span className="font-semibold text-black">최대 2분</span>까지 기다려주세요.</p>
-            <p className="text-neutral-500">완료되면 자동으로 분석 기록 화면으로 이동합니다.</p>
+            <p>
+              선택하신 회차의 AI 일관성 분석이 백그라운드에서 실행 중입니다.
+              <span className="font-semibold text-black"> 최대 2분</span> 정도 걸릴 수 있어요.
+            </p>
+            <p>이 페이지를 떠나 다른 작업을 이어가셔도 괜찮습니다. 완료되면 결과가 <span className="font-semibold text-black">분석 기록</span>에 자동으로 저장돼요.</p>
+            <p className="text-neutral-500 text-xs">확인을 누르면 대시보드로 돌아갑니다.</p>
           </div>
         }
         cancelLabel={null}
-        confirmLabel={null}
+        confirmLabel="확인 (대시보드로)"
+        onConfirm={() => { setStartedOpen(false); router.push('/dashboard') }}
       />
     </div>
   )

@@ -1,5 +1,22 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.32.1] - 2026-04-24
+
+### Hotfix — AI 분석을 fire-and-forget으로 전환 (사용자 UX 의도 정합)
+
+#### Changed
+- `dashboard/analysis/page.tsx`:
+  - `runAnalyze`를 `await` 제거 — 요청은 시작하고 백그라운드에서 진행 (브라우저가 SPA 내내 요청 유지)
+  - "분석 진행 중 locked" Alert 제거 → "분석을 시작했어요" 안내 Alert로 교체
+  - 안내 Alert 확인 누르면 `router.push('/dashboard')`로 대시보드 복귀
+  - 분석 완료/실패는 백그라운드에서 toast로 알림 + `refreshUser()` 호출 (AuthProvider 공유 상태라 다른 화면에서도 크레딧 갱신됨)
+  - state명 `analyzing` → `submitting` (요청 송신 중 의미로 명확화)
+
+#### Rationale
+- 사용자 의도 재확인: Alert는 "**나가지 말고 기다리세요**"가 아니라 "**나가서 다른 작업 하셔도 됩니다**" 안내용
+- AI 분석이 1~2분 걸리는 동안 사용자를 화면에 묶어두는 것은 UX 낭비. 백그라운드 실행 + 완료 시 분석 기록에 자동 저장 + toast 알림으로 충분
+- 결과 자체는 0.32.0에서 도입한 AnalysisReport DB 영구 저장 + `/dashboard/analysis/history` 화면으로 언제든 조회 가능
+
 ## [0.32.0] - 2026-04-24
 
 ### F4 보강 — Alert 컴포넌트 + 분석 기록 화면 + 원고 관리(덮어쓰기·삭제)
