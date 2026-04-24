@@ -21,7 +21,7 @@ import { DUMMY_META, DUMMY_EPISODE } from "./_components/previewData"
 
 // ── 메인 에디터 (useSearchParams 사용) ──
 function ThemeEditorInner() {
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading, refreshUser } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
   const editThemeId = searchParams.get("id")
@@ -119,9 +119,15 @@ function ThemeEditorInner() {
       setTheme(result.preview as unknown as AuthorTheme)
       setThemeId(result.themeId)
       setMessage("AI 테마 생성 완료! (1 크레딧 사용)")
-    } catch (e: any) { setMessage(e.message || "테마 생성 실패") }
+      // 크레딧 1개 차감 반영 — 네비바/대시보드 숫자 동기화
+      refreshUser().catch(() => {})
+    } catch (e: any) {
+      setMessage(e.message || "테마 생성 실패")
+      // 실패 시에도 서버가 환불했을 수 있으니 동기화
+      refreshUser().catch(() => {})
+    }
     setSaving(false)
-  }, [user])
+  }, [user, refreshUser])
 
   if (authLoading) return <div className="flex items-center justify-center h-screen text-gray-500">로딩 중...</div>
   if (!user) return <div className="flex items-center justify-center h-screen text-gray-500">로그인이 필요합니다.</div>

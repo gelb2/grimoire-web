@@ -161,7 +161,10 @@ export function ThemeSlots({
                   <span className="px-2 py-0.5 text-xs rounded bg-indigo-100 text-indigo-700 opacity-70 cursor-default">
                     적용됨
                   </span>
-                ) : t.isSlotted && (
+                ) : t.source !== 'system' && (
+                  // 서버 activateTheme은 슬롯에 없는 테마도 자동으로 슬롯 배정 후 활성화 지원
+                  // (theme-slot.usecase.ts:88-98). 슬롯이 가득 찬 경우에만 서버가 에러를 던지므로,
+                  // UI는 항상 "기본 적용" 버튼을 노출하고 실패 시 toast로 사유를 알린다.
                   <button
                     onClick={async () => {
                       try {
@@ -170,11 +173,16 @@ export function ThemeSlots({
                         onReloadSlotInfo()
                         // 작가공간 SSR 캐시를 강제로 재검증 — 플리커 방지
                         router.refresh()
-                        toast.success('기본 테마로 적용됨')
-                      } catch (e: any) { toast.error(e.message || '적용 실패') }
+                        toast.success(
+                          t.isSlotted ? '기본 테마로 적용됨' : '슬롯에 추가하고 기본 테마로 적용했어요',
+                        )
+                      } catch (e: any) {
+                        // 대표 실패 케이스: 슬롯 가득참 — 사용자에게 어떤 테마를 빼야 하는지 안내
+                        toast.error(e.message || '적용 실패 — 슬롯이 가득 찼다면 다른 테마를 보관으로 전환하세요')
+                      }
                     }}
                     disabled={slotInfo.isExpired}
-                    className="px-2 py-0.5 text-xs rounded bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+                    className="px-2 py-0.5 text-xs rounded bg-indigo-100 text-indigo-700 hover:bg-indigo-200 disabled:opacity-50"
                   >
                     기본 적용
                   </button>
