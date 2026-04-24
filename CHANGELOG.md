@@ -1,5 +1,23 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.32.2] - 2026-04-24
+
+### Fix — 크레딧 UI 동기화 + 테마 "기본 적용" 버튼 항상 노출
+
+#### Changed (크레딧 상태관리)
+- `features/auth/AuthProvider.tsx` — 로그인 상태에서 `window.focus` + `document.visibilitychange` 이벤트에 자동 `api.getProfile()` 재호출. 다른 탭·디바이스·결제 webhook에서 크레딧이 바뀌어도 현재 탭이 활성화되는 순간 네비바/대시보드 숫자 동기화
+- `dashboard/theme/page.tsx handleGenerate` — AI 테마 생성(1 크레딧) 성공/실패 양쪽에서 `refreshUser()` 호출 (누락 수정)
+- `features/reader/ui/EpisodeFooter.tsx handleGift` — 독자 선물 후 `refreshUser()` 호출 (누락 수정)
+- `app/[author]/profile/page.tsx` 선물 버튼 — 동일 (누락 수정)
+
+#### Changed (테마 기본 적용)
+- `dashboard/_components/ThemeSlots.tsx` — "기본 적용" 버튼을 `t.isSlotted` 조건 대신 `t.source !== 'system'` 조건으로 노출. 서버 `activateTheme`이 슬롯에 없는 테마도 자동 배정 + auto-evict 지원하므로 UI에서 막을 필요 없음
+- 적용 성공 토스트 분기: 슬롯에 없던 테마는 "슬롯에 추가하고 기본 테마로 적용했어요" 메시지
+
+#### Rationale
+- 사용자 보고 1: "네비바 크레딧 상태관리 전혀 안 됨". Zustand 미사용 확인(크레딧은 AuthProvider React Context로 관리되고 있음 — 설계는 정상). 근본 원인은 **크레딧 차감 후 `refreshUser` 호출 누락 3곳** + **포커스 복귀 자동 갱신 없음**
+- 사용자 보고 2: "테마 2에서 3으로 바꾸려는데 안 바뀜". 서버는 지원하는데 UI가 `t.isSlotted` 조건으로 버튼을 숨겨놔서 슬롯에 없는 테마는 활성화 경로 자체가 막혀있던 UI 버그. 서버 `ThemeSlotUseCase.activateTheme`에 auto-evict 로직 추가하고 UI 조건도 완화해 경로 복구
+
 ## [0.32.1] - 2026-04-24
 
 ### Hotfix — AI 분석을 fire-and-forget으로 전환 (사용자 UX 의도 정합)

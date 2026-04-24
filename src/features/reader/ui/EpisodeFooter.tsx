@@ -29,7 +29,7 @@ interface CommentData {
 }
 
 export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug, nextEpisodeSlug }: EpisodeFooterProps) {
-  const { user } = useAuth()
+  const { user, refreshUser } = useAuth()
   // 본인 작가공간 에피소드에서는 자기 자신에게 응원 보내는 버튼을 숨긴다
   const isOwner = user?.slug === authorSlug
   const [liked, setLiked] = useState(false)
@@ -218,6 +218,8 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
       setGiftMessage(`${amount} 크레딧을 선물했습니다!`)
       setShowGiftPopup(false)
       setTimeout(() => setGiftMessage(null), 3000)
+      // 본인 크레딧 차감분 네비바 동기화
+      refreshUser().catch(() => {})
     } catch {
       setGiftMessage('선물 실패 — 로그인 또는 크레딧을 확인하세요')
       setTimeout(() => setGiftMessage(null), 3000)
