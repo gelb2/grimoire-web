@@ -60,7 +60,7 @@ test.describe("관리자 패널 — 탭 구조", () => {
     // 로그인
     await page.goto("/admin/login")
     await page.getByPlaceholder("관리자 이메일").fill("admin@grimoire-book.com")
-    await page.getByPlaceholder("비밀번호").fill("REMOVED_CREDENTIAL_014")
+    await page.getByPlaceholder("비밀번호").fill(process.env.E2E_ADMIN_PASSWORD ?? (() => { throw new Error('E2E_ADMIN_PASSWORD env 필수') })())
     await page.getByRole("button", { name: "로그인" }).click()
     await page.waitForURL("/admin", { timeout: 10000 })
 
