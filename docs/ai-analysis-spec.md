@@ -154,7 +154,7 @@ POST /analysis/index { episodeId, workId, rawText }
 
 POST /analysis/check { episodeId, types? }
   → 0. Episode 로드 + 소유권 검증 (Episode.workId → Work.authorId === JWT sub)
-  → 1. 3 크레딧 차감 (F2 2026-04-19, 실패 시 BadRequest)
+  → 1. 4 크레딧 차감 (F2 2026-04-19 → 2026-04-27 cost-accountant 시뮬 검증으로 4 인상, 실패 시 BadRequest)
   → 2. Episode.rawMd 첫 2000자 임베딩 → pgvector 유사 검색(top 30)
   → 3. 자기 자신 청크 자동 제외 (self-reference 환각 방지) → top 15 사용
   → 4. Claude Sonnet 4.6 분석 (3유형 병렬, AbortSignal 전파 — Anthropic SDK messages.create RequestOptions.signal까지 도달, 2026-04-26 #9 SDK signal 완전 전파)
@@ -318,7 +318,7 @@ src/
 | 기능 | 크레딧 | 근거 |
 |------|--------|------|
 | 테마 AI 초안 생성 | 1 | AI 원가 ₩14.6, 안전배수 3.49~3.80× PASS |
-| **AI 작품 분석 (3유형)** | **3** | AI 원가 ₩60.4, 1~2 크레딧 시 전 패키지 CRITICAL. 3 크레딧 시 베스트 안전배수 3.14× PASS |
+| **AI 작품 분석 (3유형)** | **4** | AI 원가 ₩60.4. 3 크레딧은 베스트 3.14× PASS이지만 Sonnet +20% / 환율 +8.5% 시뮬 시 §0 위반 FAIL. 2026-04-27 cost-accountant 권장으로 **4 크레딧 인상** → 베스트 3.73× / 인기 3.61× / 기본 3.48× (모두 PASS), +20% 시뮬 후에도 베스트 3.35× PASS 유지 |
 | AI 채팅 1턴 | 1 (연동 미완) | AI 원가 ₩16.2, 안전배수 3.44~3.58× PASS |
 
 > 구 표기 "분석 1회 ≈ 5원, 채팅 1턴 ≈ 1.5원"은 2026-04-19 F3으로 삭제.
