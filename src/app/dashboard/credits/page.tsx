@@ -129,7 +129,7 @@ export default function CreditsPage() {
           <h3 className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-3">크레딧 사용 안내</h3>
           <div className="space-y-2 text-sm text-neutral-500">
             <p>· 테마 AI 생성: <span className="text-[#e53e3e]">1 크레딧</span></p>
-            <p>· AI 작품 분석 (설정/톤/캐릭터): <span className="text-[#e53e3e]">3 크레딧</span></p>
+            <p>· AI 작품 분석 (설정/톤/캐릭터): <span className="text-[#e53e3e]">4 크레딧</span></p>
             <p>· 수동 테마 수정 (Color Picker): <span className="text-green-500">무료</span></p>
             <p>· 에피소드 퍼블리시: <span className="text-green-500">무료</span></p>
             <p>· 공간 유지: <span className="text-green-500">무료</span></p>
