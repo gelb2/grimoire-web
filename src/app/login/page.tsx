@@ -9,7 +9,6 @@ import Link from 'next/link'
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''
 const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ''
-const IS_PRODUCTION = process.env.NEXT_PUBLIC_APP_ENV === 'production'
 
 function LoginForm() {
   const router = useRouter()
@@ -134,19 +133,6 @@ function LoginForm() {
             회원가입
           </Link>
         </p>
-
-        {!IS_PRODUCTION && (
-          <div className="mt-8 pt-6 border-t border-neutral-200">
-            <p className="text-neutral-400 text-xs text-center mb-3">테스트 계정</p>
-            <button
-              type="button"
-              onClick={() => { setEmail('test@grimoire.app'); setPassword('test1234') }}
-              className="w-full py-2 border border-neutral-300 text-neutral-500 text-sm rounded-lg hover:border-black hover:text-black transition"
-            >
-              테스트 계정으로 채우기
-            </button>
-          </div>
-        )}
       </div>
     </div>
   )

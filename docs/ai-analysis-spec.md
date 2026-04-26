@@ -157,9 +157,9 @@ POST /analysis/check { episodeId, types? }
   → 1. 3 크레딧 차감 (F2 2026-04-19, 실패 시 BadRequest)
   → 2. Episode.rawMd 첫 2000자 임베딩 → pgvector 유사 검색(top 30)
   → 3. 자기 자신 청크 자동 제외 (self-reference 환각 방지) → top 15 사용
-  → 4. Claude Sonnet 4.6 분석 (3유형 병렬, AbortSignal 전파)
+  → 4. Claude Sonnet 4.6 분석 (3유형 병렬, AbortSignal 전파 — Anthropic SDK messages.create RequestOptions.signal까지 도달, 2026-04-26 #9 SDK signal 완전 전파)
   → 5. 환각 검증 (issues 인용이 원문에 존재하는지 후처리)
-  → 6. 실패(AbortError 포함) 시 전액 환불
+  → 6. 실패(AbortError 포함) 시 전액 환불 — abort 시 SDK fetch 즉시 cancel되어 백그라운드 토큰 낭비 0건
   → 7. 성공 시 AnalysisReport DB에 저장 (히스토리, 저장 실패해도 결과 반환)
   → [{ type, score, summary, issues, suggestions }]
 
