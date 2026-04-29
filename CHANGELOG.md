@@ -1,5 +1,21 @@
 # CHANGELOG.md — 변경 이력
 
+## [0.32.3] - 2026-04-29
+
+### Security — X-Powered-By 헤더 노출 차단 (Next.js 핑거프린팅 방어)
+
+#### Changed
+- `next.config.ts`: `poweredByHeader: false` 추가 — Next.js 기본값(`true`)으로 응답에 노출되던 `X-Powered-By: Next.js` 헤더 제거
+
+#### Rationale
+- 외부 보안 점검(강의 4화 시연용 핸드오버)에서 발견된 프레임워크 핑거프린팅 이슈
+- 공격자가 "Next.js 사이트"임을 알면 Next.js 특화 취약점(SSRF/prefetch 악용 등) 표적화 가능
+- 다른 보안 헤더(HSTS/CSP/X-Frame-Options/Referrer-Policy/Permissions-Policy) 영향 없음
+
+#### Verification
+- 로컬 dev (port 3001) curl `-sI` `/`, `/explore`, `/dashboard` 모두 X-Powered-By 헤더 미포함
+- 크롬 fetch로 정적 자원(`_next/static/css/app/layout.css`) 응답에서도 `has_x_powered_by=false` 확인
+
 ## [0.32.2] - 2026-04-24
 
 ### Fix — 크레딧 UI 동기화 + 테마 "기본 적용" 버튼 항상 노출
