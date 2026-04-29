@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   // Docker standalone 빌드를 위한 설정
   output: "standalone",
 
+  // X-Powered-By: Next.js 헤더 노출 차단 — 프레임워크 핑거프린팅 방어
+  poweredByHeader: false,
+
   // 프로덕션에서 Source Map 비활성화 — 원본 코드 구조 노출 방지
   productionBrowserSourceMaps: false,
 
