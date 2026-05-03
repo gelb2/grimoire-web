@@ -17,7 +17,7 @@
 | `/register` | `app/register/page.tsx` | 회원가입 (3 크레딧 보너스) | - | `POST /api/auth/register` |
 | `/explore` | `app/explore/page.tsx` | 작품 탐색 (검색, 인기, 최신) | - | `GET /api/discover/*` |
 | `/library` | `app/library/page.tsx` | 독자 서재 (북마크, 구독) | JWT | `GET /api/reader/bookmarks`, `GET /api/social/subscriptions` |
-| `/admin` | `app/admin/page.tsx` | 관리자 패널 (통계, 크레딧 부여) | JWT, admin | `GET /api/admin/stats`, `POST /api/admin/credits` |
+| `/admin` | `app/admin/page.tsx` | 관리자 패널 — 15 탭 (통계/사용자/콘텐츠/제재/신고/댓글/결제/수익/**크레딧**/공지/추천/테마/접근로그/설정/감사로그). 크레딧 탭은 `tabs/CreditsTab.tsx` 분리 (PAY-P0-3 — 사용자 검색 + 잔액 + grant/deduct 분기 + 멀티콘펌 + sonner toast) | JWT, admin | `GET /api/admin/stats`, `GET /api/admin/authors?q`, `POST /api/admin/credits/grant`, `POST /api/admin/credits/deduct` |
 
 ### 작가 대시보드
 
