@@ -5,7 +5,7 @@
 
 ---
 
-## 테이블 (22개)
+## 테이블 (23개)
 
 ### authors
 
@@ -229,6 +229,38 @@ ON CONFLICT ("id") DO NOTHING;
 cron 주기: `@Cron('0 */10 * * * *')` 10분 (cost-accountant 권고 — Polar `/v1` rate limit 분당 500회 default 그룹, 사용률 1% 미만).
 
 정본: `.claude/shared-contracts.md` §12 PaymentReconciliation
+
+---
+
+### refund_logs (Sprint PAY-P1-1, 2026-05-03)
+
+Polar 환불 webhook 수신 시 크레딧 환수 트랜잭션의 영구 박제 테이블. payment.usecase.processWebhook의 'cancel' 분기에서 RefundPaymentUseCase가 $transaction 내부에 박제. Author.credits 잔액 부족 시 0 fix + `deficit_credits` 박제로 적자 위험 차단.
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 환불 로그 식별자 |
+| payment_id | text | - | 환불 대상 Payment id (1:N — 향후 부분 환불 호환 위해 unique 미부여) |
+| amount | int | - | PG 환불 금액 (KRW) |
+| credits | int | - | 실제 환수된 크레딧 (잔액 충분 시 = 요청, 부족 시 = 잔액) |
+| deficit_credits | int | default(0) | 잔액 부족분 (양수 = 외상, 0 = 정상 환수). 운영자 회수 정책 결정 입력 |
+| reason | text | - | 환불 사유 (예: 'polar_webhook_order.refunded') |
+| processed_at | timestamptz(3) | default(now()) | 환수 처리 시각 |
+| source | text | - | 'webhook' (Polar 자동) / 'manual' (운영자 수동, P2) |
+
+인덱스:
+- `@@index([payment_id])` — Payment별 환불 이력 조회
+
+정책:
+- **잔액 부족 시 0 fix**: Author.credits < credits → Author.credits = 0 + deficit_credits = credits - 잔액. 음수 잔액 절대 차단.
+- **CreditLog 음수 박제 대칭**: 같은 $transaction 내부에서 `credit_logs.amount = -actualDeducted` 박제 (계정 잔액 합산 정합)
+- **AdminAuditLog 후행**: `operator='system_refund'`, `action='refund_normal' | 'refund_deficit'` ($transaction 외부 호출)
+
+3중 멱등성:
+- L1: PAY-P0-1 `webhook_events.eventId @unique` (재전송 차단)
+- L2: payment.usecase 진입 시 `payment.status='completed'` 체크 (이미 환불된 payment skip)
+- L3: refund_logs 박제 (조회 + 추적)
+
+정본: `.claude/shared-contracts.md` §13 RefundPaymentAtomically
 
 ---
 
