@@ -11,6 +11,7 @@ import { EpisodeViewer } from "@/features/reader/ui/EpisodeViewer"
 import type { AuthorData } from "@/features/reader/ui/layouts"
 import { themePresets } from "@/features/theme/presets"
 import { useThemeEditorStore, inferTabFromField } from "@/stores/useThemeEditorStore"
+import { useThemeName } from "./_hooks/useThemeName"
 
 import { OptionsPanel } from "./_components/OptionsPanel"
 import { PreviewTabBar } from "./_components/PreviewTabBar"
@@ -29,7 +30,8 @@ function ThemeEditorInner() {
   const [createMode, setCreateMode] = useState<'select' | 'ai' | 'preset' | 'editor'>(editThemeId ? 'editor' : 'select')
   const [theme, setTheme] = useState<AuthorTheme | null>(null)
   const [themeId, setThemeId] = useState<string | null>(null)
-  const [themeName, setThemeName] = useState("")
+  // 테마 이름 + preset 자동 동기 정책 — useThemeName hook (P2-#10 UX, AC-1~AC-5)
+  const { themeName, handleNameChange, setNameFromServer, syncNameFromPreset } = useThemeName("")
   const [previewData, setPreviewData] = useState<AuthorData | null>(null)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState("")
@@ -47,8 +49,8 @@ function ThemeEditorInner() {
         } else {
           themeData = await api.getTheme(user.slug)
         }
-        if (themeData.theme) { setTheme(themeData.theme); setThemeId(themeData.id); setThemeName(themeData.name ?? '') }
-        else if (themeData.overrides) { setTheme(themeData.overrides); setThemeId(themeData.id); setThemeName(themeData.name ?? '') }
+        if (themeData.theme) { setTheme(themeData.theme); setThemeId(themeData.id); setNameFromServer(themeData.name ?? '') }
+        else if (themeData.overrides) { setTheme(themeData.overrides); setThemeId(themeData.id); setNameFromServer(themeData.name ?? '') }
 
         const authorRes = await api.getAuthorSpace<any>(user.slug)
         const authorInfo = authorRes.author ?? authorRes
@@ -65,6 +67,8 @@ function ThemeEditorInner() {
       } catch { setMessage("테마를 불러올 수 없습니다.") }
     }
     loadTheme()
+    // setNameFromServer는 useCallback([]) 안정 — 의존성 추가 불요
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, user, editThemeId])
 
   const handleChange = useCallback((partial: Partial<AuthorTheme>) => {
@@ -80,9 +84,9 @@ function ThemeEditorInner() {
   const handlePresetChange = useCallback((presetName: string, label?: string) => {
     if (!presetName || !themePresets[presetName as keyof typeof themePresets]) return
     setTheme(themePresets[presetName as keyof typeof themePresets])
-    // 프리셋 선택 시 이름도 자동 동기 (사용자 요청). 서버 label(한글 표시명) 우선.
-    if (label) setThemeName(label)
-  }, [])
+    // 프리셋 선택 시 이름 자동 동기 — useThemeName이 userEditedName flag를 보고 보존/덮어쓰기 결정 (P2-#10 UX).
+    syncNameFromPreset(label)
+  }, [syncNameFromPreset])
 
   const handleSave = useCallback(async () => {
     if (!themeId || !theme || !user) return
@@ -150,7 +154,7 @@ function ThemeEditorInner() {
 
   return (
     <div className="flex h-screen">
-      <OptionsPanel theme={theme} themeName={themeName} onNameChange={setThemeName} onChange={handleChange} onPresetChange={handlePresetChange}
+      <OptionsPanel theme={theme} themeName={themeName} onNameChange={handleNameChange} onChange={handleChange} onPresetChange={handlePresetChange}
         onSave={handleSave} onActivate={handleActivate} onGenerate={handleGenerate} saving={saving} />
 
       <div className="flex-1 flex flex-col overflow-hidden">

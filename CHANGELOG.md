@@ -1,5 +1,10 @@
 # CHANGELOG.md — 변경 이력
 
+## [Unreleased] - 2026-05-03
+
+### Fixed — 테마 에디터 preset 변경 시 사용자 입력 name 보존 (P2-#10 UX, sprint-theme-editor-name-sync)
+- `dashboard/theme/page.tsx` + 신설 `_hooks/useThemeName.ts` — 사용자가 테마 이름 input을 직접 수정한 적이 있으면(`userEditedName=true`), preset 변경 시 themeName을 preset label로 덮어쓰지 않음. 자동 로드(`setNameFromServer`)는 flag 변경 안 함 → edit 모드 진입 후 첫 preset 변경은 기존처럼 label 동기. AC-1~AC-5 PASS, vitest 6/6 PASS, eval regression-50 신설 5/5.
+
 ## [0.32.3] - 2026-04-29
 
 ### Security — X-Powered-By 헤더 노출 차단 (Next.js 핑거프린팅 방어)
