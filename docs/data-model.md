@@ -200,6 +200,38 @@ PG (Polar 등) 웹훅 재전송 시 동일 `event_id`로 두 번째 호출이 �
 
 ---
 
+### reconciliation_checkpoints (Sprint PAY-P0-2, 2026-05-03)
+
+PG↔DB 정합성 검증 cron의 단일 row checkpoint. cron이 매 실행 시 `lastRunAt` 기준으로 since 필터를 결정하고, 카운터(processed/boost/mismatch/expire)를 박제. **사용자 신고 의존 0건 + webhook 누락 자동 보정** 보장.
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | text | PK, default('singleton') | 항상 'singleton' (단일 row 보장) |
+| last_run_at | timestamptz(3) | - | 마지막 cron 시작 시각 (다음 cron의 since 필터) |
+| processed_count | int | default(0) | 마지막 실행에서 처리한 row 수 (전체) |
+| boost_count | int | default(0) | 자동 보정 row 수 (S1 PG=succeeded + DB=pending) |
+| mismatch_count | int | default(0) | refund mismatch row 수 (S2 PG=refunded + DB=completed, P1-1 위임) |
+| expire_count | int | default(0) | pending 만료 row 수 (S3 24h 경과) |
+| error_message | text (nullable) | - | 마지막 실행 예외 메시지 (null이면 정상) |
+| updated_at | timestamptz(3) | @updatedAt | 갱신 시각 |
+
+인덱스:
+- PK `(id)` — 단일 row 조회 (id='singleton')
+- 추가 인덱스 0건 (1 row → index 불필요)
+
+마이그레이션 seed:
+```sql
+INSERT INTO "reconciliation_checkpoints" ("id", "last_run_at")
+VALUES ('singleton', CURRENT_TIMESTAMP - INTERVAL '24 hours')
+ON CONFLICT ("id") DO NOTHING;
+```
+
+cron 주기: `@Cron('0 */10 * * * *')` 10분 (cost-accountant 권고 — Polar `/v1` rate limit 분당 500회 default 그룹, 사용률 1% 미만).
+
+정본: `.claude/shared-contracts.md` §12 PaymentReconciliation
+
+---
+
 ### daily_views
 
 | 컬럼 | 타입 | 제약 | 설명 |
