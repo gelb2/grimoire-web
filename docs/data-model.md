@@ -5,7 +5,7 @@
 
 ---
 
-## 테이블 (21개)
+## 테이블 (22개)
 
 ### authors
 
@@ -176,6 +176,27 @@
 | status | text | default("pending") | 결제 상태 (pending/completed/failed) |
 | created_at | timestamptz | default(now()) | 결제 요청일 |
 | completed_at | timestamptz (nullable) | - | 결제 완료일 |
+
+### webhook_events (Sprint PAY-P0-1, 2026-05-03)
+
+PG (Polar 등) 웹훅 재전송 시 동일 `event_id`로 두 번째 호출이 들어와도 `completePaymentAtomically`가 단 1회만 실행되도록 멱등성 박제 테이블. DB unique 제약(`event_id`)으로 race condition 차단.
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 박제 식별자 |
+| event_id | text | unique | PG가 발급한 이벤트 ID (Polar의 `webhook-id` 헤더). 멱등성 키 |
+| source | text | default("polar") | PG 식별 ('polar' / 향후 다른 PG) |
+| event_type | text | - | PG 이벤트 타입 ('order.paid', 'order.refunded', ...) |
+| payload | jsonb | - | 정규화된 NormalizedWebhookEvent 박제 (디버깅용) |
+| status | text | default("processed") | 처리 상태 ('processed' \| 'skipped' \| 'failed') |
+| error_message | text (nullable) | - | 실패/스킵 사유 ('unknown_trade', 'already_completed', 예외 메시지 등) |
+| processed_at | timestamptz | default(now()) | 박제 시각 |
+
+인덱스:
+- `webhook_events_event_id_key` UNIQUE (`event_id`) — 멱등성 race 차단 (P2002 → safe skip)
+- `webhook_events_event_type_processed_at_idx` (`event_type`, `processed_at`) — 최근 이벤트 조회
+
+정본: `.claude/shared-contracts.md` §11 WebhookEventIdempotency
 
 ---
 

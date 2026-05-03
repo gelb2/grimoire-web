@@ -675,10 +675,27 @@ Response 200: [{ "id", "name", "credits", "price", "description" }]
 
 ### POST /api/payments/webhook
 
+PG (Polar 등) 웹훅 콜백 — 서명 검증 + 멱등성 게이트 + 원자적 크레딧 부여.
+
+**Headers (Polar Standard Webhooks)**:
+- `webhook-id`: PG 발급 unique 이벤트 ID (멱등성 키, 누락 시 거부)
+- `webhook-timestamp`: Unix timestamp
+- `webhook-signature`: HMAC
+
+**Request (raw body)**: PG 원본 이벤트 JSON (Polar SDK가 검증/파싱)
+
+**Response 200 — 처리 결과 reason 박제** (Sprint PAY-P0-1, 2026-05-03):
 ```
-Request: { "paymentId": "...", "productId": "...", "authorId": "...", "status": "success" }
-Response 200: { "processed": true }
+{ "processed": true,  "credits": <N> }                        // 정상 처리 (크레딧 부여 또는 환불)
+{ "processed": false, "reason": "invalid_or_ignored" }        // 서명 검증 실패 또는 webhook-id 헤더 누락
+{ "processed": false, "reason": "duplicate_event" }           // 동일 eventId 재전송 — 첫 호출만 처리, 두 번째 즉시 skip
+{ "processed": false, "reason": "unknown_trade" }             // tradeNo 매칭 실패
+{ "processed": false, "reason": "already_completed" }         // 약식 멱등성 (이전 webhook 박제 누락된 PROD 데이터 안전망)
 ```
+
+**멱등성 보장**: 동일 `webhook-id`로 두 번째 호출이 들어와도 `completePaymentAtomically`는 단 1회만 실행. DB `webhook_events.event_id` UNIQUE 제약으로 race condition 차단 (P2002 → safe skip).
+
+**관련**: `webhook_events` 테이블 (data-model.md), `.claude/shared-contracts.md` §11 WebhookEventIdempotency
 
 ### GET /api/payments/credits
 
