@@ -1,0 +1,35 @@
+#!/bin/sh
+# grimoire-web pre-commit hook — Constitution 19 Principles 무조건 발동
+# 사용자 명시 (2026-05-04): 커밋 직전 무조건 레드팀 공격 실행
+#
+# 활성화: git config core.hooksPath .githooks (이미 설정)
+# 우회: git commit --no-verify (긴급 시 사용자 명시만)
+
+set -e
+
+PROJECT_ROOT="/Users/sokol/Desktop/Git/ProjectGrimoire"
+
+echo "=== grimoire-web pre-commit 검증 ==="
+
+echo ""
+echo "[1/2] sensor-secret-leak (시크릿 평문 차단) ..."
+bash "$PROJECT_ROOT/.claude/scripts/sensor-secret-leak.sh"
+
+echo ""
+echo "[2/2] sensor-adversarial-pre-commit (Constitution 19 Principles, 사용자 명시 무조건 강제) ..."
+set +e
+bash "$PROJECT_ROOT/.claude/scripts/sensor-adversarial-pre-commit.sh"
+ADV_RC=$?
+set -e
+if [ $ADV_RC -ge 2 ]; then
+  echo ""
+  echo "❌ Constitution 위반 — Commit 차단 (FAIL principles 발견)"
+  echo "💡 자동 회복: bash $PROJECT_ROOT/.claude/scripts/adversarial-retry-handler.sh"
+  exit 1
+elif [ $ADV_RC -eq 1 ]; then
+  echo ""
+  echo "⚠️ WARN principles 검토 권장 (commit 허용)"
+fi
+
+echo ""
+echo "=== pre-commit 검증 통과 ==="

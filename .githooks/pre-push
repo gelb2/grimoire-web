@@ -3,12 +3,25 @@ set -e
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 echo "=== Pre-Push 검증 ==="
-echo "[1/4] TypeScript 컴파일 체크..."
+echo "[1/5] TypeScript 컴파일 체크..."
 npx tsc --noEmit
-echo "[2/4] 유닛 테스트 실행..."
+echo "[2/5] 유닛 테스트 실행..."
 npm test
-echo "[3/4] 빌드 검증..."
+echo "[3/5] 빌드 검증..."
 npm run build
-echo "[4/4] docs 동기화 검증..."
+echo "[4/5] docs 동기화 검증..."
 /Users/sokol/Desktop/Git/ProjectGrimoire/.claude/scripts/sensor-docs-sync.sh
+echo "[5/5] 레드팀 검증 (Constitution 19 Principles, 사용자 명시 무조건 강제)..."
+set +e
+/Users/sokol/Desktop/Git/ProjectGrimoire/.claude/scripts/sensor-adversarial-pre-commit.sh
+ADV_RC=$?
+set -e
+if [ $ADV_RC -ge 2 ]; then
+  echo ""
+  echo "❌ Constitution 위반 — Push 차단 (FAIL principles 발견)"
+  exit 1
+elif [ $ADV_RC -eq 1 ]; then
+  echo ""
+  echo "⚠️ WARN principles 검토 권장 (push 허용)"
+fi
 echo "=== 검증 통과 ==="
