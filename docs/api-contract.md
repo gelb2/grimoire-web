@@ -316,17 +316,34 @@ AuthorTheme 스키마는 `docs/theme-spec.md` 참조.
 ### GET /api/themes/:authorSlug
 
 ```
-Response 200: Theme (id, authorId, preset, overrides, rawDescription, updatedAt)
+Response 200: Theme (id, name, preset, overrides, rawDescription, bakedCssUrl, theme, updatedAt)
+  - bakedCssUrl: 항상 절대 URL (Blob CDN 절대 URL 또는 ${PUBLIC_API_BASE_URL}/themes/css/{slug} 폴백)
+                 (P1-#7, 2026-05-03). 상대 경로 응답 0건 보장.
 Error 404: 테마 없음
 ```
 
 ### POST /api/themes/publish/:authorSlug
 
-테마를 CSS로 베이킹하고 bakedCssUrl을 갱신한다.
+테마를 CSS로 베이킹하고 baked_css_url을 갱신한다.
+
+DB 박제 정책 (P1-#7, 2026-05-03):
+  - Blob 활성 + 업로드 성공 → 절대 URL(Blob CDN) 박제
+  - Blob 비활성 또는 업로드 실패 → NULL 박제 (응답 시 server가 환경별 base URL로 절대화)
+  - 상대 경로(`/api/themes/css/...`) 박제 금지
 
 ```
-Response 200: { "bakedCssUrl": "..." }
+Response 200: { "cssUrl": "<절대 URL>", "bakedCssUrl": "<절대 URL>", "css": "..." }
+  - cssUrl/bakedCssUrl: 항상 절대 URL (Blob URL 또는 폴백 절대 URL)
 Error 404: 테마 없음
+```
+
+### GET /api/themes/resolve/:authorSlug
+
+작품별 테마 resolve (`?work=slug`).
+
+```
+Response 200: Theme | {}
+  - bakedCssUrl: 항상 절대 URL (P1-#7, 2026-05-03)
 ```
 
 ### GET /api/themes/css/:authorSlug

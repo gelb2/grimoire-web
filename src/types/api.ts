@@ -22,6 +22,17 @@ export interface Theme {
   preset: string
   overrides: Record<string, unknown> | null
   rawDescription: string | null
+  /**
+   * 베이킹된 테마 CSS의 **절대 URL** 또는 **NULL**.
+   *
+   * Sprint sprint-baked-css-url-absolute (P1-#7) — 방향 B 채택:
+   * server가 GET /api/themes/{slug} 응답 단계에서 환경별 base URL로 동적 절대화하여
+   * 항상 절대 URL(`https?://...`) 또는 NULL을 반환한다. 상대 경로(`/api/themes/css/{slug}`)
+   * 박제는 폐지됨 (DB는 마이그레이션 `baked_css_url_clear_relative`로 일괄 NULL 정리).
+   *
+   * - 절대 URL: `<link rel="stylesheet" href={url}>` 로 직접 로드 (Blob CDN 또는 server fallback)
+   * - NULL: link 미렌더 (ThemeProvider 인라인 스타일이 단독 적용)
+   */
   bakedCssUrl: string | null
   isSlotted: boolean
   source: 'system' | 'ai' | 'user'

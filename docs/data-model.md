@@ -36,7 +36,7 @@
 | preset | text | default("midnight") | 프리셋명 (파생 출처 기록용) |
 | overrides | jsonb (nullable) | - | AuthorTheme 전체 값 (독립 레코드) |
 | raw_description | text (nullable) | - | 작가 원본 구술 텍스트 |
-| baked_css_url | text (nullable) | - | Baking된 CSS 파일 URL |
+| baked_css_url | text (nullable) | - | Baking된 CSS 파일 URL. **항상 절대 URL(Blob CDN) 또는 NULL만 박제**. NULL이면 응답 시 server가 `${PUBLIC_API_BASE_URL}/themes/css/{slug}`로 동적 절대화하여 web에 반환 (P1-#7, 2026-05-03). 상대 경로 박제 금지 — 환경 전환 시 stale 방지 |
 | is_slotted | boolean | default(true) | 활성 슬롯 배치 여부 (true=활성, false=보관) |
 | source | text | default("user") | 테마 출처 ("system"=시스템 프리셋, "ai"=AI 생성, "user"=직접 편집) |
 | updated_at | timestamptz | auto-update | 수정일 |
