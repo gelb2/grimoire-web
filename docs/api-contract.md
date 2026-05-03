@@ -162,6 +162,27 @@
 | GET | `/api/payments/history` | 결제 내역 | JWT |
 | GET | `/api/payments/credits` | 내 크레딧 잔액 | JWT |
 
+### Payment Reconciliation Cron (PAY-P0-2, 2026-05-03)
+
+HTTP 미노출. NestJS `@Cron('0 */10 * * * *')` 10분 주기로 자동 실행 — Container Apps cron 단독.
+
+| 항목 | 값 |
+|------|-----|
+| 실행 주기 | `0 */10 * * * *` (매 10분 0초) |
+| 동작 | Polar `checkouts.list` 호출 + DB Payment 비교 → 4 시나리오 분기 |
+| 로그 패턴 | `[PaymentReconciliationJob] PaymentReconciliationJob 시작 — since=...` / `... 완료 — processed=N boost=N mismatch=N expire=N` |
+| AuditLog 박제 | operator=`system_reconciliation`, action ∈ {`reconciliation_boost`, `reconciliation_refund_mismatch`, `reconciliation_expire`} |
+| 비활성화 | `RECONCILIATION_DISABLED=1` 환경변수 (즉시 return) |
+| 동시 실행 차단 | in-memory `isRunning` lock + try-finally 해제 |
+
+**4 시나리오**:
+- S1 boost: PG=succeeded + DB=pending → `completePaymentAtomically` (webhook 누락 자동 보정)
+- S2 mismatch: PG=refunded + DB=completed → AuditLog만 (실제 환수는 P1-1 위임)
+- S3 expire: PG=NotFound + DB=pending(24h 경과) → status='expired' 만료 처리
+- S4 정합: skip
+
+정본: `.claude/shared-contracts.md` §12 PaymentReconciliation
+
 ### Credits
 
 | Method | Path | 용도 | 인증 |
