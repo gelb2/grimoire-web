@@ -32,7 +32,18 @@ class ApiClient extends BaseApiClient {
     })
   }
 
-  async login(data: { email: string; password: string; recaptchaToken?: string }) {
+  /**
+   * 로그인 — email 또는 slug XOR 1택 + password.
+   *
+   * Sprint email-p0-3-slug-login (2026-05-04 EMAIL-P0-3 Phase 2):
+   * - email + password (기존 후향호환)
+   * - slug + password (신규 — `deerdevil` 등)
+   * - 둘 다 박제 시 server BadRequestException
+   * - 둘 다 미박제 시 server BadRequestException
+   *
+   * 클라이언트는 `/^[^\s@]+@[^\s@]+\.[^\s@]+$/` 정규식으로 판별 후 양쪽 중 1택만 박제.
+   */
+  async login(data: { email?: string; slug?: string; password: string; recaptchaToken?: string }) {
     return this.fetch<AuthResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(data),

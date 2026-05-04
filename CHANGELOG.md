@@ -1,5 +1,19 @@
 # CHANGELOG.md — 변경 이력
 
+## [Unreleased] - 2026-05-04
+
+### Added — slug 로그인 마이그레이션 web Phase 2 (EMAIL-P0-3, sprint-email-p0-3-slug-login)
+- `src/app/login/page.tsx` — input 입력칸 1개로 통합. label "이메일" → "이메일 또는 슬러그", placeholder "your@email.com" → "your@email.com 또는 deerdevil", `type="email"` → `type="text"`, htmlFor + autoComplete 박제. `emailOrSlug` state로 단일화 후 trim → `AuthProvider.login(emailOrSlug, password, recaptchaToken)` 위임.
+- `src/features/auth/AuthProvider.tsx` — `EMAIL_OR_SLUG_REGEX` (`/^[^\s@]+@[^\s@]+\.[^\s@]+$/`) + `detectIdentifierType` 헬퍼 박제. `login(emailOrSlug, password, recaptchaToken)` 시그니처로 갱신 + 정규식 자동 판별 후 `api.login({ email })` 또는 `api.login({ slug })` XOR 박제. 후향호환 — emailOrSlug에 email 입력 시 기존 동작 100% 유지.
+- `src/features/auth/index.ts` — barrel export에 `EMAIL_OR_SLUG_REGEX` + `detectIdentifierType` 추가.
+- `src/lib/api.ts` — `login()` 시그니처 `{ email?: string; slug?: string; password: string; recaptchaToken?: string }`로 확장 (기존 `email: string` → 옵셔널, `slug?` 추가). server LoginDto Phase 1과 양립.
+- `src/features/auth/AuthProvider.test.tsx` (신설) — vitest 11 it 블록 (정규식 7건 + login 자동 판별 6건). 의미 있는 assertion 8건 (toHaveBeenCalledWith 인자 정합 + toMatchObject + toHaveBeenCalledTimes — 더미 toBeTruthy 0건).
+- `e2e/auth.spec.ts` — placeholder/label assertion 갱신 + 신규 it "슬러그로 로그인 후 dashboard 진입" 박제 (E2E_AUTHOR_SLUG default `deerdevil` + E2E_AUTHOR_PASSWORD 박제 시 PASS, 미박제 시 skip).
+- `e2e/dashboard.spec.ts` — `process.env.E2E_AUTHOR_SLUG ?? E2E_AUTHOR_EMAIL` 양립 옵션 추가. `getByLabel('이메일 또는 슬러그')` 사용으로 통합 입력칸 정합.
+- `.env.example` — `E2E_AUTHOR_SLUG=deerdevil` 박제. EMAIL_INTEGRITY_PLAN §13 정합.
+- 검증: tsc 0 errors / vitest 151/151 PASS (이전 140 → +11) / lint 0 errors (warning 5건은 본 sprint 외부 — AuthorSpace.tsx + CardTransition.tsx) / build PASS / e2e dry-run 9 tests (`auth.spec.ts:60` 신규 it 박제 확인) / 외부 인용 0건.
+- 시각 정본 (visual-canon-keeper) 자가 검수: placeholder/label 텍스트 변경 + type=email→text + htmlFor/autoComplete 박제만. border/border-radius/padding/색상/크기 변경 0건. 사슴악마 정본 (deerdevil 작가공간/뷰어/목록) 직접 영향 0 (`/login`은 플랫폼 영역).
+
 ## [Unreleased] - 2026-05-03
 
 ### Added — 운영자 수동 크레딧 지급/차감 web UI (PAY-P0-3, sprint-pay-p0-3-admin-credit-grant-ui)

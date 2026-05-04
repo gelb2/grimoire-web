@@ -5,18 +5,18 @@ test.describe("로그인 페이지 (/login)", () => {
     await page.goto("/login")
   })
 
-  test("renders login form with email and password fields", async ({
+  test("renders login form with email-or-slug and password fields", async ({
     page,
   }) => {
     // Grimoire 헤딩
     await expect(page.getByRole("link", { name: "Grimoire" })).toBeVisible()
 
-    // 서브타이틀
-    await expect(page.getByText("작가의 공간으로 돌아오세요")).toBeVisible()
+    // 서브타이틀 (page.tsx: RETURN TO YOUR SPACE)
+    await expect(page.getByText("RETURN TO YOUR SPACE")).toBeVisible()
 
-    // 이메일 필드
-    await expect(page.getByLabel("이메일")).toBeVisible()
-    await expect(page.getByPlaceholder("your@email.com")).toBeVisible()
+    // 이메일 또는 슬러그 필드 (Sprint email-p0-3-slug-login Phase 2)
+    await expect(page.getByLabel("이메일 또는 슬러그")).toBeVisible()
+    await expect(page.getByPlaceholder("your@email.com 또는 deerdevil")).toBeVisible()
 
     // 비밀번호 필드
     await expect(page.getByLabel("비밀번호")).toBeVisible()
@@ -33,8 +33,8 @@ test.describe("로그인 페이지 (/login)", () => {
 
   test("shows error on invalid login attempt", async ({ page }) => {
     // 잘못된 자격증명으로 로그인 시도
-    await page.getByPlaceholder("your@email.com").fill("wrong@test.com")
-    await page.getByPlaceholder("••••••••").fill("wrongpassword")
+    await page.getByLabel("이메일 또는 슬러그").fill("wrong@test.com")
+    await page.getByLabel("비밀번호").fill("wrongpassword")
     await page.getByRole("button", { name: "로그인" }).click()
 
     // 에러 메시지가 표시되어야 한다 (API 서버 여부에 따라 메시지가 다를 수 있음)
@@ -51,6 +51,23 @@ test.describe("로그인 페이지 (/login)", () => {
     })
     await expect(googleButton).toBeVisible()
     await expect(googleButton).toBeDisabled()
+  })
+
+  // Sprint email-p0-3-slug-login Phase 2 (2026-05-04 EMAIL-P0-3 AC-7)
+  // slug + 비밀번호로 로그인 후 /dashboard 진입.
+  // 환경변수 E2E_AUTHOR_SLUG (default: deerdevil) + E2E_AUTHOR_PASSWORD (필수) 사용.
+  // 본 it는 dev 환경 또는 server localhost가 띄워진 상태에서만 PASS — playwright.config webServer 미설정 시 자연스럽게 timeout 처리됨.
+  test("슬러그로 로그인 후 dashboard 진입", async ({ page }) => {
+    const slug = process.env.E2E_AUTHOR_SLUG ?? "deerdevil"
+    const password = process.env.E2E_AUTHOR_PASSWORD
+    test.skip(!password, "E2E_AUTHOR_PASSWORD 미박제 — 환경변수 박제 후 재실행")
+
+    await page.getByLabel("이메일 또는 슬러그").fill(slug)
+    await page.getByLabel("비밀번호").fill(password!)
+    await page.getByRole("button", { name: "로그인" }).click()
+
+    // /dashboard로 리다이렉트
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 })
   })
 })
 

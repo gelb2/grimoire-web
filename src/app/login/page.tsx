@@ -14,7 +14,9 @@ function LoginForm() {
   const router = useRouter()
   const { login, googleLogin } = useAuth()
   const { executeRecaptcha } = useGoogleReCaptcha()
-  const [email, setEmail] = useState('')
+  // Sprint email-p0-3-slug-login (2026-05-04 EMAIL-P0-3 Phase 2):
+  // 통합 입력 — 이메일 또는 슬러그. AuthProvider.login 내부에서 정규식 자동 판별.
+  const [emailOrSlug, setEmailOrSlug] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -25,14 +27,15 @@ function LoginForm() {
     setLoading(true)
     try {
       const recaptchaToken = executeRecaptcha ? await executeRecaptcha('login') : undefined
-      await login(email, password, recaptchaToken)
+      // 좌우 공백 제거 후 AuthProvider.login에 위임 (정규식 자동 판별).
+      await login(emailOrSlug.trim(), password, recaptchaToken)
       router.replace('/dashboard')
     } catch (err: any) {
       setError(err.message || '로그인에 실패했습니다')
     } finally {
       setLoading(false)
     }
-  }, [email, password, executeRecaptcha, login, router])
+  }, [emailOrSlug, password, executeRecaptcha, login, router])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
@@ -50,21 +53,25 @@ function LoginForm() {
           )}
 
           <div>
-            <label className="block text-xs uppercase tracking-widest text-neutral-500 mb-2">이메일</label>
+            <label htmlFor="email-or-slug" className="block text-xs uppercase tracking-widest text-neutral-500 mb-2">이메일 또는 슬러그</label>
             <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
+              id="email-or-slug"
+              type="text"
+              autoComplete="username"
+              value={emailOrSlug}
+              onChange={e => setEmailOrSlug(e.target.value)}
               required
               className="w-full px-4 py-3 bg-white border border-neutral-300 rounded-lg text-black placeholder-neutral-400 focus:outline-none focus:border-black transition"
-              placeholder="your@email.com"
+              placeholder="your@email.com 또는 deerdevil"
             />
           </div>
 
           <div>
-            <label className="block text-xs uppercase tracking-widest text-neutral-500 mb-2">비밀번호</label>
+            <label htmlFor="password" className="block text-xs uppercase tracking-widest text-neutral-500 mb-2">비밀번호</label>
             <input
+              id="password"
               type="password"
+              autoComplete="current-password"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required

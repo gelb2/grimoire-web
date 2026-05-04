@@ -13,7 +13,7 @@
 | 경로 | 파일 | 설명 | 인증 | API |
 |------|------|------|------|-----|
 | `/` | `app/page.tsx` | 루트 — `/explore`로 리다이렉트 | - | - |
-| `/login` | `app/login/page.tsx` | 로그인 | - | `POST /api/auth/login` |
+| `/login` | `app/login/page.tsx` | 로그인 — 입력칸 1개 (이메일 또는 슬러그) + 정규식 자동 판별 (EMAIL-P0-3 Phase 2, sprint-email-p0-3-slug-login) | - | `POST /api/auth/login` (`{ email? }` 또는 `{ slug? }` XOR + password) |
 | `/register` | `app/register/page.tsx` | 회원가입 (3 크레딧 보너스) | - | `POST /api/auth/register` |
 | `/explore` | `app/explore/page.tsx` | 작품 탐색 (검색, 인기, 최신) | - | `GET /api/discover/*` |
 | `/library` | `app/library/page.tsx` | 독자 서재 (북마크, 구독) | JWT | `GET /api/reader/bookmarks`, `GET /api/social/subscriptions` |
