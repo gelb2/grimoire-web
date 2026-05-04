@@ -158,9 +158,17 @@
 |--------|------|------|------|
 | GET | `/api/payments/products` | 크레딧 상품 목록 | - |
 | POST | `/api/payments/webhook` | PAYAPP 결제 콜백 | - |
-| POST | `/api/payments/initiate` | 결제 시작 | JWT |
+| POST | `/api/payments/initiate` | 결제 시작 (24h 이내 pending 재사용 — PAY-P1-3) | JWT |
 | GET | `/api/payments/history` | 결제 내역 | JWT |
 | GET | `/api/payments/credits` | 내 크레딧 잔액 | JWT |
+
+**POST /api/payments/initiate — 재사용 정책 (PAY-P1-3, 2026-05-04)**:
+- 진입 시 `findReusablePendingPayment(authorId, productId, now-24h)` 게이트.
+- 적중 시 → 동일 `paymentId` 재사용 + Polar Checkout URL 신규 발급 (응답 schema 변경 0건).
+- null 반환 시 → 신규 Payment row 생성 (기존 흐름).
+- Polar 정책상 매 호출마다 신규 `tradeNo` 발급 → `externalTransactionId` 갱신 1회 호출.
+- 응답 schema 동일: `{ paymentId, paymentUrl, tradeNo }` (클라이언트 변경 0건).
+- 정본: `.claude/shared-contracts.md` §14 PaymentRetryReuse
 
 ### Payment Reconciliation Cron (PAY-P0-2, 2026-05-03)
 
@@ -182,6 +190,23 @@ HTTP 미노출. NestJS `@Cron('0 */10 * * * *')` 10분 주기로 자동 실행 �
 - S4 정합: skip
 
 정본: `.claude/shared-contracts.md` §12 PaymentReconciliation
+
+### Payment Cleanup Cron (PAY-P1-3, 2026-05-04)
+
+HTTP 미노출. NestJS `@Cron('0 0 4 * * *')` 매일 새벽 4시 1회 — PAY-P0-2 reconciliation cron(새벽 3시 + 10분 주기)과 시간대/주기 분리.
+
+| 항목 | 값 |
+|------|-----|
+| 실행 주기 | `0 0 4 * * *` (매일 새벽 4시 0분 0초) |
+| 동작 | `findPendingPaymentsOlderThan(24)` → `expirePayment` + AuditLog 박제 |
+| 로그 패턴 | `[PaymentCleanupJob] PaymentCleanupJob 시작 — startedAt=...` / `... 완료 — expireCount=N stalePendingCount=N` |
+| AuditLog 박제 | operator=`system_cleanup`, action=`payment_expire` (PAY-P0-2 `system_reconciliation`과 분리) |
+| 비활성화 | `PAYMENT_CLEANUP_DISABLED=1` 환경변수 (즉시 return) |
+| 동시 실행 차단 | in-memory `isRunning` lock + try-finally 해제 |
+
+**역할**: PAY-P0-2 reconciliation cron이 PG list 기반 일부 expire를 처리하지만, PG에 record가 아예 없는 (사용자가 결제 페이지 진입조차 안 한) 24h 초과 row를 추가 정리 + PAY-P1-3 재사용 정책 cutoff와 정합 보장.
+
+정본: `.claude/shared-contracts.md` §14 PaymentRetryReuse
 
 ### Credits
 

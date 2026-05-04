@@ -173,9 +173,18 @@
 | amount | integer | - | 결제 금액 (원) |
 | credits | integer | - | 부여 크레딧 수 |
 | external_transaction_id | text (nullable) | unique | 외부 결제 거래 번호 |
-| status | text | default("pending") | 결제 상태 (pending/completed/failed) |
+| status | text | default("pending") | 결제 상태 (pending/completed/failed/refunded/expired) |
 | created_at | timestamptz | default(now()) | 결제 요청일 |
 | completed_at | timestamptz (nullable) | - | 결제 완료일 |
+
+**status enum 흐름** (2026-05-04 PAY-P1-3 갱신):
+- `pending`: 초기 생성 상태 (Polar Checkout URL 발급 직후)
+- `completed`: webhook 'order.paid' 수신 → `completePaymentAtomically` 트랜잭션 성공
+- `failed`: webhook 'fail' 수신 (PG 처리 실패)
+- `refunded`: webhook 'order.refunded' 수신 → `refundPaymentAtomically` 트랜잭션 성공 (PAY-P1-1)
+- `expired`: 24h 초과 pending row → cron이 마킹 (PAY-P0-2 reconciliation cron + PAY-P1-3 cleanup cron 양쪽에서 처리)
+  - PAY-P1-3 재사용 정책: `findReusablePendingPayment`은 `status='pending' AND createdAt > now-24h` row만 반환 → expired 마킹된 row는 재사용 후보에서 제외
+  - cleanup cron `payment-cleanup.job` (`@Cron('0 0 4 * * *')`): 매일 새벽 4시 1회, AuditLog operator='system_cleanup' action='payment_expire' 박제
 
 ### webhook_events (Sprint PAY-P0-1, 2026-05-03)
 
