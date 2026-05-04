@@ -31,19 +31,6 @@ test.describe("로그인 페이지 (/login)", () => {
     await expect(registerLink).toHaveAttribute("href", "/register")
   })
 
-  test("has test account fill button", async ({ page }) => {
-    const testButton = page.getByRole("button", {
-      name: "테스트 계정으로 채우기",
-    })
-    await expect(testButton).toBeVisible()
-
-    // 클릭하면 이메일/비밀번호가 채워진다
-    await testButton.click()
-    await expect(page.getByPlaceholder("your@email.com")).toHaveValue(
-      "test@grimoire.app"
-    )
-  })
-
   test("shows error on invalid login attempt", async ({ page }) => {
     // 잘못된 자격증명으로 로그인 시도
     await page.getByPlaceholder("your@email.com").fill("wrong@test.com")

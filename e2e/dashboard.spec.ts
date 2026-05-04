@@ -9,7 +9,7 @@ test.describe("대시보드 흐름 (로그인 → 대시보드 → 작품 관리
   test("로그인 후 대시보드에 환영 메시지가 표시된다", async ({ page }) => {
     // 로그인
     await page.goto("/login")
-    await page.fill('input[type="email"]', "deerdevil@grimoire.app")
+    await page.fill('input[type="email"]', process.env.E2E_AUTHOR_EMAIL ?? "deerdevil@example.com")
     await page.fill('input[type="password"]', process.env.E2E_AUTHOR_PASSWORD ?? (() => { throw new Error('E2E_AUTHOR_PASSWORD env 필수') })())
     await page.click('button[type="submit"]')
 
@@ -20,7 +20,7 @@ test.describe("대시보드 흐름 (로그인 → 대시보드 → 작품 관리
 
   test("대시보드에서 내 작품 목록이 표시된다", async ({ page }) => {
     await page.goto("/login")
-    await page.fill('input[type="email"]', "deerdevil@grimoire.app")
+    await page.fill('input[type="email"]', process.env.E2E_AUTHOR_EMAIL ?? "deerdevil@example.com")
     await page.fill('input[type="password"]', process.env.E2E_AUTHOR_PASSWORD ?? (() => { throw new Error('E2E_AUTHOR_PASSWORD env 필수') })())
     await page.click('button[type="submit"]')
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 5000 })
@@ -32,7 +32,7 @@ test.describe("대시보드 흐름 (로그인 → 대시보드 → 작품 관리
 
   test("대시보드에서 빠른 액션 링크가 작동한다", async ({ page }) => {
     await page.goto("/login")
-    await page.fill('input[type="email"]', "deerdevil@grimoire.app")
+    await page.fill('input[type="email"]', process.env.E2E_AUTHOR_EMAIL ?? "deerdevil@example.com")
     await page.fill('input[type="password"]', process.env.E2E_AUTHOR_PASSWORD ?? (() => { throw new Error('E2E_AUTHOR_PASSWORD env 필수') })())
     await page.click('button[type="submit"]')
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 5000 })
@@ -44,7 +44,7 @@ test.describe("대시보드 흐름 (로그인 → 대시보드 → 작품 관리
 
   test("크레딧 충전 페이지가 정상 로드된다", async ({ page }) => {
     await page.goto("/login")
-    await page.fill('input[type="email"]', "deerdevil@grimoire.app")
+    await page.fill('input[type="email"]', process.env.E2E_AUTHOR_EMAIL ?? "deerdevil@example.com")
     await page.fill('input[type="password"]', process.env.E2E_AUTHOR_PASSWORD ?? (() => { throw new Error('E2E_AUTHOR_PASSWORD env 필수') })())
     await page.click('button[type="submit"]')
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 5000 })
