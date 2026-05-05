@@ -38,7 +38,7 @@ import { api } from "@/lib/api"
 describe("EMAIL_OR_SLUG_REGEX (Sprint email-p0-3 Phase 2 §2 정본)", () => {
   it("이메일 형식 (@ + .) 입력 시 true", () => {
     expect(EMAIL_OR_SLUG_REGEX.test("user@example.com")).toBe(true)
-    expect(EMAIL_OR_SLUG_REGEX.test("deerdevil@grimoire.app")).toBe(true)
+    expect(EMAIL_OR_SLUG_REGEX.test("deerdevil@example.org")).toBe(true)
     expect(EMAIL_OR_SLUG_REGEX.test("a@b.c")).toBe(true)
   })
 
@@ -59,7 +59,7 @@ describe("EMAIL_OR_SLUG_REGEX (Sprint email-p0-3 Phase 2 §2 정본)", () => {
 describe("detectIdentifierType (단일 분기 헬퍼)", () => {
   it("이메일 형식 입력 시 'email' 반환", () => {
     expect(detectIdentifierType("user@example.com")).toBe("email")
-    expect(detectIdentifierType("deerdevil@grimoire.app")).toBe("email")
+    expect(detectIdentifierType("deerdevil@example.org")).toBe("email")
   })
 
   it("슬러그 형식 입력 시 'slug' 반환", () => {
