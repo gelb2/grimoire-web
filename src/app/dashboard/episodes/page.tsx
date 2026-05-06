@@ -178,6 +178,12 @@ export default function EpisodeManagementPage() {
                       <p className="text-[11px] text-neutral-400 mt-0.5">{statusLabel(ep.status)}</p>
                     )}
                   </div>
+                  <Link
+                    href={`/dashboard/episodes/${ep.id}/edit`}
+                    className={`text-xs px-3 py-1.5 border border-neutral-300 text-neutral-700 rounded-lg hover:border-black hover:text-black transition ${busy ? 'opacity-50 pointer-events-none' : ''}`}
+                  >
+                    본문 편집
+                  </Link>
                   <button
                     type="button"
                     disabled={busy}

@@ -260,6 +260,22 @@ class ApiClient extends BaseApiClient {
     })
   }
 
+  /** 작가 본인 에피소드 rawMd 조회 (인라인 본문 편집용, 묶음 MM 신설)
+   * 신설 사유: public getEpisode는 rawMd 의도적 제거 (Constitution P3 작가 콘텐츠 보호).
+   * 작가 본인이 dashboard 본문 편집 페이지에서 직접 호출.
+   */
+  async getEpisodeRaw(episodeId: string) {
+    return this.fetch<{
+      id: string
+      title: string
+      subtitle: string | null
+      description: string | null
+      rawMd: string
+      sourceFormat: string
+      orderNum: number
+    }>(`/episodes/${episodeId}/raw`)
+  }
+
   async updateEpisodeStatus(workId: string, episodeId: string, status: 'upload' | 'public' | 'nonPublic') {
     return this.fetch<{ status: string }>(`/works/${workId}/episodes/${episodeId}/status`, {
       method: 'PATCH',
