@@ -57,16 +57,30 @@ ProjectGrimoire의 프론트엔드. DeerDevil(사슴악마 단편소설 웹 뷰�
   - 에러 응답에서 내부 정보 노출하지 않는가?
 - **배포 전 필수** → `../grimoire-server/SECURITY.md` §4 배포 전 체크리스트 통과 확인
 
-### 아키텍처 — FSD (Feature-Sliced Design)
+### 아키텍처 — FSD 영감 5 layer 약식 (정통 FSD 미도입, 묶음 MM 2026-05-06 명시)
 ```
 src/
-├── app/           # Next.js App Router — 라우팅 + 레이아웃
-├── features/      # 도메인 로직 (auth, theme, reader)
-├── lib/           # 유틸리티 (api.ts, utils.ts)
-├── components/    # 공용 UI 컴포넌트
-├── stores/        # Zustand 스토어
-└── shared/        # 공용 유틸, UI (향후)
+├── app/           # Next.js App Router — 라우팅 + 레이아웃 (FSD 'app' + 'pages' 흡수)
+├── features/      # 도메인 로직 slice (auth, theme, reader) — 각 slice index.ts로 Public API 격리
+├── lib/           # 유틸리티 (api.ts, utils.ts) — FSD 'shared' 후보
+├── components/    # 공용 UI 컴포넌트 — FSD 'widgets'/'shared' 후보
+├── hooks/         # 공용 hook — FSD 'shared' 후보
+├── stores/        # Zustand 스토어 — FSD 'shared' 후보
+└── types/         # 타입 정의 — FSD 'shared' 후보
 ```
+
+**정통 FSD vs 우리 약식**:
+- 정통 FSD 6 layer (app/pages/widgets/features/entities/shared) 中 **app + features 2 layer만 차용**
+- pages → Next.js App Router로 흡수
+- widgets / entities / shared 미도입 (lib + components + hooks + stores 4 곳에 분산)
+- Public API 격리 규칙 (각 slice index.ts) — features/auth + features/theme + features/reader 정합 (묶음 MM)
+- 의존성 방향 (위층 → 아래층) — 위반 0건 (단 정통 layer 부재로 우회 가치 자체가 없음)
+
+**정통 FSD 정식 도입 후보** (별도 sprint, `~/.claude/projects/.../memory/project_remaining_tasks.md` 참조):
+- shared/ 신설 + lib/hooks/stores → 이동 (1 sprint)
+- entities/ 신설 + 도메인 모델 박제 (1 sprint)
+- widgets/ 신설 + 공용 페이지 조각 (예: PlatformNav/SeriesNav) → 이동 (1 sprint)
+- 큰 리팩토링 동반, 회귀 위험 — 사용자 명시 후 진행
 
 ### 라우트 구조
 

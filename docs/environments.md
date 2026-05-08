@@ -46,6 +46,7 @@ PORT=3000
 DATABASE_URL=postgresql://...
 JWT_SECRET=...
 CORS_ORIGIN={환경별 Web URL}
+PUBLIC_API_BASE_URL={환경별 API URL}/api  # bakedCssUrl 응답 절대화 (P1-#7, 2026-05-03). 절대 URL 강제, 미설정 시 부팅 차단
 
 # NODE_ENV vs APP_ENV 분리 이유:
 # - NODE_ENV는 Node/Express/NestJS 생태계의 표준값. 'production' 시 라이브러리들이 최적화 모드로 동작.
@@ -85,4 +86,5 @@ API_URL={환경별 API URL}/api
 |------|-----------|-------------|------------|
 | CORS_ORIGIN | http://localhost:3001 | https://dev.grimoire-book.com | https://grimoire-book.com |
 | API_URL | http://localhost:3000/api | https://dev-api.grimoire-book.com/api | https://api.grimoire-book.com/api |
+| PUBLIC_API_BASE_URL | http://localhost:3000/api | https://dev-api.grimoire-book.com/api | https://api.grimoire-book.com/api |
 | DATABASE_URL | postgresql://grimoireadmin:...@localhost:5432/grimoire | Azure dev DB | Azure prod DB |

@@ -14,12 +14,14 @@ import { AnnouncementsTab } from './tabs/AnnouncementsTab'
 import { FeaturedTab } from './tabs/FeaturedTab'
 import { RevenueTab } from './tabs/RevenueTab'
 import { ThemesTab } from './tabs/ThemesTab'
+import { CreditsTab } from './tabs/CreditsTab'
 
-type Tab = 'stats' | 'authors' | 'works' | 'sanctions' | 'reports' | 'comments' | 'payments' | 'revenue' | 'announcements' | 'featured' | 'themes' | 'access' | 'settings' | 'audit'
+type Tab = 'stats' | 'authors' | 'works' | 'sanctions' | 'reports' | 'comments' | 'payments' | 'revenue' | 'credits' | 'announcements' | 'featured' | 'themes' | 'access' | 'settings' | 'audit'
 
 const TAB_LABELS: Record<Tab, string> = {
   stats: '통계', authors: '사용자', works: '콘텐츠', sanctions: '제재',
   reports: '신고', comments: '댓글', payments: '결제', revenue: '수익',
+  credits: '크레딧',
   announcements: '공지', featured: '추천', themes: '테마',
   access: '접근 로그', settings: '설정', audit: '감사 로그',
 }
@@ -70,6 +72,7 @@ export default function AdminPage() {
       {tab === 'comments' && <CommentsTab />}
       {tab === 'payments' && <PaymentsTab />}
       {tab === 'revenue' && <RevenueTab />}
+      {tab === 'credits' && <CreditsTab />}
       {tab === 'announcements' && <AnnouncementsTab />}
       {tab === 'featured' && <FeaturedTab />}
       {tab === 'themes' && <ThemesTab />}
@@ -281,34 +284,6 @@ function CreateAuthorForm({ onDone }: { onDone: () => void }) {
         <button onClick={handleSubmit} className="px-4 py-2 bg-white text-black text-sm rounded-lg font-medium">생성</button>
         {error && <span className="text-red-400 text-xs">{error}</span>}
       </div>
-    </div>
-  )
-}
-
-// ─── 크레딧 관리 탭 ───
-function CreditsTab() {
-  const [authorId, setAuthorId] = useState('')
-  const [amount, setAmount] = useState('')
-  const [reason, setReason] = useState('')
-  const [result, setResult] = useState('')
-
-  return (
-    <div className="max-w-lg">
-      <div className="space-y-3 mb-4">
-        <input placeholder="작가 ID" value={authorId} onChange={e => setAuthorId(e.target.value)}
-          className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded text-sm text-white placeholder-neutral-500" />
-        <input placeholder="수량" type="number" value={amount} onChange={e => setAmount(e.target.value)}
-          className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded text-sm text-white placeholder-neutral-500" />
-        <input placeholder="사유" value={reason} onChange={e => setReason(e.target.value)}
-          className="w-full px-3 py-2 bg-neutral-900 border border-neutral-700 rounded text-sm text-white placeholder-neutral-500" />
-      </div>
-      <div className="flex gap-2">
-        <button onClick={async () => { try { const r = await api.adminGrantCredits(authorId, parseInt(amount), reason); setResult(`부여 완료: 잔액 ${r.credits}`) } catch (e: any) { setResult(`오류: ${e.message}`) } }}
-          className="px-4 py-2 bg-green-700 hover:bg-green-600 text-white text-sm rounded-lg">부여</button>
-        <button onClick={async () => { try { const r = await api.adminDeductCredits(authorId, parseInt(amount), reason); setResult(`차감 완료: 잔액 ${r.credits}`) } catch (e: any) { setResult(`오류: ${e.message}`) } }}
-          className="px-4 py-2 bg-red-700 hover:bg-red-600 text-white text-sm rounded-lg">차감</button>
-      </div>
-      {result && <p className="mt-3 text-sm text-neutral-400">{result}</p>}
     </div>
   )
 }

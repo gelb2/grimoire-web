@@ -54,7 +54,7 @@
 | Social (좋아요/댓글) | ✅ EpisodeFooter에서 사용 |
 | Social (구독) | ✅ 프로필 페이지에서 사용 |
 | Payment (Polar) | ✅ 결제 페이지에서 사용 (KYC 전 test mode) |
-| Admin | ✅ 관리자 패널 전체 탭에서 사용 (엔드포인트 수는 `docs/api-contract.md` 참조) |
+| Admin | ✅ 관리자 패널 전체 탭에서 사용 (엔드포인트 수는 `docs/api-contract.md` 참조). PAY-P0-3 (2026-05-03) — `/admin` 크레딧 탭 신설 web UI(`tabs/CreditsTab.tsx`): adminListAuthors(검색) + adminGrantCredits + adminDeductCredits 결합 운영자 수동 지급/차감. server 변경 0건. |
 | **Analysis** | ❌ api.ts 미구현 (Phase 5 대기) |
 
 ---

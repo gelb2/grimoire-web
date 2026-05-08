@@ -158,9 +158,55 @@
 |--------|------|------|------|
 | GET | `/api/payments/products` | 크레딧 상품 목록 | - |
 | POST | `/api/payments/webhook` | PAYAPP 결제 콜백 | - |
-| POST | `/api/payments/initiate` | 결제 시작 | JWT |
+| POST | `/api/payments/initiate` | 결제 시작 (24h 이내 pending 재사용 — PAY-P1-3) | JWT |
 | GET | `/api/payments/history` | 결제 내역 | JWT |
 | GET | `/api/payments/credits` | 내 크레딧 잔액 | JWT |
+
+**POST /api/payments/initiate — 재사용 정책 (PAY-P1-3, 2026-05-04)**:
+- 진입 시 `findReusablePendingPayment(authorId, productId, now-24h)` 게이트.
+- 적중 시 → 동일 `paymentId` 재사용 + Polar Checkout URL 신규 발급 (응답 schema 변경 0건).
+- null 반환 시 → 신규 Payment row 생성 (기존 흐름).
+- Polar 정책상 매 호출마다 신규 `tradeNo` 발급 → `externalTransactionId` 갱신 1회 호출.
+- 응답 schema 동일: `{ paymentId, paymentUrl, tradeNo }` (클라이언트 변경 0건).
+- 정본: `.claude/shared-contracts.md` §14 PaymentRetryReuse
+
+### Payment Reconciliation Cron (PAY-P0-2, 2026-05-03)
+
+HTTP 미노출. NestJS `@Cron('0 */10 * * * *')` 10분 주기로 자동 실행 — Container Apps cron 단독.
+
+| 항목 | 값 |
+|------|-----|
+| 실행 주기 | `0 */10 * * * *` (매 10분 0초) |
+| 동작 | Polar `checkouts.list` 호출 + DB Payment 비교 → 4 시나리오 분기 |
+| 로그 패턴 | `[PaymentReconciliationJob] PaymentReconciliationJob 시작 — since=...` / `... 완료 — processed=N boost=N mismatch=N expire=N` |
+| AuditLog 박제 | operator=`system_reconciliation`, action ∈ {`reconciliation_boost`, `reconciliation_refund_mismatch`, `reconciliation_expire`} |
+| 비활성화 | `RECONCILIATION_DISABLED=1` 환경변수 (즉시 return) |
+| 동시 실행 차단 | in-memory `isRunning` lock + try-finally 해제 |
+
+**4 시나리오**:
+- S1 boost: PG=succeeded + DB=pending → `completePaymentAtomically` (webhook 누락 자동 보정)
+- S2 mismatch: PG=refunded + DB=completed → AuditLog만 (실제 환수는 P1-1 위임)
+- S3 expire: PG=NotFound + DB=pending(24h 경과) → status='expired' 만료 처리
+- S4 정합: skip
+
+정본: `.claude/shared-contracts.md` §12 PaymentReconciliation
+
+### Payment Cleanup Cron (PAY-P1-3, 2026-05-04)
+
+HTTP 미노출. NestJS `@Cron('0 0 4 * * *')` 매일 새벽 4시 1회 — PAY-P0-2 reconciliation cron(새벽 3시 + 10분 주기)과 시간대/주기 분리.
+
+| 항목 | 값 |
+|------|-----|
+| 실행 주기 | `0 0 4 * * *` (매일 새벽 4시 0분 0초) |
+| 동작 | `findPendingPaymentsOlderThan(24)` → `expirePayment` + AuditLog 박제 |
+| 로그 패턴 | `[PaymentCleanupJob] PaymentCleanupJob 시작 — startedAt=...` / `... 완료 — expireCount=N stalePendingCount=N` |
+| AuditLog 박제 | operator=`system_cleanup`, action=`payment_expire` (PAY-P0-2 `system_reconciliation`과 분리) |
+| 비활성화 | `PAYMENT_CLEANUP_DISABLED=1` 환경변수 (즉시 return) |
+| 동시 실행 차단 | in-memory `isRunning` lock + try-finally 해제 |
+
+**역할**: PAY-P0-2 reconciliation cron이 PG list 기반 일부 expire를 처리하지만, PG에 record가 아예 없는 (사용자가 결제 페이지 진입조차 안 한) 24h 초과 row를 추가 정리 + PAY-P1-3 재사용 정책 cutoff와 정합 보장.
+
+정본: `.claude/shared-contracts.md` §14 PaymentRetryReuse
 
 ### Credits
 
@@ -316,17 +362,34 @@ AuthorTheme 스키마는 `docs/theme-spec.md` 참조.
 ### GET /api/themes/:authorSlug
 
 ```
-Response 200: Theme (id, authorId, preset, overrides, rawDescription, updatedAt)
+Response 200: Theme (id, name, preset, overrides, rawDescription, bakedCssUrl, theme, updatedAt)
+  - bakedCssUrl: 항상 절대 URL (Blob CDN 절대 URL 또는 ${PUBLIC_API_BASE_URL}/themes/css/{slug} 폴백)
+                 (P1-#7, 2026-05-03). 상대 경로 응답 0건 보장.
 Error 404: 테마 없음
 ```
 
 ### POST /api/themes/publish/:authorSlug
 
-테마를 CSS로 베이킹하고 bakedCssUrl을 갱신한다.
+테마를 CSS로 베이킹하고 baked_css_url을 갱신한다.
+
+DB 박제 정책 (P1-#7, 2026-05-03):
+  - Blob 활성 + 업로드 성공 → 절대 URL(Blob CDN) 박제
+  - Blob 비활성 또는 업로드 실패 → NULL 박제 (응답 시 server가 환경별 base URL로 절대화)
+  - 상대 경로(`/api/themes/css/...`) 박제 금지
 
 ```
-Response 200: { "bakedCssUrl": "..." }
+Response 200: { "cssUrl": "<절대 URL>", "bakedCssUrl": "<절대 URL>", "css": "..." }
+  - cssUrl/bakedCssUrl: 항상 절대 URL (Blob URL 또는 폴백 절대 URL)
 Error 404: 테마 없음
+```
+
+### GET /api/themes/resolve/:authorSlug
+
+작품별 테마 resolve (`?work=slug`).
+
+```
+Response 200: Theme | {}
+  - bakedCssUrl: 항상 절대 URL (P1-#7, 2026-05-03)
 ```
 
 ### GET /api/themes/css/:authorSlug
@@ -658,10 +721,32 @@ Response 200: [{ "id", "name", "credits", "price", "description" }]
 
 ### POST /api/payments/webhook
 
+PG (Polar 등) 웹훅 콜백 — 서명 검증 + 멱등성 게이트 + 원자적 크레딧 부여.
+
+**Headers (Polar Standard Webhooks)**:
+- `webhook-id`: PG 발급 unique 이벤트 ID (멱등성 키, 누락 시 거부)
+- `webhook-timestamp`: Unix timestamp
+- `webhook-signature`: HMAC
+
+**Request (raw body)**: PG 원본 이벤트 JSON (Polar SDK가 검증/파싱)
+
+**Response 200 — 처리 결과 reason 박제** (Sprint PAY-P0-1, 2026-05-03 / PAY-P1-1, 2026-05-03):
 ```
-Request: { "paymentId": "...", "productId": "...", "authorId": "...", "status": "success" }
-Response 200: { "processed": true }
+{ "processed": true,  "credits": <N> }                                          // 정상 결제 — 크레딧 부여 (event.status='success')
+{ "processed": true,  "credits": 0, "deficitCredits": 0 }                       // 정상 환불 — 환수 완료 (PAY-P1-1, event.status='cancel', Author.credits >= credits)
+{ "processed": true,  "credits": 0, "deficitCredits": <N> }                     // deficit 환불 — 잔액 부족 (PAY-P1-1, Author.credits < credits, 0 fix + deficit 박제)
+{ "processed": true,  "credits": 0 }                                            // 결제 실패 (event.status='fail', 환수 대상 아님)
+{ "processed": false, "reason": "invalid_or_ignored" }                          // 서명 검증 실패 또는 webhook-id 헤더 누락
+{ "processed": false, "reason": "duplicate_event" }                             // 동일 eventId 재전송 — 첫 호출만 처리, 두 번째 즉시 skip
+{ "processed": false, "reason": "unknown_trade" }                               // tradeNo 매칭 실패
+{ "processed": false, "reason": "already_completed" }                           // 약식 멱등성 (이전 webhook 박제 누락된 PROD 데이터 안전망)
 ```
+
+**멱등성 보장**: 동일 `webhook-id`로 두 번째 호출이 들어와도 `completePaymentAtomically` / `refundPaymentAtomically`는 단 1회만 실행. DB `webhook_events.event_id` UNIQUE 제약으로 race condition 차단 (P2002 → safe skip).
+
+**환불 처리 (PAY-P1-1, 2026-05-03)**: `event.status='cancel'` 분기에서 `RefundPaymentUseCase.execute` 호출. $transaction 내부에서 Payment.status='refunded' + Author.credits decrement(0 fix) + CreditLog 음수 amount + RefundLog 박제. 후행으로 AdminAuditLog(operator='system_refund', action='refund_normal' | 'refund_deficit'). 잔액 부족 시 deficitCredits 양수 응답으로 운영자 추적 가능.
+
+**관련**: `webhook_events` 테이블 + `refund_logs` 테이블 (data-model.md), `.claude/shared-contracts.md` §11 WebhookEventIdempotency + §13 RefundPaymentAtomically
 
 ### GET /api/payments/credits
 

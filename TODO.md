@@ -14,7 +14,7 @@
 
 **web 단독 P0**
 - [ ] `grimoire-web/.githooks/pre-push` 설치 — tsc + vitest + build + docs 동기화 검증 (server에는 있으나 web 없음)
-- [ ] `src/app/login/page.tsx`의 "테스트 계정으로 채우기" 하드코딩 이메일 교체 — 현재 `test@grimoire.app`이나 dev DB에 없음. 실측된 dev 계정으로 변경 또는 비활성화
+- [x] **해소 (2026-05-04 EMAIL-P0-1)** — login/page.tsx에서 "테스트 계정으로 채우기" 버튼 이미 제거됨. broken e2e 테스트 (auth.spec.ts) 삭제 + dashboard.spec.ts 4 위치 `process.env.E2E_AUTHOR_EMAIL` 환경변수화 + .env.example 박제.
 
 **web 공유 참여 (루트 `.claude/` 작업 시 함께)**
 - [ ] PostToolUse hook에서 web 파일 `.tsx/.ts` 수정 시 `npx tsc --noEmit` 자동 트리거

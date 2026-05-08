@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/features/theme"
 import type { AuthorTheme } from "@/features/theme"
 import { AuthProvider } from "@/features/auth"
 import { SeriesNav } from "@/features/reader/ui/SeriesNav"
+import { resolveBakedCssUrl } from "./_helpers/baked-css-url"
 
 // 완전 동적 — SSR on every request
 export const dynamic = "force-dynamic"
@@ -36,13 +37,12 @@ async function loadTheme(authorSlug: string): Promise<{ theme: AuthorTheme | nul
     if (res.ok) {
       const data = await res.json()
       const theme = (data.theme ?? data.overrides ?? null) as AuthorTheme | null
-      // bakedCssUrl은 절대 URL(Blob Storage CDN) 또는 상대 URL(`/api/themes/css/{slug}`)
-      // 두 형태 모두 <link rel=stylesheet>로 로드 가능. ThemeProvider 인라인과 함께
-      // 중복 적용되더라도 CSS 변수 값이 같아 렌더링에는 영향 없음 (ThemeProvider가
-      // inline style로 강제 우선).
-      const bakedCssUrl = typeof data.bakedCssUrl === 'string' && data.bakedCssUrl.length > 0
-        ? data.bakedCssUrl
-        : null
+      // bakedCssUrl은 server에서 항상 **절대 URL 또는 NULL** 로 응답 보장한다
+      // (Sprint sprint-baked-css-url-absolute / 방향 B — server 응답 단계 절대화).
+      // 상대 경로(`/api/themes/css/{slug}`) fallback 처리는 폐지됨 — DB도 마이그레이션
+      // `baked_css_url_clear_relative`로 일괄 NULL 정리. resolveBakedCssUrl은 회귀
+      // 방어선(비문자열/빈문자열 → null) 일 뿐, 상대 경로 변환 로직은 포함하지 않는다.
+      const bakedCssUrl = resolveBakedCssUrl(data.bakedCssUrl)
       return { theme, bakedCssUrl }
     }
   } catch {
