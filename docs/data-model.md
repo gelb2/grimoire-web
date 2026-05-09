@@ -414,13 +414,19 @@ AnalysisReport (AI 일관성 분석 리포트, 2026-04-24 F4)
 | 컬럼 | 타입 | 제약 | 설명 |
 |------|------|------|------|
 | id | uuid | PK | 감사 로그 식별자 |
-| admin_id | text | not null | 행위 관리자 |
-| action | text | not null | author_create, credit_grant, episode_status_change, user_sanction, report_resolve, setting_change 등 |
-| target_id | text | nullable | 대상 리소스 ID |
-| detail | jsonb | nullable | 변경 전/후 값, 사유 등 |
+| admin_id | text | not null | 행위 관리자 또는 시스템 식별자 (`system_*` prefix) |
+| action | text | not null | (인간 운영자) author_create, credit_grant, episode_status_change, user_sanction, report_resolve, setting_change 등 / (시스템) refund_normal, refund_deficit, payment_expire, **webhook_permanent_failed** (PAY-P3-B 신설), retry_skip_dedup (PAY-P3-C) |
+| target_id | text | nullable | 대상 리소스 ID (시스템 박제 시 webhook eventId 또는 paymentId) |
+| detail | jsonb | nullable | 변경 전/후 값, 사유 등 (PAY-P3-B `webhook_permanent_failed` 시 `{ reason: 'polar_4xx_no_retry', errorClass, httpStatus, paymentId, branch, originalMessage }` 박제) |
 | created_at | timestamptz | default now | 기록 시각 |
 
 인덱스: `(admin_id, created_at)`, `(action)`
+
+**시스템 operator 매핑 (PAY-P3-B 정합)**:
+- `system_refund` — RefundPaymentUseCase ($transaction 후행, action `refund_normal` / `refund_deficit`)
+- `system_cleanup` — payment-cleanup.job (action `payment_expire`)
+- `system_payment` — PaymentUseCase 결제 완료 (action `payment_completed`)
+- `system_dlq` — webhook 영구 실패 박제. PAY-P2-2 MAX_RETRY 누적 후 + **PAY-P3-B Polar 4xx 즉시 permanent_failed (action `webhook_permanent_failed`, retry queue 박제 0건)** + PAY-P3-C dedup skip (action `retry_skip_dedup`).
 
 ---
 
