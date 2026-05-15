@@ -109,6 +109,7 @@
 | GET | `/api/authors/:slug` | 작가 공간 데이터 (테마 + 작품 목록) | - |
 | GET | `/api/authors/:slug/profile` | 작가 공개 프로필 (통계 포함) | - |
 | PATCH | `/api/authors/:slug/profile` | 작가 bio 수정 | JWT |
+| DELETE | `/api/authors/me` | 본인 계정 탈퇴 (soft delete + GDPR 익명화 + 30일 cron hard delete) | JWT |
 
 ### Content (공개)
 
@@ -233,7 +234,9 @@ HTTP 미노출. NestJS `@Cron('0 0 4 * * *')` 매일 새벽 4시 1회 — PAY-P0
 | GET | `/api/admin/authors/:id` | 작가 상세 | JWT, admin |
 | POST | `/api/admin/authors` | 작가 생성 | JWT, admin |
 | PATCH | `/api/admin/authors/:id` | 작가 정보 수정 | JWT, admin |
-| DELETE | `/api/admin/authors/:id` | 작가 삭제 | JWT, admin |
+| DELETE | `/api/admin/authors/:id` | 작가 삭제 (legacy soft delete) | JWT, admin |
+| POST | `/api/admin/authors/:id/force-delete` | 운영자 강제 삭제 (soft delete + GDPR 익명화 + 30일 cron hard delete + 사유 필수) | JWT, admin |
+| POST | `/api/admin/authors/:id/anonymize` | 운영자 GDPR 익명화 only (계정 유지 + email/name/passwordHash/bio 4 필드 익명화 + 사유 필수) | JWT, admin |
 | PATCH | `/api/admin/authors/:id/role` | 역할 변경 (user/admin) | JWT, admin |
 | PATCH | `/api/admin/authors/:id/plan` | 플랜 변경 | JWT, admin |
 | POST | `/api/admin/credits/grant` | 크레딧 부여 | JWT, admin |
