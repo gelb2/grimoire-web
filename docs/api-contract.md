@@ -109,6 +109,7 @@
 | GET | `/api/authors/:slug` | 작가 공간 데이터 (테마 + 작품 목록) | - |
 | GET | `/api/authors/:slug/profile` | 작가 공개 프로필 (통계 포함) | - |
 | PATCH | `/api/authors/:slug/profile` | 작가 bio 수정 | JWT |
+| DELETE | `/api/authors/me` | 본인 계정 탈퇴 (soft delete + GDPR 익명화 + 30일 cron hard delete) | JWT |
 
 ### Content (공개)
 
@@ -233,7 +234,9 @@ HTTP 미노출. NestJS `@Cron('0 0 4 * * *')` 매일 새벽 4시 1회 — PAY-P0
 | GET | `/api/admin/authors/:id` | 작가 상세 | JWT, admin |
 | POST | `/api/admin/authors` | 작가 생성 | JWT, admin |
 | PATCH | `/api/admin/authors/:id` | 작가 정보 수정 | JWT, admin |
-| DELETE | `/api/admin/authors/:id` | 작가 삭제 | JWT, admin |
+| DELETE | `/api/admin/authors/:id` | 작가 삭제 (legacy soft delete) | JWT, admin |
+| POST | `/api/admin/authors/:id/force-delete` | 운영자 강제 삭제 (soft delete + GDPR 익명화 + 30일 cron hard delete + 사유 필수) | JWT, admin |
+| POST | `/api/admin/authors/:id/anonymize` | 운영자 GDPR 익명화 only (계정 유지 + email/name/passwordHash/bio 4 필드 익명화 + 사유 필수) | JWT, admin |
 | PATCH | `/api/admin/authors/:id/role` | 역할 변경 (user/admin) | JWT, admin |
 | PATCH | `/api/admin/authors/:id/plan` | 플랜 변경 | JWT, admin |
 | POST | `/api/admin/credits/grant` | 크레딧 부여 | JWT, admin |
@@ -746,7 +749,19 @@ PG (Polar 등) 웹훅 콜백 — 서명 검증 + 멱등성 게이트 + 원자적
 
 **환불 처리 (PAY-P1-1, 2026-05-03)**: `event.status='cancel'` 분기에서 `RefundPaymentUseCase.execute` 호출. $transaction 내부에서 Payment.status='refunded' + Author.credits decrement(0 fix) + CreditLog 음수 amount + RefundLog 박제. 후행으로 AdminAuditLog(operator='system_refund', action='refund_normal' | 'refund_deficit'). 잔액 부족 시 deficitCredits 양수 응답으로 운영자 추적 가능.
 
-**관련**: `webhook_events` 테이블 + `refund_logs` 테이블 (data-model.md), `.claude/shared-contracts.md` §11 WebhookEventIdempotency + §13 RefundPaymentAtomically
+**Polar SDK exception 정책 (PAY-P3-B, 2026-05-09)**: webhook 처리 catch 블록에서 `classifyPolarError` 5분류 후 분기 처리.
+
+| errorClass | 트리거 | 분기 | webhook_events.status | retry queue 박제 | AuditLog action |
+|---|---|---|---|---|---|
+| `timeout` | AbortError, TimeoutError, message에 'timeout' 포함 | retry | `failed` (errorMessage `polar_timeout: ...`) | 박제 (PAY-P2-2 DLQ, 5분 cron) | — |
+| `network` | ECONNRESET, ENOTFOUND, ETIMEDOUT, EPIPE, ECONNREFUSED, ConnectionError | retry | `failed` (errorMessage `polar_network: ...`) | 박제 | — |
+| `server_5xx` | HTTP 500/502/503/504 (PolarError.statusCode 추출) | retry | `failed` (errorMessage `polar_server_5xx: ...`) | 박제 | — |
+| `client_4xx` | HTTP 400/401/403/404/422 (요청 결함, retry 무의미) | **permanent_failed 즉시** | `failed` (errorMessage `polar_client_4xx: ...`) | **박제 0건** | `webhook_permanent_failed` (operator='system_dlq') |
+| `unknown` | 분류 실패 시 안전 fallback | retry | `failed` (errorMessage `polar_unknown: ...`) | 박제 | — |
+
+**SDK timeout 옵션**: `new Polar({ timeoutMs })` Polar SDK v0.47.0 SDKOptions.timeoutMs 내장 옵션 (옵션 A 채택). env `POLAR_SDK_TIMEOUT_MS` 오버라이드 (기본값 30000ms). 워커 자원 leak 차단.
+
+**관련**: `webhook_events` 테이블 + `refund_logs` 테이블 (data-model.md), `.claude/shared-contracts.md` §11 WebhookEventIdempotency + §13 RefundPaymentAtomically + §24 PolarSDKTimeoutPolicy (PAY-P3-B 신설)
 
 ### GET /api/payments/credits
 

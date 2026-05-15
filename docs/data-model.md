@@ -23,6 +23,7 @@
 | plan_expire_at | timestamptz (nullable) | - | 플랜 만료일 (free=null, pro/premium=날짜) |
 | default_theme_id | uuid (nullable) | - | 기본 테마 ID |
 | created_at | timestamptz | default(now()) | 가입일 |
+| deleted_at | timestamptz (nullable) | - | **USER-SOFT-DELETE sprint (2026-05-15)** — Author soft delete 표식. NULL = 활성 / NOT NULL = soft deleted. 30일 후 cron hard delete 정합 (회계 8건 Restrict 차단 시 보류). @@index([deleted_at]) 정합. middleware 자동 변환 박제 (findUnique/findMany/findFirst → WHERE deletedAt IS NULL 자동 + delete → soft delete) |
 
 관계: Theme (1:N), Work (1:N), SocialAccount (1:N)
 
@@ -310,27 +311,43 @@ Polar 환불 webhook 수신 시 크레딧 환수 트랜잭션의 영구 박제 �
 ## 관계 다이어그램
 
 ```
-Author ──1:N── Theme
-Author ──1:N── Work ──1:N── Episode
-Work ──N:1── Theme (작품별 테마)
-Work ──1:N── DailyView (일별 조회 통계)
-Author ──1:N── SocialAccount
-Author ──1:N── CreditLog (비정규화)
-ChatSession ──1:N── ChatMessage (cascade delete)
-Comment ──1:N── Comment (대댓글, self-join)
+Author ──1:N── Theme                  (onDelete: SetNull — 익명화)
+Author ──1:N── Work                   (onDelete: Restrict — 작가 콘텐츠 영구 보존)
+Work ──1:N── Episode                  (onDelete: Cascade — Work 삭제 시 동시)
+Work ──N:1── Theme                    (onDelete: SetNull — Theme 삭제 시 default 유지)
+Work ──1:N── DailyView                (onDelete: Cascade)
+Author ──1:N── SocialAccount          (onDelete: Cascade — 계정 종속)
+Author ──1:N── CreditLog              (onDelete: Restrict — 회계/감사 영구 보존)
+Author ──1:N── Payment                (onDelete: Restrict — 회계/세무 영구 보존)
+Author ──1:N── AnalysisReport         (onDelete: Restrict — 환불 추적 + 감사)
+Author ──1:N── AdminAuditLog (admin)  (onDelete: Restrict — 감사 영구 보존)
+Author ──1:N── UserSanction (author)  (onDelete: Restrict — 재가입 추적)
+Author ──1:N── UserSanction (admin)   (onDelete: SetNull — 운영자 변경 보존)
+Author ──1:N── FeaturedWork (admin)   (onDelete: SetNull — 운영자 변경 보존)
+Author ──1:N── RefreshToken           (onDelete: Cascade — 즉시 무효)
+Author ──1:N── ChatSession            (onDelete: Cascade)
+Author ──1:N── Bookmark               (onDelete: Cascade)
+Author ──1:N── ReadingProgress        (onDelete: Cascade)
+Author ──1:N── Like                   (onDelete: SetNull — 익명화, 카운트 보존)
+Author ──1:N── Comment                (onDelete: SetNull — 익명화, 본문 보존)
+Author ──1:N── AccessLog              (onDelete: SetNull — 보안 감사 영구 보존, 익명화)
+Author ──1:N── Report (reporter/resolver) (onDelete: SetNull — 익명화)
+Author ──1:N── Subscription (sub/target) (onDelete: Cascade)
+Payment ──1:N── RefundLog              (onDelete: Restrict — 회계/세무 영구 보존)
+ChatSession ──1:N── ChatMessage       (onDelete: Cascade)
+Comment ──1:N── Comment (대댓글)      (onDelete: SetNull — 답글 보존)
 SignupHistory (독립 — 재가입 방지)
-Bookmark (독자 행위 기록)
-ReadingProgress (독자 행위 기록)
-Like (독자 행위 기록)
-Subscription (구독 관계)
-Payment (결제 기록)
-UserSanction (제재/정지 — 작가별 이력)
-Report (콘텐츠 신고 큐)
 SystemSetting (동적 설정값)
-AccessLog (보안 접근 로그)
-AdminAuditLog (관리자 감사 로그)
-AnalysisReport (AI 일관성 분석 리포트, 2026-04-24 F4)
+WebhookEvent (멱등성, FK 0건)
+WebhookRetryQueue (DLQ, FK 0건)
+ReconciliationCheckpoint (cron checkpoint, 단일 row)
 ```
+
+**FK Cascade 정책 박제 (PAY-P3-E §3-1, 2026-05-10)**:
+- 4 전략 분포: **Cascade 16건** (사용자 종속 + Work/Episode 종속) + **Restrict 8건** (회계/세무/감사 영구 보존) + **SetNull 9건** (익명화 + 운영자 변경 보존) + **NoAction 0건**
+- Restrict 8 영역: `payments.authorId` / `credit_logs.authorId` / `works.authorId` / `user_sanctions.authorId` / `analysis_reports.authorId` / `admin_audit_logs.adminId` / `refund_logs.paymentId`
+- 정본: `prisma/schema.prisma` + `prisma/migrations/20260510_pay_p3_e_fk_cascade_policy/migration.sql` + `ADR.md ADR-007`
+- archive 테이블 (옵션 C 강제 박제, 단계 2 dev 영역): `credit_logs_archive_pay_p3_e` (1 row) + `admin_audit_logs_archive_pay_p3_e` (2 row) — 회계/감사 영구 보존
 
 ### analysis_reports
 
@@ -414,13 +431,19 @@ AnalysisReport (AI 일관성 분석 리포트, 2026-04-24 F4)
 | 컬럼 | 타입 | 제약 | 설명 |
 |------|------|------|------|
 | id | uuid | PK | 감사 로그 식별자 |
-| admin_id | text | not null | 행위 관리자 |
-| action | text | not null | author_create, credit_grant, episode_status_change, user_sanction, report_resolve, setting_change 등 |
-| target_id | text | nullable | 대상 리소스 ID |
-| detail | jsonb | nullable | 변경 전/후 값, 사유 등 |
+| admin_id | text | not null | 행위 관리자 또는 시스템 식별자 (`system_*` prefix) |
+| action | text | not null | (인간 운영자) author_create, credit_grant, episode_status_change, user_sanction, report_resolve, setting_change 등 / (시스템) refund_normal, refund_deficit, payment_expire, **webhook_permanent_failed** (PAY-P3-B 신설), retry_skip_dedup (PAY-P3-C) |
+| target_id | text | nullable | 대상 리소스 ID (시스템 박제 시 webhook eventId 또는 paymentId) |
+| detail | jsonb | nullable | 변경 전/후 값, 사유 등 (PAY-P3-B `webhook_permanent_failed` 시 `{ reason: 'polar_4xx_no_retry', errorClass, httpStatus, paymentId, branch, originalMessage }` 박제) |
 | created_at | timestamptz | default now | 기록 시각 |
 
 인덱스: `(admin_id, created_at)`, `(action)`
+
+**시스템 operator 매핑 (PAY-P3-B 정합)**:
+- `system_refund` — RefundPaymentUseCase ($transaction 후행, action `refund_normal` / `refund_deficit`)
+- `system_cleanup` — payment-cleanup.job (action `payment_expire`)
+- `system_payment` — PaymentUseCase 결제 완료 (action `payment_completed`)
+- `system_dlq` — webhook 영구 실패 박제. PAY-P2-2 MAX_RETRY 누적 후 + **PAY-P3-B Polar 4xx 즉시 permanent_failed (action `webhook_permanent_failed`, retry queue 박제 0건)** + PAY-P3-C dedup skip (action `retry_skip_dedup`).
 
 ---
 

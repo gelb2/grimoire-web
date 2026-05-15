@@ -15,11 +15,12 @@ import { FeaturedTab } from './tabs/FeaturedTab'
 import { RevenueTab } from './tabs/RevenueTab'
 import { ThemesTab } from './tabs/ThemesTab'
 import { CreditsTab } from './tabs/CreditsTab'
+import { UsersTab } from './tabs/UsersTab'
 
-type Tab = 'stats' | 'authors' | 'works' | 'sanctions' | 'reports' | 'comments' | 'payments' | 'revenue' | 'credits' | 'announcements' | 'featured' | 'themes' | 'access' | 'settings' | 'audit'
+type Tab = 'stats' | 'authors' | 'users' | 'works' | 'sanctions' | 'reports' | 'comments' | 'payments' | 'revenue' | 'credits' | 'announcements' | 'featured' | 'themes' | 'access' | 'settings' | 'audit'
 
 const TAB_LABELS: Record<Tab, string> = {
-  stats: '통계', authors: '사용자', works: '콘텐츠', sanctions: '제재',
+  stats: '통계', authors: '사용자', users: '탈퇴/익명화', works: '콘텐츠', sanctions: '제재',
   reports: '신고', comments: '댓글', payments: '결제', revenue: '수익',
   credits: '크레딧',
   announcements: '공지', featured: '추천', themes: '테마',
@@ -66,6 +67,7 @@ export default function AdminPage() {
 
       {tab === 'stats' && <StatsTab />}
       {tab === 'authors' && <AuthorsTab />}
+      {tab === 'users' && <UsersTab />}
       {tab === 'works' && <WorksTab />}
       {tab === 'sanctions' && <SanctionsTab />}
       {tab === 'reports' && <ReportsTab />}
