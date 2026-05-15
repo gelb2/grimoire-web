@@ -7,14 +7,16 @@ import Link from 'next/link'
 import { PlatformNav } from '@/components/PlatformNav'
 import { useLoadingAction } from '@/hooks/useThrottle'
 import { api } from '@/lib/api'
+import { AccountDeleteDialog } from '@/features/account'
 
 export default function ProfilePage() {
-  const { user, loading } = useAuth()
+  const { user, loading, logout } = useAuth()
   const router = useRouter()
   const [name, setName] = useState('')
   const [bio, setBio] = useState('')
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState<'success' | 'error'>('success')
+  const [deleteOpen, setDeleteOpen] = useState(false)
   const saveAction = useLoadingAction()
 
   useEffect(() => {
@@ -108,7 +110,41 @@ export default function ProfilePage() {
             {saveAction.pending ? '저장 중...' : '저장'}
           </button>
         </div>
+
+        {/* USER-SOFT-DELETE sprint §15-1 — 본인 계정 탈퇴 영역 */}
+        <section
+          aria-labelledby="account-delete-section-title"
+          className="mt-16 pt-8 border-t border-neutral-200"
+        >
+          <h2 id="account-delete-section-title" className="text-sm font-bold text-[#e53e3e] uppercase tracking-[0.2em] mb-2">
+            위험 영역
+          </h2>
+          <p className="text-sm text-neutral-600 mb-4 leading-relaxed">
+            계정 탈퇴 시 30일 유예 후 영구 삭제됩니다. 본인 식별 정보는 즉시 익명화되며,
+            업로드하신 작품/에피소드와 결제 내역은 회계 보존을 위해 유지됩니다.
+          </p>
+          <button
+            type="button"
+            onClick={() => setDeleteOpen(true)}
+            className="px-4 py-2 border border-[#e53e3e] text-[#e53e3e] text-sm font-medium rounded-lg hover:bg-[#e53e3e] hover:text-white transition"
+          >
+            계정 탈퇴
+          </button>
+        </section>
       </main>
+
+      <AccountDeleteDialog
+        open={deleteOpen}
+        slug={user.slug}
+        name={user.name}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={async reason => {
+          await api.deleteMyAccount(reason ?? undefined)
+          // 서버 영역 RefreshToken 즉시 무효화 — 클라 상태 영역 정리 + 로그인 페이지 영역 이동
+          try { await logout() } catch { /* 서버 영역 실패 시에도 클라 상태 영역 정리 */ }
+          router.push('/login?account_deleted=1')
+        }}
+      />
     </div>
   )
 }

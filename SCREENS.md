@@ -17,7 +17,7 @@
 | `/register` | `app/register/page.tsx` | 회원가입 (3 크레딧 보너스) | - | `POST /api/auth/register` |
 | `/explore` | `app/explore/page.tsx` | 작품 탐색 (검색, 인기, 최신) | - | `GET /api/discover/*` |
 | `/library` | `app/library/page.tsx` | 독자 서재 (북마크, 구독) | JWT | `GET /api/reader/bookmarks`, `GET /api/social/subscriptions` |
-| `/admin` | `app/admin/page.tsx` | 관리자 패널 — 15 탭 (통계/사용자/콘텐츠/제재/신고/댓글/결제/수익/**크레딧**/공지/추천/테마/접근로그/설정/감사로그). 크레딧 탭은 `tabs/CreditsTab.tsx` 분리 (PAY-P0-3 — 사용자 검색 + 잔액 + grant/deduct 분기 + 멀티콘펌 + sonner toast) | JWT, admin | `GET /api/admin/stats`, `GET /api/admin/authors?q`, `POST /api/admin/credits/grant`, `POST /api/admin/credits/deduct` |
+| `/admin` | `app/admin/page.tsx` | 관리자 패널 — 16 탭 (통계/사용자/**탈퇴·익명화**/콘텐츠/제재/신고/댓글/결제/수익/**크레딧**/공지/추천/테마/접근로그/설정/감사로그). 크레딧 탭은 `tabs/CreditsTab.tsx` 분리 (PAY-P0-3). 탈퇴·익명화 탭은 `tabs/UsersTab.tsx` (USER-SOFT-DELETE sprint §15-1 — 강제 탈퇴 + GDPR 익명화 + 사유 필수 + 멀티콘펌 + sonner toast + AdminAuditLog 박제) | JWT, admin | `GET /api/admin/stats`, `GET /api/admin/authors?q`, `POST /api/admin/credits/grant`, `POST /api/admin/credits/deduct`, `POST /api/admin/authors/:id/force-delete`, `POST /api/admin/authors/:id/anonymize` |
 
 ### 작가 대시보드
 
@@ -28,7 +28,7 @@
 | `/dashboard/theme` | `app/dashboard/theme/page.tsx` | 테마 에디터 (편집 전용, `?id=`로 특정 테마 로드) | `GET /api/themes/detail/:themeId`, `POST /api/themes/generate` |
 | `/dashboard/analytics` | `app/dashboard/analytics/page.tsx` | 작품 분석 (요약 카드 + 조회수 차트 + 에피소드 순위) | `GET /api/authors/:slug/profile`, `GET /api/works/:id/stats` |
 | `/dashboard/credits` | `app/dashboard/credits/page.tsx` | 크레딧 충전 | `GET /api/payments/products`, `GET /api/payments/credits` |
-| `/dashboard/profile` | `app/dashboard/profile/page.tsx` | 프로필 설정 | `GET /api/auth/profile` |
+| `/dashboard/profile` | `app/dashboard/profile/page.tsx` | 프로필 설정 + **계정 탈퇴** (USER-SOFT-DELETE sprint §15-1 — `AccountDeleteDialog` 모달 영역 + slug 재입력 검증 + 30일 유예 안내 + GDPR basic 익명화 박제) | `GET /api/auth/profile`, `DELETE /api/auth/me` |
 
 ### 작가 공간 (멀티테넌트)
 
@@ -89,6 +89,12 @@
 | 컴포넌트 | 설명 |
 |---------|------|
 | AuthProvider | JWT 토큰 기반 인증 상태 관리 컨텍스트 |
+
+### 계정 (`src/features/account/`)
+
+| 컴포넌트 | 설명 |
+|---------|------|
+| AccountDeleteDialog | 본인 계정 탈퇴 모달 (USER-SOFT-DELETE sprint §15-1 — slug 재입력 검증 + 사유 입력 + 30일 유예 안내 + GDPR basic 익명화 정책 박제. 시각 정본 사슴악마: Alert.tsx 동일 골격 + neutral-* 팔레트 + 경고 포인트 `#e53e3e`) |
 
 ### 테마 (`src/features/theme/`)
 
