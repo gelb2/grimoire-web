@@ -58,6 +58,24 @@ class ApiClient extends BaseApiClient {
     return this.fetch<void>('/auth/logout', { method: 'POST' })
   }
 
+  /**
+   * 본인 계정 탈퇴 (USER-SOFT-DELETE sprint §5-4 정합).
+   *
+   * - JWT 인증 영역 (HttpOnly Cookie 자동 전송, BFF 프록시 경유)
+   * - server 영역: User.deletedAt 박제 + GDPR basic 익명화 (email/name/passwordHash/bio) + RefreshToken Cascade 무효화
+   * - 30일 후 cron으로 hard delete (회계 8건 Restrict 영역은 PG 자동 차단)
+   * - 작품/episode 영역은 별도 archive 0건 (PAY-P3-E `works.authorId onDelete=Restrict` 정합 강제)
+   * - audit log 박제 (action=`self_account_delete`)
+   *
+   * @returns `{ deletedAt: string }` — soft delete 박제 시각 (ISO 8601)
+   */
+  async deleteMyAccount(reason?: string) {
+    return this.fetch<{ deletedAt: string }>('/auth/me', {
+      method: 'DELETE',
+      body: JSON.stringify({ reason: reason ?? null }),
+    })
+  }
+
   // 테마
   async getTheme(authorSlug: string) {
     return this.fetch<Theme>(`/themes/${authorSlug}`)
@@ -555,6 +573,41 @@ class ApiClient extends BaseApiClient {
 
   async adminDeleteAuthor(authorId: string) {
     return this.fetch<{ deleted: boolean }>(`/admin/authors/${authorId}`, { method: 'DELETE' })
+  }
+
+  /**
+   * 운영자 강제 사용자 탈퇴 (USER-SOFT-DELETE sprint §5-4 정합).
+   *
+   * - admin role 영역 (JWT + AdminGuard)
+   * - server 영역: User.deletedAt 박제 + GDPR basic 익명화 + RefreshToken Cascade 무효화
+   * - 30일 후 cron으로 hard delete (회계 8건 Restrict 정합 강제)
+   * - 사유(reason) 필수 — AdminAuditLog에 박제 (action=`admin_force_delete`, beforeState/afterState 박제)
+   *
+   * @returns `{ deletedAt: string }` — soft delete 박제 시각
+   */
+  async adminForceDeleteAuthor(authorId: string, reason: string) {
+    return this.fetch<{ deletedAt: string }>(`/admin/authors/${authorId}/force-delete`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    })
+  }
+
+  /**
+   * 운영자 GDPR 익명화 (USER-SOFT-DELETE sprint §7-1 옵션 A — basic).
+   *
+   * - admin role 영역 (JWT + AdminGuard)
+   * - basic 익명화: email → `deleted-{uuid}@grimoire.local` + name → `Deleted Author` + passwordHash → null + bio → null
+   * - GDPR Article 17 (Right to Erasure) 정합 영역
+   * - 사유(reason) 필수 — AdminAuditLog에 박제 (action=`gdpr_anonymize`)
+   * - 본 작업은 soft delete와 독립 — 작성자 요청 시 즉시 익명화 영역
+   *
+   * @returns `{ anonymizedAt: string }` — 익명화 박제 시각
+   */
+  async adminAnonymizeAuthor(authorId: string, reason: string) {
+    return this.fetch<{ anonymizedAt: string }>(`/admin/authors/${authorId}/anonymize`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    })
   }
 
   async adminChangeRole(authorId: string, role: string) {

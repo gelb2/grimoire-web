@@ -1,5 +1,23 @@
 # CHANGELOG.md — 변경 이력
 
+## [Unreleased] - 2026-05-15
+
+### Added — USER-SOFT-DELETE web Generator (sprint-user-soft-delete, §15-1 web 영역)
+
+본인 계정 탈퇴 + 운영자 강제 탈퇴 + GDPR 익명화 UI 박제. server 영역(domain/policy/port/adapter/usecase/cron + Prisma migration)은 별도 sprint 영역 (parallel server agent). 본 변경은 web UI 영역만 — BFF 프록시 경유 강제 + HttpOnly Cookie 자동 + localStorage 0 박제. 사용자 5/15 §16 6 결정 옵션 A 채택 정합 (User.deletedAt + 작품 영역 Restrict + GDPR basic + 자동 cron + `0 4 * * *`).
+
+- **신설 `src/features/account/AccountDeleteDialog.tsx`** — 본인 계정 탈퇴 모달. props: `{ open, slug, name, onClose, onConfirm }`. 검증 영역: 본인 슬러그 재입력 정합 (오작동 방지) + 동의 체크박스 영역 영역 + 사유 선택 입력 (max 500자, audit log 박제 영역) + 30일 유예 + 작품 보존 + 회계 보존 + GDPR 익명화 정책 5개 항목 박제. 시각 정본 (사슴악마): Alert.tsx 동일 모달 골격 차용 — bg-white + border-neutral-200 + rounded-xl + 경고 dot `#e53e3e` (Alert warning tone 정합). 작가 g-* 토큰 침범 0건, 플랫폼 neutral-* 영역. ESC 키 닫기 + backdrop 클릭 닫기 (submitting 0건 강제). onConfirm 실패 시 에러 메시지 표시 + 모달 영역 유지 (영역 영역 0).
+- **신설 `src/features/account/index.ts`** — barrel export 박제 (`AccountDeleteDialog`, `AccountDeleteDialogProps`).
+- **신설 `src/features/account/AccountDeleteDialog.test.tsx`** — vitest 4 it 블록 (open=false 가시성 게이트 / slug 미일치 disabled / slug 정합 + 사유 박제 → onConfirm 호출 정합 / onConfirm 실패 시 에러 표시 + 모달 유지). 의미 있는 assertion (toHaveBeenCalledWith 사유 정합 + toHaveBeenCalledTimes + screen.getByText 정책 영역 검증) — 더미 toBeTruthy 0건.
+- **갱신 `src/app/dashboard/profile/page.tsx`** — 페이지 하단 "위험 영역" 섹션 신설 (border-t neutral-200 + uppercase tracking 헤더 `#e53e3e` + 정책 안내 4줄 + 탈퇴 버튼 outline 영역). `AccountDeleteDialog` 마운트 + `onConfirm` 영역 `api.deleteMyAccount(reason)` 호출 + `logout()` 영역 클라이언트 상태 초기화 + `router.push('/login?account_deleted=1')` 이동. 기존 프로필 폼/소셜 영역 변경 0 (회귀 영역 0).
+- **신설 `src/app/admin/tabs/UsersTab.tsx`** — 운영자 강제 탈퇴 + GDPR 익명화 탭. 사용자 검색(slug/email/ID, 기존 AuthorsTab 영역 정합) + 카드 + 상태 컬럼 (deletedAt 박제 시 "탈퇴됨" 빨강 배지) + 강제 탈퇴 / 익명화 버튼 분리 + 사유 필수 모달 영역 (textarea max 500자) + 네이티브 confirm() 멀티콘펌 (11 tabs 정본 — CreditsTab 영역 정합) + sonner toast.success/error + 페이지네이션 영역. AdminAuditLog 박제 (`admin_force_delete` / `gdpr_anonymize`) 영역 영역 강제. 시각 정본: admin neutral-* 영역 (다크 배경) — 작가 g-* 토큰 침범 0건.
+- **신설 `src/app/admin/tabs/UsersTab.test.tsx`** — vitest 5 it 블록 (마운트 → adminListAuthors 호출 + 카드 렌더 / 강제 탈퇴 클릭 → 사유 모달 표시 + disabled / 강제 탈퇴 + 사유 + confirm 승인 → adminForceDeleteAuthor 1회 + toast.success / 익명화 + 사유 + confirm 승인 → adminAnonymizeAuthor 1회 + toast.success / confirm 취소 → API 호출 0회). toHaveBeenCalledWith 인자 정합 + confirmMsg 정합 검증.
+- **갱신 `src/app/admin/page.tsx`** — `Tab` 타입에 `'users'` 추가 + TAB_LABELS에 `users: '탈퇴/익명화'` 박제 + UsersTab 마운트 분기 추가. 기존 AuthorsTab + planEdit + 역할 토글 영역 변경 0 (회귀 영역 0).
+- **갱신 `src/lib/api.ts`** — `deleteMyAccount(reason?)` (DELETE `/auth/me`) + `adminForceDeleteAuthor(id, reason)` (POST `/admin/authors/:id/force-delete`) + `adminAnonymizeAuthor(id, reason)` (POST `/admin/authors/:id/anonymize`) 3 메서드 신설. BFF 프록시 경유 (`/api` 접두) + HttpOnly Cookie 자동 + AbortSignal 자동. 기존 메서드 시그니처 변경 0.
+- **갱신 `SCREENS.md`** — `/dashboard/profile` API 컬럼에 `DELETE /api/auth/me` 추가 + 설명 영역 "계정 탈퇴" 박제. `/admin` 탭 매트릭스에 "탈뎈/익명화" 추가 (16 탭) + UsersTab 영역 박제 + API 컬럼에 `POST /api/admin/authors/:id/force-delete` + `POST /api/admin/authors/:id/anonymize` 추가. `src/features/account/` 슬라이스 신설 박제 (AccountDeleteDialog).
+- 검증: vitest 151→160 PASS (+9 신규 — AccountDeleteDialog 4 + UsersTab 5) / tsc --noEmit 0 errors / Next.js build PASS (23 routes) / lint 0 errors (warnings 5건은 본 sprint 외부 — CardTransition.tsx + AuthorSpace.tsx pre-existing) / 외부 Anthropic API 의존 0건 / localStorage 토큰 박제 0 / BFF 프록시 우회 0.
+- 시각 정본 (visual-canon-keeper 자가 검수): AccountDeleteDialog는 Alert.tsx 동일 모달 골격 (bg-white + border-neutral-200 + rounded-xl + 경고 dot `#e53e3e` warning tone) 차용 — 사슴악마 정본 변경 0. UsersTab은 기존 AuthorsTab + CreditsTab 시각 정본 영역 (neutral-900 + neutral-700 + bg-red-700 / yellow-700 액션 분기) 차용 — 작가 g-* 토큰 침범 0건. globals.css 디자인토큰 영역 변경 0 (사용자 5/15 명시 정합).
+
 ## [Unreleased] - 2026-05-04
 
 ### Added — slug 로그인 마이그레이션 web Phase 2 (EMAIL-P0-3, sprint-email-p0-3-slug-login)
