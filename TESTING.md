@@ -51,10 +51,22 @@ npm run test:all      # 유닛 + E2E 전체
 
 ### Playwright
 
-- **브라우저**: Chromium (headless)
-- **Base URL**: `http://localhost:3002`
-- **서버**: `npm run dev -- -p 3002` (reuseExistingServer 활성)
-- **타임아웃**: 30000ms
+기본은 localhost 대상이며, `PLAYWRIGHT_BASE_URL` env 로 dev 등 배포 환경 대상 실행을 지원한다.
+
+| 항목 | localhost (기본) | dev 환경 대상 (`PLAYWRIGHT_BASE_URL` 박제) |
+|------|------------------|-------------------------------------------|
+| Base URL | `http://localhost:3002` | `PLAYWRIGHT_BASE_URL` 값 (예: `https://dev.grimoire-book.com`) |
+| webServer | `npm run dev -- -p 3002` 자동 기동 | 비활성 (이미 배포된 환경) |
+| 브라우저 | Chromium headless | Chromium **headed** (reCAPTCHA v3 대응) |
+| 타임아웃 | 30000ms | 60000ms (Azure 콜드스타트 고려) |
+
+- **dev 대상 headed 강제 사유**: dev 서버는 `RECAPTCHA_SECRET_KEY` 박제 →
+  `/login` 로그인이 reCAPTCHA v3 점수 검증을 거친다. headless 브라우저는 봇 판정(낮은 점수)으로
+  서버가 400 차단 → headed(실제 창) 브라우저만 정상 점수로 통과한다.
+- **dev 대상 실행 예**:
+  `PLAYWRIGHT_BASE_URL=https://dev.grimoire-book.com E2E_AUTHOR_PASSWORD=… npm run test:e2e -- account-delete`
+- **E2E 계정 env**: `E2E_AUTHOR_*` (작가 로그인), `E2E_ADMIN_*` (관리자) — `.env.example` 참조.
+  미박제 시 로그인 의존 it 는 `test.skip`.
 
 ---
 
