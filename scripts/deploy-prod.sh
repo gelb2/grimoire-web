@@ -20,7 +20,8 @@ action_acr_login
 action_docker_build_push "$ENV" "$SHA"
 action_containerapp_update "$ENV" "$SHA"
 action_purge_old_images "$ENV"
-action_post_deploy_healthcheck "$ENV"
+action_post_deploy_revision_check "$ENV"   # 1차: 신규 revision 상태 직접 검증 (ActivationFailed 차단)
+action_post_deploy_healthcheck "$ENV"      # 2차: endpoint 보조 검증
 
 step "배포 완료"
 ok "web [$ENV] 배포 성공"
