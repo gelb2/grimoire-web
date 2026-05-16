@@ -1,5 +1,16 @@
 # CHANGELOG.md — 변경 이력
 
+## [Unreleased] - 2026-05-17
+
+### Added — USER-SOFT-DELETE E2E 통합 검증 (sprint-e2e-user-soft-delete, Tier 1)
+
+USER-SOFT-DELETE 풀스택 5/15 dev+prod 배포 종료(server-prod rev 101 / web-prod rev 119 Healthy) 이후 미완이던 Playwright E2E 통합 검증 마무리. vitest 9 it(AccountDeleteDialog 4 + UsersTab 5)은 5/15 web Generator에서 작성됨 — 본 변경은 E2E spec 영역만 추가.
+
+- **신설 `e2e/account-delete.spec.ts`** — Playwright E2E 5 it 블록. 시나리오 3건: ① 본인 탈퇴 (`/dashboard/profile` "위험 영역" → AccountDeleteDialog 모달 → slug 미입력/불일치 시 "탈퇴" 버튼 disabled + 불일치 경고 → slug 정합 + 동의 체크박스 → enabled) ② 어드민 force delete (`/admin` '탈퇴/익명화' 탭(UsersTab) → 행 "강제 탈퇴" → 사유 필수 모달 → 사유 미입력 시 confirm 버튼 disabled → 사유 입력 시 enabled) ③ GDPR anonymize (동일 탭 → 행 "익명화" → 사유 필수 모달, force delete 동형 검증). 비인증 리다이렉트 it 2건(`/dashboard/profile` → `/login`, `/admin` → `/admin/login`) 포함.
+- **데이터 파괴 방지 영역 (CRITICAL)** — 본인 탈퇴 it는 AccountDeleteDialog.onConfirm 이 실제 `api.deleteMyAccount()` 호출이므로 confirm("탈퇴") 버튼을 끝까지 클릭하지 않고 모달 취소로 종료 (활성/비활성 상태까지만 검증). force delete / anonymize it는 `page.on('dialog', d => d.dismiss())`로 UsersTab.handleAction 의 `window.confirm()` 네이티브 게이트를 자동 거부 → `api.adminForceDeleteAuthor` / `api.adminAnonymizeAuthor` 절대 미호출 — deerdevil 등 실제 작가 계정 soft delete/anonymize 0건.
+- **환경 의존 graceful degradation** — 비인증 리다이렉트 it 2건은 server 무관 web 단독 PASS. 로그인 의존 it 3건은 `E2E_AUTHOR_SLUG` / `E2E_AUTHOR_PASSWORD` / `E2E_ADMIN_PASSWORD` env 미박제 시 `test.skip` (기존 `auth.spec.ts` / `dashboard.spec.ts` 정합). 로그인 헬퍼는 `dashboard.spec.ts` slug-or-email 폼 패턴 차용.
+- 검증: `npm run test:e2e -- account-delete` 2 passed + 3 skipped (server localhost:3000 미기동 — `ECONNREFUSED` 로그 확인. env 박제 + server 기동 시 3 시나리오 PASS) / vitest 9 it 회귀 무손상 PASS (UsersTab 5 + AccountDeleteDialog 4) / tsc --noEmit 0 errors / eslint 0 errors / Next.js build PASS. 시각 컴포넌트 신규 0건 (E2E spec만) — VCK 검수 불요. globals.css 디자인토큰 변경 0.
+
 ## [Unreleased] - 2026-05-15
 
 ### Added — USER-SOFT-DELETE web Generator (sprint-user-soft-delete, §15-1 web 영역)
