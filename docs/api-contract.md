@@ -765,9 +765,16 @@ PG (Polar 등) 웹훅 콜백 — 서명 검증 + 멱등성 게이트 + 원자적
 
 ### GET /api/payments/credits
 
+크레딧 개편 I Phase — `GET /api/credits/balance` 와 동일한 4 출처 포인트 잔액 응답.
+
 ```
 Headers: Authorization: Bearer <token>
-Response 200: { "credits": 5 }
+Response 200: {
+  "available": 10000,   // 실사용 가능 (total - deficit)
+  "total": 10000,       // 4 출처 합
+  "deficit": 0,         // 외상 (채팅 사후 차감 잔액 부족분)
+  "bySource": { "free": 3000, "subscription": 0, "gift": 2000, "charged": 5000 }
+}
 ```
 
 ### POST /api/admin/login
