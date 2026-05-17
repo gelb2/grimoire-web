@@ -27,9 +27,10 @@
 | 대시보드 홈 | `/dashboard` | 구현 완료 | getProfile, getWorkStats |
 | 테마 에디터 | `/dashboard/theme` | 구현 완료 | getMyThemes, generateTheme, updateTheme, publishTheme |
 | 원고 업로드 | `/dashboard/upload` | 구현 완료 | createWork, createEpisode, parseManuscript |
-| 크레딧 | `/dashboard/credits` | 구현 완료 | getProducts, initiatePayment (Polar checkout) |
+| 포인트 충전 | `/dashboard/credits` | 구현 완료 (크레딧 개편 I Phase — 디노미 1크레딧=1,000pt + 4 출처 잔액 + 채팅 4구간 안내) | getPointBalance, getProducts, getCreditLogs, initiatePayment (Polar checkout) |
+| 멤버십 플랜 | `/dashboard/membership` | 구현 완료 (크레딧 개편 I Phase — free/pro/premium 표시·선택 전용, 결제 연동 별도 sprint) | - (§30 상수 표시) |
 | 프로필 편집 | `/dashboard/profile` | 구현 완료 | updateBio |
-| AI 채팅 | `/dashboard/chat` | 구현 완료 | listChatSessions, createChatSession, sendChatMessage, getChatMessages |
+| AI 채팅 | `/dashboard/chat` | 구현 완료 (크레딧 개편 I Phase — 메시지별 4구간 차감 배지) | listChatSessions, createChatSession, sendChatMessage, getChatMessages |
 | 관리자 로그인 | `/admin/login` | 구현 완료 | adminLogin (독립 인증, reCAPTCHA 없음) |
 | 관리자 패널 | `/admin` | 구현 완료 | 통계/사용자/콘텐츠/제재/신고/댓글/결제/접근로그/설정/감사로그 |
 

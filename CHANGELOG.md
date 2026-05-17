@@ -2,6 +2,19 @@
 
 ## [Unreleased] - 2026-05-17
 
+### Added — 크레딧 개편 I Phase web Generator (sprint-credit-overhaul, Tier 2)
+
+크레딧·구독·채팅 과금 개편 I Phase의 server 측(schema + 차감/적립 로직 + sensor 5종, develop `376ee04`) qa CONDITIONAL PASS 이후 web UI 측 구현. 디노미네이션 1크레딧 = 1,000pt + 포인트 출처 4종 회계 + 채팅 4구간 차감 안내 + 멤버십 플랜. 정본: `.claude/shared-contracts.md` §30 CreditOverhaul + `.claude/state/sprint-credit-overhaul-s-phase-draft.md` §14.
+
+- **신설 `src/features/credits/` 슬라이스** (FSD — slice index.ts Public API 격리). `credit-overhaul.ts`: §30 도메인 상수 미러(CREDIT_TO_POINT / CHAT_CHARGE_TIERS 4구간 190·810·3,390·5,520pt / ANALYSIS·THEME_POINT_COST / MEMBERSHIP_MONTHLY_POOL · PRICE_KRW / 출처 라벨) + 디노미 표시 유틸(`formatPoints` 천단위 / `abbreviatePoints` 만·억 축약 — S Phase Draft §8-1 "큰 숫자 완화 UI"). `point-balance.ts`: server `/credits/balance` 응답 정규화(`normalizePointBalance`) — 출처 회계(bySource)/포인트 총량(available)/정수 크레딧(credits, 현행 server backward-compatible) 3형태 모두 PointBalanceView 로 변환.
+- **신설 컴포넌트 3종** — `CreditBalanceCard`(포인트 잔액 표시: 헤드라인 축약 + 4 출처 분해 + deficit 외상 안내), `ChatChargeGuide`(채팅 4구간 차감 안내, 일반/compact 모드), `MembershipPlans`(멤버십 3등급 표시·선택 — 결제 연동 없음). 채팅 `_components/ChatChargeBadge`(메시지별 4구간 사후 차감 결과 배지).
+- **`/dashboard/credits` 개편** — 크레딧 → 포인트 디노미 표시. 잔액 4 출처 + deficit(`CreditBalanceCard`), 충전 패키지 pt 표기(server `/payments/products` 정본 — Polar 흐름 재사용), 채팅 4구간 차감 안내, 분석 2,440pt / 테마 590pt 안내, 멤버십 페이지 링크.
+- **신설 `/dashboard/membership`** — 멤버십 free/pro/premium 3등급 플랜 표시(가격 + 월 포인트 풀 + 특징). 표시·선택 전용 — Polar 구독 결제 연동은 I Phase 외(별도 sprint PAY-P1-4).
+- **`/dashboard/chat` 차감 표시** — assistant 메시지에 `ChatChargeBadge` 추가. server `sendMessage` 응답의 `chargedPoints`/`chargeTier`(4구간 사후 차감 결과 — §30 ChatMessage) 표시.
+- **API 클라이언트** — `api.getPointBalance()` 추가 (`/credits/balance` → `normalizePointBalance` 정규화). BFF 프록시 경유 — 백엔드 직접 호출 없음.
+- **상태 검증 (CLAUDE.md §0)** — server I Phase 는 backward-compatible: `/credits/balance`·`/auth/me`·`/payments/products` HTTP 응답 미변경(정수 크레딧·구 3 패키지 유지), `CreditLedger.getBalance`(4 출처)·`MembershipPlan` 은 domain 에만 존재하고 HTTP 미연동. `ChatMessage.chargedPoints`/`chargeTier` 만 실제 응답에 포함. → web 은 server 가 실제 반환하는 값에만 의존(없는 출처 값 추정 금지). 잔액은 정수 크레딧 ×1,000 환산 표시, server 가 출처 회계 응답을 줄 때 자동 분해.
+- 검증: vitest 160 → **210** passed (+50 it, 신규 6 파일). credits 슬라이스 커버리지 lines/stmts 100%. tsc --noEmit 0 errors / eslint 신규 파일 0 errors·0 warnings / Next.js build PASS (`/dashboard/membership` 라우트 생성 확인). 플랫폼 neutral-* + `#e53e3e`·`#f5f5f5`(기존 dashboard 페이지 동일 팔레트, 신규 색상 0). 시각 컴포넌트 신규 4종 — VCK 사전 검수 대상.
+
 ### Added — USER-SOFT-DELETE E2E 통합 검증 (sprint-e2e-user-soft-delete, Tier 1)
 
 USER-SOFT-DELETE 풀스택 5/15 dev+prod 배포 종료(server-prod rev 101 / web-prod rev 119 Healthy) 이후 미완이던 Playwright E2E 통합 검증 마무리. vitest 9 it(AccountDeleteDialog 4 + UsersTab 5)은 5/15 web Generator에서 작성됨 — 본 변경은 E2E spec 영역만 추가.

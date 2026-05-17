@@ -3,6 +3,8 @@ import type {
   AnalysisResult, IndexStatus, AnalysisReport, AnalysisReportSummary,
 } from "@/types/api"
 import { BaseApiClient, getApiBaseUrl } from "./api/client"
+import type { PointBalanceView } from "@/features/credits"
+import { normalizePointBalance, type CreditBalanceResponse } from "@/features/credits/point-balance"
 
 /** 페이지네이션 작품 응답 타입 */
 export interface PaginatedWorksResponse {
@@ -444,6 +446,21 @@ class ApiClient extends BaseApiClient {
   // 크레딧 잔액 조회
   async getCreditBalance() {
     return this.fetch<{ credits: number }>('/credits/balance')
+  }
+
+  /**
+   * 포인트 잔액 조회 (크레딧 개편 I Phase — 디노미네이션 + 4 출처 회계).
+   *
+   * server `/credits/balance` 는 디노미 전환 backward-compatible 단계에서
+   * 정수 `credits` 만 반환할 수 있다. 그 경우 web 에서 ×1,000 환산해 총 포인트로 표시한다.
+   * server 가 출처별 잔액(`pointsFree` 등 / `bySource`)을 반환하면 그대로 통과시킨다.
+   * 없는 출처 값은 만들지 않는다 (CLAUDE.md §0 추정 금지).
+   *
+   * 정본: shared-contracts §30 CreditOverhaul.
+   */
+  async getPointBalance(): Promise<PointBalanceView> {
+    const raw = await this.fetch<CreditBalanceResponse>('/credits/balance')
+    return normalizePointBalance(raw)
   }
 
   // 크레딧 사용 로그
