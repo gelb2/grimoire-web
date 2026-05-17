@@ -5,7 +5,7 @@
 
 ---
 
-## 테이블 (23개)
+## 테이블 (25개)
 
 ### authors
 
@@ -18,14 +18,21 @@
 | password_hash | text (nullable) | - | 비밀번호 해시 (bcryptjs) |
 | bio | text (nullable) | - | 작가 소개 (최대 500자) |
 | role | text | default("user") | 역할 (user/admin) |
-| credits | integer | default(3) | 크레딧 잔액 |
-| plan | text | default("free") | 구독 플랜 (free/pro/premium) |
+| credits | integer | default(0) | **[DEPRECATED — 크레딧 개편 I Phase 2026-05-17]** 디노미네이션 후 points_* 4 필드로 이행. 1 sprint 유예 후 별도 sprint DROP (롤백 안전망). 신규 코드 사용 금지 |
+| points_free | integer | default(0) | **크레딧 개편 I Phase** — 무료 적립(가입·첫작품) 포인트 잔액 캐시. §0 위상 = CAC(매출 0) |
+| points_subscription | integer | default(0) | **크레딧 개편 I Phase** — 구독 월 풀 포인트 잔액 캐시. 매월 리셋·이월 금지 |
+| points_gift | integer | default(0) | **크레딧 개편 I Phase** — 응원 선물 수령 포인트 잔액 캐시. 독자 결제분 이전 |
+| points_charged | integer | default(0) | **크레딧 개편 I Phase** — 충전(Polar) 포인트 잔액 캐시. pt 단가에 §0 박힘, 영구 보존 |
+| deficit_points | integer | default(0) | **크레딧 개편 I Phase** — 외상(채팅 사후 차감 시 잔액 부족분). 충전 시 우선 상계. 상한 -10,000pt |
+| plan | text | default("free") | 구독 플랜 (free/pro/premium). MembershipPlan 정본화 후 deprecated 검토 (I Phase 후속) |
 | plan_expire_at | timestamptz (nullable) | - | 플랜 만료일 (free=null, pro/premium=날짜) |
 | default_theme_id | uuid (nullable) | - | 기본 테마 ID |
 | created_at | timestamptz | default(now()) | 가입일 |
 | deleted_at | timestamptz (nullable) | - | **USER-SOFT-DELETE sprint (2026-05-15)** — Author soft delete 표식. NULL = 활성 / NOT NULL = soft deleted. 30일 후 cron hard delete 정합 (회계 8건 Restrict 차단 시 보류). @@index([deleted_at]) 정합. middleware 자동 변환 박제 (findUnique/findMany/findFirst → WHERE deletedAt IS NULL 자동 + delete → soft delete) |
 
-관계: Theme (1:N), Work (1:N), SocialAccount (1:N)
+관계: Theme (1:N), Work (1:N), SocialAccount (1:N), CreditLedger (1:N — Restrict), MembershipPlan (1:N — Restrict)
+
+> **크레딧 개편 I Phase (2026-05-17) — 디노미네이션 1:1,000 + 포인트 출처 4종 분리 회계 (1-C 하이브리드)**: `credits` 단일 Int → `points_*` 4 필드(출처별 잔액 캐시) + `credit_ledgers` 입출금 원장. `points_*` 4 필드는 빠른 조회용 캐시, `credit_ledgers` 가 audit 정본. 정본: `research/CREDIT_PRICING_OVERHAUL_PLAN.md` §8 + ADR-012.
 
 ### themes
 
@@ -304,7 +311,54 @@ Polar 환불 webhook 수신 시 크레딧 환수 트랜잭션의 영구 박제 �
 | session_id | uuid | FK→chat_sessions, index(session+created) | 세션 |
 | role | text | - | 역할 ("user" \| "assistant") |
 | content | text | - | 메시지 내용 |
+| input_tokens | integer (nullable) | - | **크레딧 개편 I Phase** — API 응답 usage.input_tokens. assistant 메시지만, 과거 무료 row 는 null (§8-8 #3 — 토큰 실측 선행) |
+| output_tokens | integer (nullable) | - | **크레딧 개편 I Phase** — API 응답 usage.output_tokens |
+| model | text (nullable) | - | **크레딧 개편 I Phase** — 'claude-sonnet-4-...' 모델 식별자 (차감 N 재산정 시 사용) |
+| charged_points | integer (nullable) | - | **크레딧 개편 I Phase** — 이 턴에 차감된 pt (4구간 정액). null = 미차감(과거 무료) |
+| charge_tier | text (nullable) | - | **크레딧 개편 I Phase** — 차감 구간 'short'\|'normal'\|'long'\|'xlong'. 경계 재확정 후에도 근거 보존 |
 | created_at | timestamptz | default(now()) | 작성일 |
+
+> **크레딧 개편 I Phase (2026-05-17)**: 채팅 4구간 사후 차감을 위해 토큰 실측 5 필드 추가. 전부 nullable — `role='user'` 메시지·과거 무료 시대 row 는 null("0 토큰"과 "미측정" 구분 보존). §8-8 CRITICAL #3.
+
+### credit_ledgers (크레딧 개편 I Phase, 2026-05-17)
+
+포인트 입출금 원장 (1-C 하이브리드의 원장 측 — `authors.points_*` 4 필드는 잔액 캐시, 본 테이블이 audit 정본).
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 원장 엔트리 식별자 |
+| author_id | text | FK→authors (Restrict), index(author+created), index(author+source) | 작가. **Restrict** — 회계 영구 보존 (ADR-007 정합, Author hard delete 시 PG 차단) |
+| source | text | - | 출처: free \| subscription \| gift \| charged (§8-2 분리 회계) |
+| type | text | - | earn \| spend \| deficit_incur \| deficit_settle \| expire |
+| amount | integer | - | 변동 포인트 (부호 有 — earn 양수 / spend·expire 음수) |
+| balance_after | integer | - | 이 row 직후 총 잔액 (4 출처 합) |
+| expires_at | timestamptz (nullable) | index(expires_at) | 구독풀 row 만 — 다음 리셋일. 만료 row 는 잔액 집계 제외 → **이월 구조적 차단** (§8-8 #2) |
+| reason | text | - | 변동 사유 |
+| related_id | text (nullable) | - | ChatMessage/Payment/AnalysisReport id 약결합 (FK 미설정 — 회계 row 영구 보존) |
+| created_at | timestamptz | default(now()) | 기록일 |
+
+관계: Author (N:1, Restrict)
+
+### membership_plans (크레딧 개편 I Phase, 2026-05-17)
+
+멤버십 등급 + 월 포인트 풀 (4-C 구조). 현행 `subscriptions`(독자→작가 팔로우)와 **완전히 다른 도메인** — 명명 충돌 회피 위해 `membership_plans`.
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 멤버십 식별자 |
+| author_id | text | FK→authors (Restrict), index(author_id) | 작가. **Restrict** — 구독 이력 영구 보존 (ADR-007 정합) |
+| tier | text | default("free") | free \| pro \| premium |
+| monthly_pool_points | integer | default(0) | 월 풀 크기 (free 0 / pro 93,000 / premium 191,500 — §8-3) |
+| pool_balance | integer | default(0) | 현재 잔여 풀 (캐시 — 리셋 시 monthly_pool_points 로 재설정) |
+| pool_reset_at | timestamptz | index(pool_reset_at) | 다음 리셋 시각 (cron + lazy 이중 안전망) |
+| started_at | timestamptz | default(now()) | 멤버십 시작일 |
+| expires_at | timestamptz (nullable) | - | 멤버십 만료일 |
+| polar_subscription_id | text (nullable) | unique | Polar 구독 결제 연동 (별도 sprint PAY-P1-4 — 본 sprint 는 필드만) |
+| status | text | default("active"), index(status) | active \| expired \| cancelled |
+| created_at | timestamptz | default(now()) | 생성일 |
+| updated_at | timestamptz | auto-update | 수정일 |
+
+관계: Author (N:1, Restrict)
 
 ---
 
