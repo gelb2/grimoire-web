@@ -179,15 +179,15 @@
 | author_id | text | - | 결제 작가 ID |
 | product_id | text | - | 상품 ID |
 | amount | integer | - | 결제 금액 (원) |
-| credits | integer | - | 부여 크레딧 수 |
+| credits | integer | - | **CC-2a 의미 재해석** — 충전 총 포인트 (pt). 구 "패키지 수량" → 디노미 후 "충전 pt"(`CREDIT_PRODUCTS.points`). 컬럼명 물리 rename(`credits`→`points`)은 마이그레이션 동반 → CC-2b/CC-4 위임 (MEDIUM-4) |
 | external_transaction_id | text (nullable) | unique | 외부 결제 거래 번호 |
 | status | text | default("pending") | 결제 상태 (pending/completed/failed/refunded/expired) |
 | created_at | timestamptz | default(now()) | 결제 요청일 |
 | completed_at | timestamptz (nullable) | - | 결제 완료일 |
 
-**status enum 흐름** (2026-05-04 PAY-P1-3 갱신):
+**status enum 흐름** (2026-05-04 PAY-P1-3 갱신 / 2026-05-20 CC-2a 갱신):
 - `pending`: 초기 생성 상태 (Polar Checkout URL 발급 직후)
-- `completed`: webhook 'order.paid' 수신 → `completePaymentAtomically` 트랜잭션 성공
+- `completed`: webhook 'order.paid' 수신 → **`completePaymentWithPoints`** 트랜잭션 성공 (CC-2a — 충전 적립 신 경로. 단일 `$transaction` 으로 Payment 완료 + deficit 우선 상계 + `credit_ledgers` charged earn + `authors.points_charged`/`deficit_points` 캐시. 구 `completePaymentAtomically`(`authors.credits` Int + `credit_logs`)는 `@deprecated` — CC-2b 후 제거)
 - `failed`: webhook 'fail' 수신 (PG 처리 실패)
 - `refunded`: webhook 'order.refunded' 수신 → `refundPaymentAtomically` 트랜잭션 성공 (PAY-P1-1)
 - `expired`: 24h 초과 pending row → cron이 마킹 (PAY-P0-2 reconciliation cron + PAY-P1-3 cleanup cron 양쪽에서 처리)
@@ -196,7 +196,7 @@
 
 ### webhook_events (Sprint PAY-P0-1, 2026-05-03)
 
-PG (Polar 등) 웹훅 재전송 시 동일 `event_id`로 두 번째 호출이 들어와도 `completePaymentAtomically`가 단 1회만 실행되도록 멱등성 박제 테이블. DB unique 제약(`event_id`)으로 race condition 차단.
+PG (Polar 등) 웹훅 재전송 시 동일 `event_id`로 두 번째 호출이 들어와도 `completePaymentWithPoints`(CC-2a 충전 적립) / `refundPaymentAtomically`가 단 1회만 실행되도록 멱등성 박제 테이블. DB unique 제약(`event_id`)으로 race condition 차단.
 
 | 컬럼 | 타입 | 제약 | 설명 |
 |------|------|------|------|
