@@ -179,7 +179,7 @@
 | author_id | text | - | 결제 작가 ID |
 | product_id | text | - | 상품 ID |
 | amount | integer | - | 결제 금액 (원) |
-| credits | integer | - | **CC-2a 의미 재해석** — 충전 총 포인트 (pt). 구 "패키지 수량" → 디노미 후 "충전 pt"(`CREDIT_PRODUCTS.points`). 컬럼명 물리 rename(`credits`→`points`)은 마이그레이션 동반 → CC-2b/CC-4 위임 (MEDIUM-4) |
+| points | integer | - | **[CC-4 Phase 2 rename, 2026-05-21]** 충전 총 포인트 (pt). 구 컬럼명 `credits`(CC-2a 의미 재해석 "패키지 수량"→"pt") → `points` 물리 rename 완료. 마이그레이션: `20260521_payment_credits_rename_phase2` (`ALTER TABLE "payments" RENAME COLUMN "credits" TO "points"`). 값 = `CREDIT_PRODUCTS.points` |
 | external_transaction_id | text (nullable) | unique | 외부 결제 거래 번호 |
 | status | text | default("pending") | 결제 상태 (pending/completed/failed/refunded/expired) |
 | created_at | timestamptz | default(now()) | 결제 요청일 |
@@ -189,7 +189,7 @@
 - `pending`: 초기 생성 상태 (Polar Checkout URL 발급 직후)
 - `completed`: webhook 'order.paid' 수신 → **`completePaymentWithPoints`** 트랜잭션 성공 (CC-2a — 충전 적립 신 경로. 단일 `$transaction` 으로 Payment 완료 + deficit 우선 상계 + `credit_ledgers` charged earn + `authors.points_charged`/`deficit_points` 캐시. 구 `completePaymentAtomically`(`authors.credits` Int + `credit_logs`)는 `@deprecated` — CC-2b 후 제거)
 - `failed`: webhook 'fail' 수신 (PG 처리 실패)
-- `refunded`: webhook 'order.refunded' 수신 → `refundPaymentAtomically` 트랜잭션 성공 (PAY-P1-1)
+- `refunded`: webhook 'order.refunded' 수신 → **`refundPaymentWithPoints`** 트랜잭션 성공 (CC-2b 신 경로 — 4 출처 환수 + 이중 외상 통합. 구 `refundPaymentAtomically`는 CC-4 Phase 1에서 제거 완료)
 - `expired`: 24h 초과 pending row → cron이 마킹 (PAY-P0-2 reconciliation cron + PAY-P1-3 cleanup cron 양쪽에서 처리)
   - PAY-P1-3 재사용 정책: `findReusablePendingPayment`은 `status='pending' AND createdAt > now-24h` row만 반환 → expired 마킹된 row는 재사용 후보에서 제외
   - cleanup cron `payment-cleanup.job` (`@Cron('0 0 4 * * *')`): 매일 새벽 4시 1회, AuditLog operator='system_cleanup' action='payment_expire' 박제
@@ -249,13 +249,14 @@ cron 주기: `@Cron('0 */10 * * * *')` 10분 (cost-accountant 권고 — Polar `
 
 ---
 
-### refund_logs (Sprint PAY-P1-1, 2026-05-03; CC-2b 의미 재해석 2026-05-20)
+### refund_logs (Sprint PAY-P1-1, 2026-05-03; CC-2b 의미 재해석 2026-05-20; CC-4 Phase 2 보존 2026-05-21)
 
 Polar 환불 webhook 수신 시 크레딧 환수 트랜잭션의 영구 박제 테이블. CC-2b 이후 RefundPaymentUseCase 가 `refundPaymentWithPoints` `$transaction` 내부에 박제 (4 출처 환수 + 이중 외상 통합).
 
-**CC-2b 컬럼 의미 재해석 (물리 변경 0건, 코드 주석 + 본 문서만 갱신, 물리 rename 은 CC-4 위임)**:
-- `credits` Int — CC-2a `Payment.credits` 의미 "pt" 재해석 정합: **실 환수 pt** (`actualRefunded`). 4 출처(charged→gift→subscription→free)에서 실제 환수된 총합.
-- `deficit_credits` Int — CC-2b 의미 재해석: **이 환불 1건이 유발한 외상 pt 기여분** (감사 추적용). 외상 잔액 정본은 `Author.deficitPoints` 단일화 — 다음 충전 시 CC-2a `completePaymentWithPoints` 가 자동 회수 (구 시스템 영구 외상 해소).
+**CC-4 Phase 2 컬럼 처리 결정 — 案 Y (보존 + 의미 박제 강화)**: `Payment.credits → Payment.points` 물리 rename 시 RefundLog의 `credits`·`deficit_credits` 컬럼은 **rename하지 않고 보존**. 사유: (a) 명명 충돌 회피 (`Author.deficitPoints` 외상 잔액 정본과 의미 충돌 방지) (b) 회귀 범위 최소화 (admin/audit 전용, HTTP 미노출 — 외부 사용자 영향 0) (c) CC-2b 의미 재해석은 schema 주석 + shared-contracts §13/§30 박제로 강화.
+
+- `credits` Int — **[CC-2b 재해석 / CC-4 Phase 2 보존]** 실 환수 pt (`actualRefunded`). 4 출처(charged→gift→subscription→free)에서 실제 환수된 총합. **단위 = `Payment.points`와 일관 (디노미 1:1,000 pt)**.
+- `deficit_credits` Int — **[CC-2b 재해석 / CC-4 Phase 2 보존]** 이 환불 1건이 유발한 외상 pt 기여분 (감사 추적용). **외상 잔액 정본은 `Author.deficitPoints` 단일화** — 다음 충전 시 CC-2a `completePaymentWithPoints` 가 자동 회수 (구 시스템 영구 외상 해소).
 
 | 컬럼 | 타입 | 제약 | 설명 |
 |------|------|------|------|
