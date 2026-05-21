@@ -298,13 +298,18 @@ Request:
 
 Response 201:
 {
-  "user": { "id": "uuid", "slug": "author-slug", "name": "작가명", "email": "...", "credits": 3 },
+  "user": { "id": "uuid", "slug": "author-slug", "name": "작가명", "email": "...", "credits": 3000 },
   "token": "jwt-token"
 }
 
 Error 400: 유효성 검증 실패
 Error 409: 이메일/슬러그 중복
 ```
+
+> **CC-4 Phase 3 (2026-05-21) — 응답 `credits` 필드 의미 변경 (案 P3-Y 옵션 A)**:
+> 구 `authors.credits Int` 컬럼 DROP 후에도 **응답 키 `credits` 보존** — 외부 호환성(web `AuthUser.credits` + `PlatformNav.tsx` + admin authors UI 영향 회피).
+> 값 = `CreditLedgerPort.getBalance().total` (4 출처 합 pt 단위 — 디노미 1:1,000). ledger 미주입/throw 시 0 폴백(안전망).
+> 예: 가입 보너스 3,000pt → `"credits": 3000`. 구 정수 의미("3 크레딧")에서 pt 의미로 전환됨 — web 표시 시 디노미 환산 가능(`point-balance.ts` 패턴).
 
 ### POST /api/auth/login
 
@@ -314,7 +319,7 @@ Request:
 
 Response 200:
 {
-  "user": { "id": "uuid", "slug": "author-slug", "name": "작가명", "email": "...", "credits": 5 },
+  "user": { "id": "uuid", "slug": "author-slug", "name": "작가명", "email": "...", "credits": 5000 },
   "token": "jwt-token"
 }
 
@@ -327,7 +332,7 @@ Error 401: 이메일/비밀번호 불일치
 Headers: Authorization: Bearer <token>
 
 Response 200:
-{ "id": "uuid", "slug": "author-slug", "name": "작가명", "email": "...", "credits": 5 }
+{ "id": "uuid", "slug": "author-slug", "name": "작가명", "email": "...", "credits": 5000 }
 
 Error 401: 인증 실패
 ```
@@ -340,7 +345,7 @@ Request:
 
 Response 200:
 {
-  "user": { "id": "uuid", "slug": "...", "name": "...", "email": "...", "credits": 5 },
+  "user": { "id": "uuid", "slug": "...", "name": "...", "email": "...", "credits": 5000 },
   "token": "jwt-token"
 }
 ```

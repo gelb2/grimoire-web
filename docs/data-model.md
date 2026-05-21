@@ -18,7 +18,7 @@
 | password_hash | text (nullable) | - | 비밀번호 해시 (bcryptjs) |
 | bio | text (nullable) | - | 작가 소개 (최대 500자) |
 | role | text | default("user") | 역할 (user/admin) |
-| credits | integer | default(0) | **[DEPRECATED — 크레딧 개편 I Phase 2026-05-17]** 디노미네이션 후 points_* 4 필드로 이행. 1 sprint 유예 후 별도 sprint DROP (롤백 안전망). 신규 코드 사용 금지 |
+| ~~credits~~ | ~~integer~~ | ~~DROPPED~~ | **[CC-4 Phase 3 DROP, 2026-05-21]** `ALTER TABLE "authors" DROP COLUMN "credits"` — 마이그레이션 `20260521_author_credits_drop_credit_log_phase3`. 신 4 출처 캐시(`points_*`) + `deficit_points` 단일. 응답 키 `credits`(`/auth/me` 등)는 controller 측에서 `CreditLedgerPort.getBalance().total` 매핑으로 보존(案 P3-Y 옵션 A) |
 | points_free | integer | default(0) | **크레딧 개편 I Phase** — 무료 적립(가입·첫작품) 포인트 잔액 캐시. §0 위상 = CAC(매출 0) |
 | points_subscription | integer | default(0) | **크레딧 개편 I Phase** — 구독 월 풀 포인트 잔액 캐시. 매월 리셋·이월 금지 |
 | points_gift | integer | default(0) | **크레딧 개편 I Phase** — 응원 선물 수령 포인트 잔액 캐시. 독자 결제분 이전 |
@@ -33,6 +33,8 @@
 관계: Theme (1:N), Work (1:N), SocialAccount (1:N), CreditLedger (1:N — Restrict), MembershipPlan (1:N — Restrict)
 
 > **크레딧 개편 I Phase (2026-05-17) — 디노미네이션 1:1,000 + 포인트 출처 4종 분리 회계 (1-C 하이브리드)**: `credits` 단일 Int → `points_*` 4 필드(출처별 잔액 캐시) + `credit_ledgers` 입출금 원장. `points_*` 4 필드는 빠른 조회용 캐시, `credit_ledgers` 가 audit 정본. 정본: `research/CREDIT_PRICING_OVERHAUL_PLAN.md` §8 + ADR-012.
+
+> **CC-4 Phase 3 (2026-05-21) — `Author.credits` 컬럼 DROP + `CreditLog` 테이블 폐기**: 비가역 마이그레이션 `20260521_author_credits_drop_credit_log_phase3` 적용. `ALTER TABLE "authors" DROP COLUMN "credits"` + `DROP TABLE IF EXISTS "credit_logs" CASCADE`. `CreditLedger`(원장 정본) + `Author.points_*`/`deficit_points`(4 출처 캐시) 단일 정본. 응답 키 `credits`(/auth/me 등)는 controller 측에서 `ledger.getBalance().total` 매핑으로 보존(案 P3-Y 옵션 A — web 영향 0건). 정본: `.claude/state/sprint-cc4-phase3-drop-plan-draft.md` + shared-contracts §30 박제.
 
 ### themes
 
@@ -89,15 +91,12 @@
 | shared_expire_at | timestamptz (nullable) | - | 공유 링크 만료 시각 |
 | created_at | timestamptz | default(now()) | 생성일 |
 
-### credit_logs
+### ~~credit_logs~~ — **[CC-4 Phase 3 DROP, 2026-05-21]**
 
-| 컬럼 | 타입 | 제약 | 설명 |
-|------|------|------|------|
-| id | uuid | PK | 로그 식별자 |
-| author_id | text | - | 작가 ID (FK 없음 — 감사 로그) |
-| amount | integer | - | 양수: 적립, 음수: 차감 |
-| reason | text | - | 변동 사유 코드 |
-| created_at | timestamptz | default(now()) | 기록일 |
+`DROP TABLE IF EXISTS "credit_logs" CASCADE` (마이그레이션 `20260521_author_credits_drop_credit_log_phase3`).
+신 `credit_ledgers`(원장 정본 — `source`/`type`/`balanceAfter`/`expiresAt`/`relatedId` 5필드 확장)가 단일 정본.
+적립/차감 8경로(T1~T8) 전부 신 `CreditLedger` 이행 완료(CC-1·CC-2a·CC-2b·CC-3).
+PAY-P3-E archive `credit_logs_archive_pay_p3_e`(1 row, dev 영역)는 회계/감사 영구 보존 정합 박제(별도 테이블).
 
 ### social_accounts
 
@@ -377,7 +376,7 @@ Work ──1:N── Episode                  (onDelete: Cascade — Work 삭제
 Work ──N:1── Theme                    (onDelete: SetNull — Theme 삭제 시 default 유지)
 Work ──1:N── DailyView                (onDelete: Cascade)
 Author ──1:N── SocialAccount          (onDelete: Cascade — 계정 종속)
-Author ──1:N── CreditLog              (onDelete: Restrict — 회계/감사 영구 보존)
+// [CC-4 Phase 3 DROP, 2026-05-21] Author ──1:N── CreditLog — 테이블/모델 폐기. 신 CreditLedger 단일 정본.
 Author ──1:N── Payment                (onDelete: Restrict — 회계/세무 영구 보존)
 Author ──1:N── AnalysisReport         (onDelete: Restrict — 환불 추적 + 감사)
 Author ──1:N── AdminAuditLog (admin)  (onDelete: Restrict — 감사 영구 보존)
@@ -405,7 +404,7 @@ ReconciliationCheckpoint (cron checkpoint, 단일 row)
 
 **FK Cascade 정책 박제 (PAY-P3-E §3-1, 2026-05-10)**:
 - 4 전략 분포: **Cascade 16건** (사용자 종속 + Work/Episode 종속) + **Restrict 8건** (회계/세무/감사 영구 보존) + **SetNull 9건** (익명화 + 운영자 변경 보존) + **NoAction 0건**
-- Restrict 8 영역: `payments.authorId` / `credit_logs.authorId` / `works.authorId` / `user_sanctions.authorId` / `analysis_reports.authorId` / `admin_audit_logs.adminId` / `refund_logs.paymentId`
+- Restrict 7 영역 (CC-4 Phase 3 후 — `credit_logs.authorId` 폐기): `payments.authorId` / `works.authorId` / `user_sanctions.authorId` / `analysis_reports.authorId` / `admin_audit_logs.adminId` / `refund_logs.paymentId` / `subscriptions.targetAuthorId` (PAY-P3-E 박제 영역) — 회계/세무/감사 영구 보존
 - 정본: `prisma/schema.prisma` + `prisma/migrations/20260510_pay_p3_e_fk_cascade_policy/migration.sql` + `ADR.md ADR-007`
 - archive 테이블 (옵션 C 강제 박제, 단계 2 dev 영역): `credit_logs_archive_pay_p3_e` (1 row) + `admin_audit_logs_archive_pay_p3_e` (2 row) — 회계/감사 영구 보존
 
