@@ -213,10 +213,10 @@ HTTP 미노출. NestJS `@Cron('0 0 4 * * *')` 매일 새벽 4시 1회 — PAY-P0
 
 | Method | Path | 용도 | 인증 |
 |--------|------|------|------|
-| POST | `/api/credits/gift` | 크레딧 선물 (독자 → 작가) | JWT |
-| GET | `/api/credits/ranking` | 응원받는 작가 랭킹 | - |
-| GET | `/api/credits/balance` | 크레딧 잔액 조회 | JWT |
-| GET | `/api/credits/logs` | 크레딧 로그 조회 | JWT |
+| POST | `/api/credits/gift` | 응원 선물 (독자 → 작가) — body `{receiverId, amount}` `amount` **단위 pt** (1,000/3,000/5,000pt 3단계, CC-2b §6 결정) | JWT |
+| GET | `/api/credits/ranking` | 응원받는 작가 랭킹 — **CC-3 (HIGH-3) 재작성**: `CreditLedger source='gift', type='earn'` groupBy. 반환 `{authorId, totalGifted}[]` (구 `CreditLog reason='gift_received'` 집계 폐기 — CC-2b 신 선물 정합) | - |
+| GET | `/api/credits/balance` | 4 출처 포인트 잔액 (`CreditBalance` — bySource/total/deficit/available). **CC-3 (CRITICAL-1) lazy 안전망 진입점** — 호출 시 `MembershipPlanPort.checkAndResetExpiredPool` 자동 실행 (poolResetAt 만료 시 풀 리셋). cron 실패 백업 — 이월 금지 코드 강제 | JWT |
+| GET | `/api/credits/logs` | 크레딧 로그 조회 — **CC-3 (HIGH-3) 응답 형태 변경**: `CreditLog[]` → `CreditLedgerEntry[]` (source/type/amount/balanceAfter/expiresAt/relatedId/reason/createdAt). 4 출처 분리 + 만료 + relatedId 까지 노출 | JWT |
 
 ### Stats
 
