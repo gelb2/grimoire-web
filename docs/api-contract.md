@@ -151,7 +151,7 @@
 | GET | `/api/discover/authors` | 작가 검색 (`?q=검색어&limit=10`) | - |
 | GET | `/api/discover/works/popular` | 인기 작품 (`?limit=10`) | - |
 | GET | `/api/discover/works/recent` | 최신 작품 (`?limit=10`) | - |
-| GET | `/api/discover/authors/most-gifted` | 응원받는 작가 랭킹 (`?limit=8`) | - |
+| GET | `/api/discover/authors/most-gifted` | 응원받는 작가 랭킹 (`?limit=8`) — **CC-4 P1 (2026-05-21)**: `DiscoveryUseCase` 가 `CreditUseCase.getGiftRanking` 위임 → CC-2b 신 선물(`source='gift'`)이 본 엔드포인트에 자동 인식 (구 `creditRepo.getGiftRanking` 직접 호출 제거). | - |
 
 ### Payment
 
@@ -241,7 +241,7 @@ HTTP 미노출. NestJS `@Cron('0 0 4 * * *')` 매일 새벽 4시 1회 — PAY-P0
 | PATCH | `/api/admin/authors/:id/plan` | 플랜 변경 | JWT, admin |
 | POST | `/api/admin/credits/grant` | 크레딧 부여 | JWT, admin |
 | POST | `/api/admin/credits/deduct` | 크레딧 차감 | JWT, admin |
-| GET | `/api/admin/credits/logs` | 크레딧 이력 조회 | JWT, admin |
+| GET | `/api/admin/credits/logs` | 크레딧 이력 조회 — **CC-4 P1 (2026-05-21) 응답 형태 변경**: `CreditLog[]` → `CreditLedgerEntry[]` (source/type/amount/balanceAfter/expiresAt/relatedId 추가, `/credits/logs` 와 동일 신 모델). 신 `CreditLedger` 위임 — admin 화면이 4 출처/type 인식. | JWT, admin |
 | GET | `/api/admin/works` | 작품 목록 (검색/필터) | JWT, admin |
 | GET | `/api/admin/works/:id` | 작품 상세 + 에피소드 목록 | JWT, admin |
 | GET | `/api/admin/works/:wid/episodes/:eid` | 에피소드 상세 | JWT, admin |
