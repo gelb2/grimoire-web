@@ -67,6 +67,11 @@ POLAR_PRODUCT_STARTER=...   # 입문 ₩3,000 / $2.99 (CC-2a 신설 — Polar Da
 POLAR_PRODUCT_BASIC=...     # 기본 ₩5,000 / $4.99
 POLAR_PRODUCT_POPULAR=...   # 인기 ₩10,000 / $9.99
 POLAR_PRODUCT_BEST=...      # 베스트 ₩30,000 / $29.99
+# 구독 정기결제 상품 2종 (CC-5 — PAY-P1-4) — 각 Polar recurring Product UUID. **Optional**.
+#   미설정 = 정상 상태 (POST /subscriptions/checkout 만 503 graceful, 나머지 기능 전부 정상).
+#   구독 결제 활성화 시 Polar Dashboard 에 recurring product 등록 후 입력.
+POLAR_PRODUCT_SUBSCRIPTION_PRO=...      # Pro 구독 ₩9,900/월 (recurring_interval: month)
+POLAR_PRODUCT_SUBSCRIPTION_PREMIUM=...  # Premium 구독 ₩19,900/월 (recurring_interval: month)
 # PAY-P3-B (2026-05-09) — Polar SDK timeout (워커 자원 leak 차단). 미설정 시 30000ms 기본값.
 POLAR_SDK_TIMEOUT_MS=30000
 

@@ -24,8 +24,8 @@
 | points_gift | integer | default(0) | **크레딧 개편 I Phase** — 응원 선물 수령 포인트 잔액 캐시. 독자 결제분 이전 |
 | points_charged | integer | default(0) | **크레딧 개편 I Phase** — 충전(Polar) 포인트 잔액 캐시. pt 단가에 §0 박힘, 영구 보존 |
 | deficit_points | integer | default(0) | **크레딧 개편 I Phase** — 외상(채팅 사후 차감 시 잔액 부족분). 충전 시 우선 상계. 상한 -10,000pt |
-| plan | text | default("free") | 구독 플랜 (free/pro/premium). **CC-3 (HIGH-1 案 A, 2026-05-20, ADR-014)** — `Author.plan` 정본 유지 + `MembershipPlan.tier` 미러. `MembershipPlanPort.changeTier` 가 유일한 변경 진입점 — `$transaction` 안에서 양측 동기 강제. 직접 SQL UPDATE 금지. 案 B(`tier` 정본화 + 읽기 13곳 이행)는 CC-5/후속 sprint 옵션 |
-| plan_expire_at | timestamptz (nullable) | - | 플랜 만료일. **CC-3 案 A 동기** — `MembershipPlan.poolResetAt` 미러 (free → null / pro·premium → 다음 풀 리셋일 = `nextMonthStart(now)`). CC-5 PAY-P1-4 활성화 시 구독 결제 만기와 정합 재확인 |
+| plan | text | default("free") | **[DEPRECATED — CC-5, 2026-05-22, ADR-015 案 B]** tier 정본이 `MembershipPlan.tier` 로 이행. application 직접 읽기 0건(`MembershipPlanPort.getPlan` 경유). `changeTier` 案 A 미러로 동기 갱신 — 컬럼 물리 DROP 전까지 stale 방지용. 컬럼 DROP 은 별도 후속 sprint(CC-4 `Author.credits` deprecated→DROP 패턴 정합) |
+| plan_expire_at | timestamptz (nullable) | - | **[DEPRECATED — CC-5, 2026-05-22, ADR-015]** 만기 판정은 `MembershipPlan.status`/`expiresAt` 정본. `changeTier` 案 A 미러 — `MembershipPlan.poolResetAt` 미러 (free → null / pro·premium → 다음 풀 리셋일 = `nextMonthStart(now)`) |
 | default_theme_id | uuid (nullable) | - | 기본 테마 ID |
 | created_at | timestamptz | default(now()) | 가입일 |
 | deleted_at | timestamptz (nullable) | - | **USER-SOFT-DELETE sprint (2026-05-15)** — Author soft delete 표식. NULL = 활성 / NOT NULL = soft deleted. 30일 후 cron hard delete 정합 (회계 8건 Restrict 차단 시 보류). @@index([deleted_at]) 정합. middleware 자동 변환 박제 (findUnique/findMany/findFirst → WHERE deletedAt IS NULL 자동 + delete → soft delete) |
@@ -352,18 +352,20 @@ Polar 환불 webhook 수신 시 크레딧 환수 트랜잭션의 영구 박제 �
 |------|------|------|------|
 | id | uuid | PK | 멤버십 식별자 |
 | author_id | text | FK→authors (Restrict), index(author_id) | 작가. **Restrict** — 구독 이력 영구 보존 (ADR-007 정합) |
-| tier | text | default("free") | free \| pro \| premium |
+| tier | text | default("free") | **CC-5 (ADR-015 案 B)** — tier 정본. free \| pro \| premium |
 | monthly_pool_points | integer | default(0) | 월 풀 크기 (free 0 / pro 93,000 / premium 191,500 — §8-3) |
 | pool_balance | integer | default(0) | 현재 잔여 풀 (캐시 — 리셋 시 monthly_pool_points 로 재설정) |
 | pool_reset_at | timestamptz | index(pool_reset_at) | 다음 리셋 시각 (cron + lazy 이중 안전망) |
 | started_at | timestamptz | default(now()) | 멤버십 시작일 |
-| expires_at | timestamptz (nullable) | - | 멤버십 만료일 |
-| polar_subscription_id | text (nullable) | unique | Polar 구독 결제 연동 (별도 sprint PAY-P1-4 — 본 sprint 는 필드만) |
-| status | text | default("active"), index(status) | active \| expired \| cancelled |
+| expires_at | timestamptz (nullable) | - | 멤버십 만료일. **CC-5** — `changeTier` 가 갱신 (free 다운그레이드 → now / pro·premium → 다음 풀 리셋일) |
+| polar_subscription_id | text (nullable) | unique | **CC-5 (PAY-P1-4)** — Polar 구독 결제 매핑. 구독 webhook 처리 시 `changeTier(_, _, _, polarSubscriptionId)` 가 저장 |
+| status | text | default("active"), index(status) | active \| expired \| cancelled. **CC-5** — 구독 해지/revoke 시 `changeTier` 가 `cancelled` 로 갱신 |
 | created_at | timestamptz | default(now()) | 생성일 |
 | updated_at | timestamptz | auto-update | 수정일 |
 
 관계: Author (N:1, Restrict)
+
+> **CC-5 (2026-05-22, ADR-015) — Polar 구독 정기결제 연동**: `MembershipPlan.tier` 가 tier 정본(案 B). 구독 webhook(`subscription.created/updated/canceled/revoked`)이 `ProcessSubscriptionWebhookUseCase` → `MembershipPlanPort.changeTier` 로 등급/`polar_subscription_id`/`status`/`expires_at` 갱신. 정기결제 갱신 ↔ 풀 리셋 cron 정합 案 A 분리 — 구독 webhook 은 등급 변경만, 풀 리셋은 `resetMonthlyPool` cron 단독. 마이그레이션 0건(필드 추가 0 — `polar_subscription_id` 는 I Phase 부터 존재).
 
 ---
 

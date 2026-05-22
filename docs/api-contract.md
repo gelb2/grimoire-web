@@ -158,10 +158,32 @@
 | Method | Path | 용도 | 인증 |
 |--------|------|------|------|
 | GET | `/api/payments/products` | 크레딧 상품 목록 | - |
-| POST | `/api/payments/webhook` | PAYAPP 결제 콜백 | - |
+| POST | `/api/payments/webhook` | Polar 결제 콜백 (충전 + CC-5 구독 생명주기 webhook 라우팅) | - |
 | POST | `/api/payments/initiate` | 결제 시작 (24h 이내 pending 재사용 — PAY-P1-3) | JWT |
 | GET | `/api/payments/history` | 결제 내역 | JWT |
 | GET | `/api/payments/credits` | 내 크레딧 잔액 | JWT |
+
+### Subscription (크레딧 개편 CC-5 — PAY-P1-4 Polar 구독 정기결제, 2026-05-22)
+
+| Method | Path | 용도 | 인증 |
+|--------|------|------|------|
+| POST | `/api/subscriptions/checkout` | 구독 정기결제 시작 (Polar Checkout recurring) | JWT |
+| GET | `/api/membership` | 내 멤버십 등급/풀 조회 | JWT |
+
+**POST /api/subscriptions/checkout** (`@Throttle` 분당 3회):
+- body: `{ tier: 'pro' | 'premium', returnUrl: string }` (free 는 구독 불가).
+- 응답: `{ paymentUrl, tradeNo }` — Polar 호스티드 Checkout(정기결제 모드) URL.
+- **graceful (CC-5 §4)** — env(`POLAR_PRODUCT_SUBSCRIPTION_PRO/_PREMIUM`) 미설정 시 `503 Service Unavailable`("구독 결제가 아직 활성화되지 않았습니다"). 구독 checkout 만 비활성, 나머지 기능 전부 정상.
+- 결제 완료 시 Polar 가 `subscription.created` webhook 발행 → `/api/payments/webhook` → `ProcessSubscriptionWebhookUseCase` → `MembershipPlanPort.changeTier`.
+
+**GET /api/membership**:
+- 응답: `{ tier, monthlyPoolPoints, poolBalance, poolResetAt, status, expiresAt }`.
+- 내부 ID(`authorId`/`polarSubscriptionId`) 미노출 (SECURITY.md §4).
+- 조회 직전 `checkAndResetExpiredPool` lazy 안전망 호출 (CC-3 정합).
+
+**Polar 구독 webhook** (`/api/payments/webhook` 경유): `subscription.created`/`updated` → `changeTier(tier)` + `polarSubscriptionId` 매핑, `subscription.canceled`/`revoked` → `changeTier('free')` 다운그레이드. `WebhookEvent` 멱등성 게이트 재사용.
+
+> 정본: `.claude/shared-contracts.md` §30 CreditOverhaul / ADR-015.
 
 **POST /api/payments/initiate — 재사용 정책 (PAY-P1-3, 2026-05-04)**:
 - 진입 시 `findReusablePendingPayment(authorId, productId, now-24h)` 게이트.
