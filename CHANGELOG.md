@@ -1,5 +1,18 @@
 # CHANGELOG.md — 변경 이력
 
+## [Unreleased] - 2026-05-22
+
+### Added — CC-5 web 구독 페이지 노출 (준비중 모드) (sprint-cc5-web-subscription)
+
+CC-5 server 측 Polar 구독 정기결제 API(`POST /subscriptions/checkout`·`GET /membership`)는 prod 라이브이나, Polar KYC + 한국 payout 승인 미완으로 실 구독 결제 불가(test mode). 구독 기능/페이지를 web 에 선노출하되, 모든 구독 액션 버튼은 "준비중" 모달만 띄우도록 가드. server 구독 API 실호출 0건.
+
+- **`MembershipPlans` — 표시 전용 → 구독 액션 버튼 노출.** 기존엔 `onSelect` 미전달 시 `<div>`만 렌더돼 버튼이 없었음. CC-5: `onSelect` 전달 시 카드마다 footer 버튼 렌더(pro/premium "구독하기" 활성, free "무료 플랜" 비활성, currentTier 일치 카드 "현재 플랜" 비활성). pro 카드 "추천" 배지 추가. 미사용 `selectedTier` prop 제거(YAGNI).
+- **신설 `ComingSoonModal`** (`src/features/credits/ComingSoonModal.tsx`) — "준비중입니다" 안내 모달. 신규 시각 컴포넌트 아님 — 기존 `Alert`(사슴악마 시각 정본 PASS 컴포넌트) info 톤 래퍼. 새 색/레이아웃 0건. 메시지 "멤버십 구독 기능은 준비 중입니다. 곧 만나보실 수 있습니다…" + 확인 버튼 1개.
+- **`/dashboard/membership` 개편** — `MembershipPlans`에 `onSelect={handleSelect}` 전달 → 구독 버튼 노출. 구독 해지 버튼 추가. 모든 구독 액션(플랜 선택/구독하기/해지)이 단일 핸들러 `handleSelect`로 수렴 → `ComingSoonModal` 노출. server `/subscriptions/checkout`·`/membership` 호출 0건. 기존 인라인 안내 문구는 "준비 중" 강조만 남기고 유지(모달과 비중복).
+- **추후 실연결 전환 구조** — Polar KYC 승인 시 `MembershipPage.handleSelect`의 `setComingSoonOpen(true)` 1줄을 실 `api.checkoutSubscription(tier)` 호출로 교체하면 됨. 액션 핸들러를 1곳에 모아 가드→실연결 전환을 최소 변경으로.
+- **진입 경로 노출** — `/dashboard/credits`→멤버십 링크는 기존 존재. 대시보드 메인 `CreditsSection` 헤더에 "멤버십 →" 링크 추가(충전하기 링크 옆).
+- 검증: vitest — 신규 `ComingSoonModal.test.tsx`(7 it: 가시성/문구/onClose/body override + 구독 버튼 클릭→모달 노출 플로우 3건) + `MembershipPlans.test.tsx` 갱신(버튼 렌더/비활성/tier 콜백). 시각: 플랫폼 neutral-* + `#e53e3e`·`#f5f5f5`(기존 dashboard 동일 팔레트, 신규 색 0). 새 컴포넌트 `ComingSoonModal` — Alert 래퍼라 시각 표면 최소, VCK 검수 대상.
+
 ## [Unreleased] - 2026-05-17
 
 ### Added — 크레딧 개편 I Phase web Generator (sprint-credit-overhaul, Tier 2)

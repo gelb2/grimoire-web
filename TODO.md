@@ -7,7 +7,7 @@
 ## 단기
 
 - [ ] AI 채팅 스트리밍 SSE
-- [ ] 크레딧 개편 — 멤버십 구독 결제 연동 UI (Polar). 현재 `/dashboard/membership`은 표시·선택 전용. server PAY-P1-4(구독 결제 sprint) + `MembershipPlanPort` HTTP 엔드포인트 노출 후 착수.
+- [ ] 크레딧 개편 — 멤버십 구독 실 결제 연결 (Polar). CC-5(2026-05-22): `/dashboard/membership` 구독 UI 노출 + "준비중" 모달 가드 완료. server 구독 API(`/subscriptions/checkout`·`/membership`)는 prod 라이브. **Polar KYC + 한국 payout 승인 완료 시** `MembershipPage.handleSelect`의 `setComingSoonOpen(true)`를 실 checkout 호출로 교체 + `ComingSoonModal` 제거.
 - [ ] 크레딧 개편 — 잔액 4 출처 분해 표시 활성화. `CreditBalanceCard`는 server 가 `bySource`(출처별 잔액) 응답 시 자동 분해 — 현재 server `/credits/balance`는 정수 크레딧만 반환(I Phase backward-compatible). server 가 `CreditLedger.getBalance`를 HTTP 노출하면 추가 작업 없이 동작.
 - [ ] 크레딧 개편 — 충전 패키지 #7 4종(입문 ₩3,000 / 기본 ₩5,000 / 인기 ₩10,000 +10% / 베스트 ₩30,000 +15%) 반영. 현재 server `CREDIT_PRODUCTS`는 구 3종(credit-5/20/50) — server config 갱신 후 web 은 자동 반영(`/payments/products` 정본 의존).
 
