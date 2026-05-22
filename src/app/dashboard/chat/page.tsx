@@ -7,6 +7,7 @@ import { useAuth } from "@/features/auth"
 import { ThinkingIndicator } from "./_components/ThinkingIndicator"
 import { StreamedMessage } from "./_components/StreamedMessage"
 import { ChatSidebar } from "./_components/ChatSidebar"
+import { ChatChargeBadge } from "./_components/ChatChargeBadge"
 
 interface Message {
   id: string
@@ -14,6 +15,9 @@ interface Message {
   content: string
   createdAt: string
   isNew?: boolean
+  // 크레딧 개편 I Phase — 채팅 4구간 사후 차감 결과 (assistant 메시지, server 응답)
+  chargedPoints?: number | null
+  chargeTier?: string | null
 }
 
 interface Session {
@@ -181,7 +185,7 @@ export default function ChatPage() {
             <div ref={scrollContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
               {loadingMore && <div className="text-center text-xs text-gray-400 py-2">이전 메시지 로딩 중...</div>}
               {messages.map(msg => (
-                <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div key={msg.id} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
                   <div className={`max-w-[70%] rounded-lg px-4 py-3 text-sm whitespace-pre-wrap ${
                     msg.role === "user"
                       ? "bg-black text-white"
@@ -189,6 +193,10 @@ export default function ChatPage() {
                   }`}>
                     {msg.role === "assistant" ? <StreamedMessage content={msg.content} isNew={msg.isNew} /> : msg.content}
                   </div>
+                  {/* 채팅 4구간 사후 차감 결과 (assistant 메시지에만) */}
+                  {msg.role === "assistant" && (
+                    <ChatChargeBadge chargedPoints={msg.chargedPoints} chargeTier={msg.chargeTier} />
+                  )}
                 </div>
               ))}
               {sending && <ThinkingIndicator />}

@@ -181,6 +181,9 @@ action_docker_build_push() {
   ok "푸시 완료"
 }
 
+# Container App 업데이트.
+# 업데이트 직후 생성된 신규 revision 이름을 전역 변수 DEPLOYED_REVISION 에 박제한다.
+# (revision-aware healthcheck 가 이 값을 사용 — endpoint 200 ≠ 신규 revision Healthy 차단)
 action_containerapp_update() {
   local env="$1" sha="$2"
   local app tag_sha
@@ -189,12 +192,123 @@ action_containerapp_update() {
 
   step "Container App 업데이트: $app"
   info "  이미지: $tag_sha"
-  az containerapp update \
+  # update 응답 JSON 에서 latestRevisionName 캡처 (-o none 대신 -o json)
+  local update_out
+  update_out=$(az containerapp update \
     --name "$app" \
     --resource-group "$RESOURCE_GROUP" \
     --image "$tag_sha" \
-    -o none || fail "Container App 업데이트 실패"
+    -o json 2>/dev/null) || fail "Container App 업데이트 실패"
+
+  DEPLOYED_REVISION=$(printf "%s" "$update_out" \
+    | python3 -c "import sys,json; print(json.load(sys.stdin).get('properties',{}).get('latestRevisionName',''))" 2>/dev/null || echo "")
+
+  # update 응답에서 못 얻으면 revision list 로 폴백 (최신 createdTime 기준)
+  if [ -z "$DEPLOYED_REVISION" ]; then
+    DEPLOYED_REVISION=$(az containerapp revision list \
+      --name "$app" \
+      --resource-group "$RESOURCE_GROUP" \
+      --query "sort_by([], &properties.createdTime)[-1].name" \
+      -o tsv 2>/dev/null || echo "")
+  fi
+
+  if [ -z "$DEPLOYED_REVISION" ]; then
+    warn "신규 revision 이름 캡처 실패 — revision-aware healthcheck 가 폴백 모드로 동작"
+  else
+    info "  신규 revision: $DEPLOYED_REVISION"
+  fi
   ok "업데이트 완료"
+}
+
+# revision-aware healthcheck — 신규 revision 의 runningState/healthState 직접 검증.
+# 배경: Azure Container Apps single revision mode 에서 신규 revision 이 ActivationFailed 면
+#       직전 revision 이 트래픽을 유지 → endpoint 는 200/3xx(구 코드 fallback)이지만 신규 revision 은 죽음.
+#       endpoint curl 만으로는 이 사고(2026-05-15 server-dev revision 159)를 잡지 못한다.
+# 판정:
+#   - runningState == ActivationFailed         → 실패 (비0 exit)
+#   - healthState  == Unhealthy                → 실패 (비0 exit)
+#   - runningState ∈ {Running, RunningAtMaxScale} && healthState ∈ {Healthy, None} → 성공
+#   - runningState == ScaledToZero (replicas 0) → 정상 (idle, 통과)
+#   - runningState == Activating / healthState == None → 안정화 대기 (polling 계속)
+# polling: 30s 간격 최대 5회 (총 ~150s) — Activating 이 끝날 때까지 대기.
+action_post_deploy_revision_check() {
+  local env="$1"
+  local app
+  app="$(env_to_app_name "$env")"
+
+  step "Healthcheck (신규 revision 상태 직접 검증)"
+
+  local rev="${DEPLOYED_REVISION:-}"
+  if [ -z "$rev" ]; then
+    # update 단계에서 캡처 실패 → 폴백: 최신 revision 재조회
+    rev=$(az containerapp revision list \
+      --name "$app" \
+      --resource-group "$RESOURCE_GROUP" \
+      --query "sort_by([], &properties.createdTime)[-1].name" \
+      -o tsv 2>/dev/null || echo "")
+    if [ -z "$rev" ]; then
+      fail "신규 revision 이름을 확정할 수 없음 — 배포 검증 불가."
+    fi
+    warn "DEPLOYED_REVISION 미설정 — 폴백으로 최신 revision '$rev' 검증"
+  fi
+  info "  검증 대상 revision: $rev"
+
+  local i=0 max=5 health="" running="" rev_json=""
+  while [ "$i" -lt "$max" ]; do
+    rev_json=$(az containerapp revision show \
+      --name "$app" \
+      --resource-group "$RESOURCE_GROUP" \
+      --revision "$rev" \
+      --query "{health:properties.healthState, running:properties.runningState}" \
+      -o json 2>/dev/null || echo "")
+
+    if [ -z "$rev_json" ]; then
+      info "  revision 조회 실패. 30초 후 재시도 ($((i+1))/$max)"
+      sleep 30
+      i=$((i+1))
+      continue
+    fi
+
+    health=$(printf "%s" "$rev_json" | python3 -c "import sys,json; print(json.load(sys.stdin).get('health',''))" 2>/dev/null || echo "")
+    running=$(printf "%s" "$rev_json" | python3 -c "import sys,json; print(json.load(sys.stdin).get('running',''))" 2>/dev/null || echo "")
+    info "  revision 상태: running=$running health=$health ($((i+1))/$max)"
+
+    # 즉시 실패 판정 — polling 중단
+    case "$running" in
+      ActivationFailed|Failed|Degraded)
+        fail "신규 revision '$rev' runningState=$running — 배포 실패. (endpoint 200/3xx 은 직전 revision fallback)
+  → 회복: az containerapp update -n $app -g $RESOURCE_GROUP --image <last-healthy-image>
+  → 또는: rollback-revision skill 호출"
+        ;;
+    esac
+    if [ "$health" = "Unhealthy" ]; then
+      fail "신규 revision '$rev' healthState=Unhealthy — 배포 실패.
+  → 회복: az containerapp update -n $app -g $RESOURCE_GROUP --image <last-healthy-image>"
+    fi
+
+    # 성공 판정 — Running 계열 + (Healthy 또는 None)
+    case "$running" in
+      Running|RunningAtMaxScale)
+        if [ "$health" = "Healthy" ] || [ "$health" = "None" ]; then
+          ok "신규 revision '$rev' 정상 (running=$running health=$health)"
+          return 0
+        fi
+        ;;
+      ScaledToZero)
+        # replicas 0 은 idle 정상 — ActivationFailed 가 아니므로 통과
+        ok "신규 revision '$rev' ScaledToZero (idle 정상, ActivationFailed 아님)"
+        return 0
+        ;;
+    esac
+
+    # Activating / health=None 등 — 안정화 대기
+    info "  안정화 대기 중. 30초 후 재검증 ($((i+1))/$max)"
+    sleep 30
+    i=$((i+1))
+  done
+
+  # max 회 polling 후에도 Running/ScaledToZero 미도달
+  fail "신규 revision '$rev' 가 ${max}회 polling(약 150s) 후에도 안정화 실패 (최종: running=$running health=$health) — 배포 실패."
 }
 
 action_purge_old_images() {
@@ -236,12 +350,15 @@ action_purge_old_images() {
   ok "정리 완료"
 }
 
+# endpoint curl healthcheck — 보조 검증.
+# 주의: 이 검증만으로는 신규 revision ActivationFailed 를 잡지 못한다 (직전 revision fallback 200/3xx).
+#       반드시 action_post_deploy_revision_check 를 먼저 통과시킨 뒤 보조로 호출할 것.
 action_post_deploy_healthcheck() {
   local env="$1"
   local fqdn
   fqdn="$(env_to_fqdn "$env")"
 
-  step "Healthcheck (Container App 직접)"
+  step "Healthcheck (endpoint 보조 검증)"
   local url="https://${fqdn}/"
   info "  GET $url"
 

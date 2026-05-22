@@ -27,7 +27,8 @@
 | `/dashboard/upload` | `app/dashboard/upload/page.tsx` | 원고 업로드 (드래그앤드롭, 포맷 감지, 미리보기) | `POST /api/manuscripts/parse` |
 | `/dashboard/theme` | `app/dashboard/theme/page.tsx` | 테마 에디터 (편집 전용, `?id=`로 특정 테마 로드) | `GET /api/themes/detail/:themeId`, `POST /api/themes/generate` |
 | `/dashboard/analytics` | `app/dashboard/analytics/page.tsx` | 작품 분석 (요약 카드 + 조회수 차트 + 에피소드 순위) | `GET /api/authors/:slug/profile`, `GET /api/works/:id/stats` |
-| `/dashboard/credits` | `app/dashboard/credits/page.tsx` | 크레딧 충전 | `GET /api/payments/products`, `GET /api/payments/credits` |
+| `/dashboard/credits` | `app/dashboard/credits/page.tsx` | 포인트 충전 + 잔액 (크레딧 개편 I Phase — 디노미네이션 1크레딧=1,000pt, 4 출처 + deficit 잔액 표시, 채팅 4구간 차감 안내, 충전 패키지) | `GET /api/credits/balance`, `GET /api/payments/products`, `GET /api/credits/logs`, `POST /api/payments/initiate` |
+| `/dashboard/membership` | `app/dashboard/membership/page.tsx` | 멤버십 플랜 (크레딧 개편 I Phase — free/pro/premium 3등급 + 월 포인트 풀). CC-5(2026-05-22): 구독 액션 버튼(구독하기/해지) 노출 + "준비중" 모달 가드 — Polar KYC 미완으로 server 구독 API 실호출 0건 | — (구독 API 미호출, §30 상수) |
 | `/dashboard/profile` | `app/dashboard/profile/page.tsx` | 프로필 설정 + **계정 탈퇴** (USER-SOFT-DELETE sprint §15-1 — `AccountDeleteDialog` 모달 영역 + slug 재입력 검증 + 30일 유예 안내 + GDPR basic 익명화 박제) | `GET /api/auth/profile`, `DELETE /api/auth/me` |
 
 ### 작가 공간 (멀티테넌트)
@@ -50,7 +51,8 @@
 | `app/library/layout.tsx` | 서재 레이아웃 |
 | `app/login/layout.tsx` | 로그인 레이아웃 |
 | `app/register/layout.tsx` | 회원가입 레이아웃 |
-| `app/dashboard/credits/layout.tsx` | 크레딧 충전 레이아웃 |
+| `app/dashboard/credits/layout.tsx` | 포인트 충전 레이아웃 |
+| `app/dashboard/membership/layout.tsx` | 멤버십 플랜 레이아웃 |
 | `app/dashboard/profile/layout.tsx` | 프로필 설정 레이아웃 |
 | `app/dashboard/theme/layout.tsx` | 테마 에디터 레이아웃 |
 
@@ -95,6 +97,25 @@
 | 컴포넌트 | 설명 |
 |---------|------|
 | AccountDeleteDialog | 본인 계정 탈퇴 모달 (USER-SOFT-DELETE sprint §15-1 — slug 재입력 검증 + 사유 입력 + 30일 유예 안내 + GDPR basic 익명화 정책 박제. 시각 정본 사슴악마: Alert.tsx 동일 골격 + neutral-* 팔레트 + 경고 포인트 `#e53e3e`) |
+
+### 크레딧 (`src/features/credits/`)
+
+> 크레딧 개편 I Phase (2026-05-17) — 디노미네이션 1크레딧=1,000pt + 포인트 출처 4종 회계 + 채팅 4구간 차감. 정본: `.claude/shared-contracts.md` §30 CreditOverhaul.
+
+| 항목 | 설명 |
+|------|------|
+| `credit-overhaul.ts` | §30 도메인 상수 미러 (CREDIT_TO_POINT / CHAT_CHARGE_TIERS / MEMBERSHIP_* / 출처 라벨) + 디노미 표시 유틸 (`formatPoints` 천단위 / `abbreviatePoints` 만·억 축약 — §8-1 큰 숫자 완화) |
+| `point-balance.ts` | server `/credits/balance` 응답 정규화 (`normalizePointBalance`) — 출처 회계/포인트 총량/정수 크레딧 3형태 모두 PointBalanceView 로 변환 |
+| CreditBalanceCard | 포인트 잔액 표시 — 헤드라인 축약 + 4 출처 분해 (server 가 출처 회계 응답 시) + deficit(외상) 안내. 플랫폼 neutral-* 팔레트 + `#e53e3e` |
+| ChatChargeGuide | 채팅 4구간(짧음/보통/긺/아주 긺) 차감 안내 — 정적 (일반/compact 모드). 사후 차감 안내 문구 |
+| MembershipPlans | 멤버십 3등급 플랜 카드 — 가격 + 월 포인트 풀 + 특징 + 구독 액션 버튼. `onSelect` 전달 시 카드마다 버튼 렌더(pro/premium "구독하기", free 비활성). CC-5: 클릭은 ComingSoonModal 트리거 |
+| ComingSoonModal | "준비중입니다" 안내 모달 (CC-5 — 구독 준비중 가드). 기존 `Alert`(시각 정본 PASS) info 톤 래퍼 — 신규 색/레이아웃 0건. Polar KYC 미완으로 모든 구독 액션이 이 모달로 수렴 |
+
+### 채팅 (`src/app/dashboard/chat/_components/`)
+
+| 컴포넌트 | 설명 |
+|---------|------|
+| ChatChargeBadge | 채팅 메시지 차감 배지 — server `sendMessage` 응답의 `chargedPoints`/`chargeTier` (4구간 사후 차감 결과) 표시. 차감 정보 없으면 미렌더 (캡션 크기 — 본문 미간섭) |
 
 ### 테마 (`src/features/theme/`)
 

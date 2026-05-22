@@ -1,5 +1,42 @@
 # CHANGELOG.md — 변경 이력
 
+## [Unreleased] - 2026-05-22
+
+### Added — CC-5 web 구독 페이지 노출 (준비중 모드) (sprint-cc5-web-subscription)
+
+CC-5 server 측 Polar 구독 정기결제 API(`POST /subscriptions/checkout`·`GET /membership`)는 prod 라이브이나, Polar KYC + 한국 payout 승인 미완으로 실 구독 결제 불가(test mode). 구독 기능/페이지를 web 에 선노출하되, 모든 구독 액션 버튼은 "준비중" 모달만 띄우도록 가드. server 구독 API 실호출 0건.
+
+- **`MembershipPlans` — 표시 전용 → 구독 액션 버튼 노출.** 기존엔 `onSelect` 미전달 시 `<div>`만 렌더돼 버튼이 없었음. CC-5: `onSelect` 전달 시 카드마다 footer 버튼 렌더(pro/premium "구독하기" 활성, free "무료 플랜" 비활성, currentTier 일치 카드 "현재 플랜" 비활성). pro 카드 "추천" 배지 추가. 미사용 `selectedTier` prop 제거(YAGNI).
+- **신설 `ComingSoonModal`** (`src/features/credits/ComingSoonModal.tsx`) — "준비중입니다" 안내 모달. 신규 시각 컴포넌트 아님 — 기존 `Alert`(사슴악마 시각 정본 PASS 컴포넌트) info 톤 래퍼. 새 색/레이아웃 0건. 메시지 "멤버십 구독 기능은 준비 중입니다. 곧 만나보실 수 있습니다…" + 확인 버튼 1개.
+- **`/dashboard/membership` 개편** — `MembershipPlans`에 `onSelect={handleSelect}` 전달 → 구독 버튼 노출. 구독 해지 버튼 추가. 모든 구독 액션(플랜 선택/구독하기/해지)이 단일 핸들러 `handleSelect`로 수렴 → `ComingSoonModal` 노출. server `/subscriptions/checkout`·`/membership` 호출 0건. 기존 인라인 안내 문구는 "준비 중" 강조만 남기고 유지(모달과 비중복).
+- **추후 실연결 전환 구조** — Polar KYC 승인 시 `MembershipPage.handleSelect`의 `setComingSoonOpen(true)` 1줄을 실 `api.checkoutSubscription(tier)` 호출로 교체하면 됨. 액션 핸들러를 1곳에 모아 가드→실연결 전환을 최소 변경으로.
+- **진입 경로 노출** — `/dashboard/credits`→멤버십 링크는 기존 존재. 대시보드 메인 `CreditsSection` 헤더에 "멤버십 →" 링크 추가(충전하기 링크 옆).
+- 검증: vitest — 신규 `ComingSoonModal.test.tsx`(7 it: 가시성/문구/onClose/body override + 구독 버튼 클릭→모달 노출 플로우 3건) + `MembershipPlans.test.tsx` 갱신(버튼 렌더/비활성/tier 콜백). 시각: 플랫폼 neutral-* + `#e53e3e`·`#f5f5f5`(기존 dashboard 동일 팔레트, 신규 색 0). 새 컴포넌트 `ComingSoonModal` — Alert 래퍼라 시각 표면 최소, VCK 검수 대상.
+
+## [Unreleased] - 2026-05-17
+
+### Added — 크레딧 개편 I Phase web Generator (sprint-credit-overhaul, Tier 2)
+
+크레딧·구독·채팅 과금 개편 I Phase의 server 측(schema + 차감/적립 로직 + sensor 5종, develop `376ee04`) qa CONDITIONAL PASS 이후 web UI 측 구현. 디노미네이션 1크레딧 = 1,000pt + 포인트 출처 4종 회계 + 채팅 4구간 차감 안내 + 멤버십 플랜. 정본: `.claude/shared-contracts.md` §30 CreditOverhaul + `.claude/state/sprint-credit-overhaul-s-phase-draft.md` §14.
+
+- **신설 `src/features/credits/` 슬라이스** (FSD — slice index.ts Public API 격리). `credit-overhaul.ts`: §30 도메인 상수 미러(CREDIT_TO_POINT / CHAT_CHARGE_TIERS 4구간 190·810·3,390·5,520pt / ANALYSIS·THEME_POINT_COST / MEMBERSHIP_MONTHLY_POOL · PRICE_KRW / 출처 라벨) + 디노미 표시 유틸(`formatPoints` 천단위 / `abbreviatePoints` 만·억 축약 — S Phase Draft §8-1 "큰 숫자 완화 UI"). `point-balance.ts`: server `/credits/balance` 응답 정규화(`normalizePointBalance`) — 출처 회계(bySource)/포인트 총량(available)/정수 크레딧(credits, 현행 server backward-compatible) 3형태 모두 PointBalanceView 로 변환.
+- **신설 컴포넌트 3종** — `CreditBalanceCard`(포인트 잔액 표시: 헤드라인 축약 + 4 출처 분해 + deficit 외상 안내), `ChatChargeGuide`(채팅 4구간 차감 안내, 일반/compact 모드), `MembershipPlans`(멤버십 3등급 표시·선택 — 결제 연동 없음). 채팅 `_components/ChatChargeBadge`(메시지별 4구간 사후 차감 결과 배지).
+- **`/dashboard/credits` 개편** — 크레딧 → 포인트 디노미 표시. 잔액 4 출처 + deficit(`CreditBalanceCard`), 충전 패키지 pt 표기(server `/payments/products` 정본 — Polar 흐름 재사용), 채팅 4구간 차감 안내, 분석 2,440pt / 테마 590pt 안내, 멤버십 페이지 링크.
+- **신설 `/dashboard/membership`** — 멤버십 free/pro/premium 3등급 플랜 표시(가격 + 월 포인트 풀 + 특징). 표시·선택 전용 — Polar 구독 결제 연동은 I Phase 외(별도 sprint PAY-P1-4).
+- **`/dashboard/chat` 차감 표시** — assistant 메시지에 `ChatChargeBadge` 추가. server `sendMessage` 응답의 `chargedPoints`/`chargeTier`(4구간 사후 차감 결과 — §30 ChatMessage) 표시.
+- **API 클라이언트** — `api.getPointBalance()` 추가 (`/credits/balance` → `normalizePointBalance` 정규화). BFF 프록시 경유 — 백엔드 직접 호출 없음.
+- **상태 검증 (CLAUDE.md §0)** — server I Phase 는 backward-compatible: `/credits/balance`·`/auth/me`·`/payments/products` HTTP 응답 미변경(정수 크레딧·구 3 패키지 유지), `CreditLedger.getBalance`(4 출처)·`MembershipPlan` 은 domain 에만 존재하고 HTTP 미연동. `ChatMessage.chargedPoints`/`chargeTier` 만 실제 응답에 포함. → web 은 server 가 실제 반환하는 값에만 의존(없는 출처 값 추정 금지). 잔액은 정수 크레딧 ×1,000 환산 표시, server 가 출처 회계 응답을 줄 때 자동 분해.
+- 검증: vitest 160 → **210** passed (+50 it, 신규 6 파일). credits 슬라이스 커버리지 lines/stmts 100%. tsc --noEmit 0 errors / eslint 신규 파일 0 errors·0 warnings / Next.js build PASS (`/dashboard/membership` 라우트 생성 확인). 플랫폼 neutral-* + `#e53e3e`·`#f5f5f5`(기존 dashboard 페이지 동일 팔레트, 신규 색상 0). 시각 컴포넌트 신규 4종 — VCK 사전 검수 대상.
+
+### Added — USER-SOFT-DELETE E2E 통합 검증 (sprint-e2e-user-soft-delete, Tier 1)
+
+USER-SOFT-DELETE 풀스택 5/15 dev+prod 배포 종료(server-prod rev 101 / web-prod rev 119 Healthy) 이후 미완이던 Playwright E2E 통합 검증 마무리. vitest 9 it(AccountDeleteDialog 4 + UsersTab 5)은 5/15 web Generator에서 작성됨 — 본 변경은 E2E spec 영역만 추가.
+
+- **신설 `e2e/account-delete.spec.ts`** — Playwright E2E 5 it 블록. 시나리오 3건: ① 본인 탈퇴 (`/dashboard/profile` "위험 영역" → AccountDeleteDialog 모달 → slug 미입력/불일치 시 "탈퇴" 버튼 disabled + 불일치 경고 → slug 정합 + 동의 체크박스 → enabled) ② 어드민 force delete (`/admin` '탈퇴/익명화' 탭(UsersTab) → 행 "강제 탈퇴" → 사유 필수 모달 → 사유 미입력 시 confirm 버튼 disabled → 사유 입력 시 enabled) ③ GDPR anonymize (동일 탭 → 행 "익명화" → 사유 필수 모달, force delete 동형 검증). 비인증 리다이렉트 it 2건(`/dashboard/profile` → `/login`, `/admin` → `/admin/login`) 포함.
+- **데이터 파괴 방지 영역 (CRITICAL)** — 본인 탈퇴 it는 AccountDeleteDialog.onConfirm 이 실제 `api.deleteMyAccount()` 호출이므로 confirm("탈퇴") 버튼을 끝까지 클릭하지 않고 모달 취소로 종료 (활성/비활성 상태까지만 검증). force delete / anonymize it는 `page.on('dialog', d => d.dismiss())`로 UsersTab.handleAction 의 `window.confirm()` 네이티브 게이트를 자동 거부 → `api.adminForceDeleteAuthor` / `api.adminAnonymizeAuthor` 절대 미호출 — deerdevil 등 실제 작가 계정 soft delete/anonymize 0건.
+- **환경 의존 graceful degradation** — 비인증 리다이렉트 it 2건은 server 무관 web 단독 PASS. 로그인 의존 it 3건은 `E2E_AUTHOR_SLUG` / `E2E_AUTHOR_PASSWORD` / `E2E_ADMIN_PASSWORD` env 미박제 시 `test.skip` (기존 `auth.spec.ts` / `dashboard.spec.ts` 정합). 로그인 헬퍼는 `dashboard.spec.ts` slug-or-email 폼 패턴 차용.
+- 검증: `npm run test:e2e -- account-delete` 2 passed + 3 skipped (server localhost:3000 미기동 — `ECONNREFUSED` 로그 확인. env 박제 + server 기동 시 3 시나리오 PASS) / vitest 9 it 회귀 무손상 PASS (UsersTab 5 + AccountDeleteDialog 4) / tsc --noEmit 0 errors / eslint 0 errors / Next.js build PASS. 시각 컴포넌트 신규 0건 (E2E spec만) — VCK 검수 불요. globals.css 디자인토큰 변경 0.
+
 ## [Unreleased] - 2026-05-15
 
 ### Added — USER-SOFT-DELETE web Generator (sprint-user-soft-delete, §15-1 web 영역)

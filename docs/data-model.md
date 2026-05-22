@@ -5,7 +5,7 @@
 
 ---
 
-## 테이블 (23개)
+## 테이블 (25개)
 
 ### authors
 
@@ -18,14 +18,23 @@
 | password_hash | text (nullable) | - | 비밀번호 해시 (bcryptjs) |
 | bio | text (nullable) | - | 작가 소개 (최대 500자) |
 | role | text | default("user") | 역할 (user/admin) |
-| credits | integer | default(3) | 크레딧 잔액 |
-| plan | text | default("free") | 구독 플랜 (free/pro/premium) |
-| plan_expire_at | timestamptz (nullable) | - | 플랜 만료일 (free=null, pro/premium=날짜) |
+| ~~credits~~ | ~~integer~~ | ~~DROPPED~~ | **[CC-4 Phase 3 DROP, 2026-05-21]** `ALTER TABLE "authors" DROP COLUMN "credits"` — 마이그레이션 `20260521_author_credits_drop_credit_log_phase3`. 신 4 출처 캐시(`points_*`) + `deficit_points` 단일. 응답 키 `credits`(`/auth/me` 등)는 controller 측에서 `CreditLedgerPort.getBalance().total` 매핑으로 보존(案 P3-Y 옵션 A) |
+| points_free | integer | default(0) | **크레딧 개편 I Phase** — 무료 적립(가입·첫작품) 포인트 잔액 캐시. §0 위상 = CAC(매출 0) |
+| points_subscription | integer | default(0) | **크레딧 개편 I Phase** — 구독 월 풀 포인트 잔액 캐시. 매월 리셋·이월 금지 |
+| points_gift | integer | default(0) | **크레딧 개편 I Phase** — 응원 선물 수령 포인트 잔액 캐시. 독자 결제분 이전 |
+| points_charged | integer | default(0) | **크레딧 개편 I Phase** — 충전(Polar) 포인트 잔액 캐시. pt 단가에 §0 박힘, 영구 보존 |
+| deficit_points | integer | default(0) | **크레딧 개편 I Phase** — 외상(채팅 사후 차감 시 잔액 부족분). 충전 시 우선 상계. 상한 -10,000pt |
+| plan | text | default("free") | **[DEPRECATED — CC-5, 2026-05-22, ADR-015 案 B]** tier 정본이 `MembershipPlan.tier` 로 이행. application 직접 읽기 0건(`MembershipPlanPort.getPlan` 경유). `changeTier` 案 A 미러로 동기 갱신 — 컬럼 물리 DROP 전까지 stale 방지용. 컬럼 DROP 은 별도 후속 sprint(CC-4 `Author.credits` deprecated→DROP 패턴 정합) |
+| plan_expire_at | timestamptz (nullable) | - | **[DEPRECATED — CC-5, 2026-05-22, ADR-015]** 만기 판정은 `MembershipPlan.status`/`expiresAt` 정본. `changeTier` 案 A 미러 — `MembershipPlan.poolResetAt` 미러 (free → null / pro·premium → 다음 풀 리셋일 = `nextMonthStart(now)`) |
 | default_theme_id | uuid (nullable) | - | 기본 테마 ID |
 | created_at | timestamptz | default(now()) | 가입일 |
 | deleted_at | timestamptz (nullable) | - | **USER-SOFT-DELETE sprint (2026-05-15)** — Author soft delete 표식. NULL = 활성 / NOT NULL = soft deleted. 30일 후 cron hard delete 정합 (회계 8건 Restrict 차단 시 보류). @@index([deleted_at]) 정합. middleware 자동 변환 박제 (findUnique/findMany/findFirst → WHERE deletedAt IS NULL 자동 + delete → soft delete) |
 
-관계: Theme (1:N), Work (1:N), SocialAccount (1:N)
+관계: Theme (1:N), Work (1:N), SocialAccount (1:N), CreditLedger (1:N — Restrict), MembershipPlan (1:N — Restrict)
+
+> **크레딧 개편 I Phase (2026-05-17) — 디노미네이션 1:1,000 + 포인트 출처 4종 분리 회계 (1-C 하이브리드)**: `credits` 단일 Int → `points_*` 4 필드(출처별 잔액 캐시) + `credit_ledgers` 입출금 원장. `points_*` 4 필드는 빠른 조회용 캐시, `credit_ledgers` 가 audit 정본. 정본: `research/CREDIT_PRICING_OVERHAUL_PLAN.md` §8 + ADR-012.
+
+> **CC-4 Phase 3 (2026-05-21) — `Author.credits` 컬럼 DROP + `CreditLog` 테이블 폐기**: 비가역 마이그레이션 `20260521_author_credits_drop_credit_log_phase3` 적용. `ALTER TABLE "authors" DROP COLUMN "credits"` + `DROP TABLE IF EXISTS "credit_logs" CASCADE`. `CreditLedger`(원장 정본) + `Author.points_*`/`deficit_points`(4 출처 캐시) 단일 정본. 응답 키 `credits`(/auth/me 등)는 controller 측에서 `ledger.getBalance().total` 매핑으로 보존(案 P3-Y 옵션 A — web 영향 0건). 정본: `.claude/state/sprint-cc4-phase3-drop-plan-draft.md` + shared-contracts §30 박제.
 
 ### themes
 
@@ -82,15 +91,12 @@
 | shared_expire_at | timestamptz (nullable) | - | 공유 링크 만료 시각 |
 | created_at | timestamptz | default(now()) | 생성일 |
 
-### credit_logs
+### ~~credit_logs~~ — **[CC-4 Phase 3 DROP, 2026-05-21]**
 
-| 컬럼 | 타입 | 제약 | 설명 |
-|------|------|------|------|
-| id | uuid | PK | 로그 식별자 |
-| author_id | text | - | 작가 ID (FK 없음 — 감사 로그) |
-| amount | integer | - | 양수: 적립, 음수: 차감 |
-| reason | text | - | 변동 사유 코드 |
-| created_at | timestamptz | default(now()) | 기록일 |
+`DROP TABLE IF EXISTS "credit_logs" CASCADE` (마이그레이션 `20260521_author_credits_drop_credit_log_phase3`).
+신 `credit_ledgers`(원장 정본 — `source`/`type`/`balanceAfter`/`expiresAt`/`relatedId` 5필드 확장)가 단일 정본.
+적립/차감 8경로(T1~T8) 전부 신 `CreditLedger` 이행 완료(CC-1·CC-2a·CC-2b·CC-3).
+PAY-P3-E archive `credit_logs_archive_pay_p3_e`(1 row, dev 영역)는 회계/감사 영구 보존 정합 박제(별도 테이블).
 
 ### social_accounts
 
@@ -172,24 +178,24 @@
 | author_id | text | - | 결제 작가 ID |
 | product_id | text | - | 상품 ID |
 | amount | integer | - | 결제 금액 (원) |
-| credits | integer | - | 부여 크레딧 수 |
+| points | integer | - | **[CC-4 Phase 2 rename, 2026-05-21]** 충전 총 포인트 (pt). 구 컬럼명 `credits`(CC-2a 의미 재해석 "패키지 수량"→"pt") → `points` 물리 rename 완료. 마이그레이션: `20260521_payment_credits_rename_phase2` (`ALTER TABLE "payments" RENAME COLUMN "credits" TO "points"`). 값 = `CREDIT_PRODUCTS.points` |
 | external_transaction_id | text (nullable) | unique | 외부 결제 거래 번호 |
 | status | text | default("pending") | 결제 상태 (pending/completed/failed/refunded/expired) |
 | created_at | timestamptz | default(now()) | 결제 요청일 |
 | completed_at | timestamptz (nullable) | - | 결제 완료일 |
 
-**status enum 흐름** (2026-05-04 PAY-P1-3 갱신):
+**status enum 흐름** (2026-05-04 PAY-P1-3 갱신 / 2026-05-20 CC-2a 갱신):
 - `pending`: 초기 생성 상태 (Polar Checkout URL 발급 직후)
-- `completed`: webhook 'order.paid' 수신 → `completePaymentAtomically` 트랜잭션 성공
+- `completed`: webhook 'order.paid' 수신 → **`completePaymentWithPoints`** 트랜잭션 성공 (CC-2a — 충전 적립 신 경로. 단일 `$transaction` 으로 Payment 완료 + deficit 우선 상계 + `credit_ledgers` charged earn + `authors.points_charged`/`deficit_points` 캐시. 구 `completePaymentAtomically`(`authors.credits` Int + `credit_logs`)는 `@deprecated` — CC-2b 후 제거)
 - `failed`: webhook 'fail' 수신 (PG 처리 실패)
-- `refunded`: webhook 'order.refunded' 수신 → `refundPaymentAtomically` 트랜잭션 성공 (PAY-P1-1)
+- `refunded`: webhook 'order.refunded' 수신 → **`refundPaymentWithPoints`** 트랜잭션 성공 (CC-2b 신 경로 — 4 출처 환수 + 이중 외상 통합. 구 `refundPaymentAtomically`는 CC-4 Phase 1에서 제거 완료)
 - `expired`: 24h 초과 pending row → cron이 마킹 (PAY-P0-2 reconciliation cron + PAY-P1-3 cleanup cron 양쪽에서 처리)
   - PAY-P1-3 재사용 정책: `findReusablePendingPayment`은 `status='pending' AND createdAt > now-24h` row만 반환 → expired 마킹된 row는 재사용 후보에서 제외
   - cleanup cron `payment-cleanup.job` (`@Cron('0 0 4 * * *')`): 매일 새벽 4시 1회, AuditLog operator='system_cleanup' action='payment_expire' 박제
 
 ### webhook_events (Sprint PAY-P0-1, 2026-05-03)
 
-PG (Polar 등) 웹훅 재전송 시 동일 `event_id`로 두 번째 호출이 들어와도 `completePaymentAtomically`가 단 1회만 실행되도록 멱등성 박제 테이블. DB unique 제약(`event_id`)으로 race condition 차단.
+PG (Polar 등) 웹훅 재전송 시 동일 `event_id`로 두 번째 호출이 들어와도 `completePaymentWithPoints`(CC-2a 충전 적립) / `refundPaymentAtomically`가 단 1회만 실행되도록 멱등성 박제 테이블. DB unique 제약(`event_id`)으로 race condition 차단.
 
 | 컬럼 | 타입 | 제약 | 설명 |
 |------|------|------|------|
@@ -242,17 +248,22 @@ cron 주기: `@Cron('0 */10 * * * *')` 10분 (cost-accountant 권고 — Polar `
 
 ---
 
-### refund_logs (Sprint PAY-P1-1, 2026-05-03)
+### refund_logs (Sprint PAY-P1-1, 2026-05-03; CC-2b 의미 재해석 2026-05-20; CC-4 Phase 2 보존 2026-05-21)
 
-Polar 환불 webhook 수신 시 크레딧 환수 트랜잭션의 영구 박제 테이블. payment.usecase.processWebhook의 'cancel' 분기에서 RefundPaymentUseCase가 $transaction 내부에 박제. Author.credits 잔액 부족 시 0 fix + `deficit_credits` 박제로 적자 위험 차단.
+Polar 환불 webhook 수신 시 크레딧 환수 트랜잭션의 영구 박제 테이블. CC-2b 이후 RefundPaymentUseCase 가 `refundPaymentWithPoints` `$transaction` 내부에 박제 (4 출처 환수 + 이중 외상 통합).
+
+**CC-4 Phase 2 컬럼 처리 결정 — 案 Y (보존 + 의미 박제 강화)**: `Payment.credits → Payment.points` 물리 rename 시 RefundLog의 `credits`·`deficit_credits` 컬럼은 **rename하지 않고 보존**. 사유: (a) 명명 충돌 회피 (`Author.deficitPoints` 외상 잔액 정본과 의미 충돌 방지) (b) 회귀 범위 최소화 (admin/audit 전용, HTTP 미노출 — 외부 사용자 영향 0) (c) CC-2b 의미 재해석은 schema 주석 + shared-contracts §13/§30 박제로 강화.
+
+- `credits` Int — **[CC-2b 재해석 / CC-4 Phase 2 보존]** 실 환수 pt (`actualRefunded`). 4 출처(charged→gift→subscription→free)에서 실제 환수된 총합. **단위 = `Payment.points`와 일관 (디노미 1:1,000 pt)**.
+- `deficit_credits` Int — **[CC-2b 재해석 / CC-4 Phase 2 보존]** 이 환불 1건이 유발한 외상 pt 기여분 (감사 추적용). **외상 잔액 정본은 `Author.deficitPoints` 단일화** — 다음 충전 시 CC-2a `completePaymentWithPoints` 가 자동 회수 (구 시스템 영구 외상 해소).
 
 | 컬럼 | 타입 | 제약 | 설명 |
 |------|------|------|------|
 | id | uuid | PK | 환불 로그 식별자 |
-| payment_id | text | - | 환불 대상 Payment id (1:N — 향후 부분 환불 호환 위해 unique 미부여) |
+| payment_id | text | - | 환불 대상 Payment id (1:N — 부분 환불 호환 위해 unique 미부여) |
 | amount | int | - | PG 환불 금액 (KRW) |
-| credits | int | - | 실제 환수된 크레딧 (잔액 충분 시 = 요청, 부족 시 = 잔액) |
-| deficit_credits | int | default(0) | 잔액 부족분 (양수 = 외상, 0 = 정상 환수). 운영자 회수 정책 결정 입력 |
+| credits | int | - | **실 환수 pt** (CC-2b 의미 재해석 — actualRefunded, 4 출처 합) |
+| deficit_credits | int | default(0) | **이 환불이 유발한 외상 pt 기여분** (CC-2b 의미 재해석 — 외상 잔액 정본은 Author.deficitPoints) |
 | reason | text | - | 환불 사유 (예: 'polar_webhook_order.refunded') |
 | processed_at | timestamptz(3) | default(now()) | 환수 처리 시각 |
 | source | text | - | 'webhook' (Polar 자동) / 'manual' (운영자 수동, P2) |
@@ -260,17 +271,18 @@ Polar 환불 webhook 수신 시 크레딧 환수 트랜잭션의 영구 박제 �
 인덱스:
 - `@@index([payment_id])` — Payment별 환불 이력 조회
 
-정책:
-- **잔액 부족 시 0 fix**: Author.credits < credits → Author.credits = 0 + deficit_credits = credits - 잔액. 음수 잔액 절대 차단.
-- **CreditLog 음수 박제 대칭**: 같은 $transaction 내부에서 `credit_logs.amount = -actualDeducted` 박제 (계정 잔액 합산 정합)
-- **AdminAuditLog 후행**: `operator='system_refund'`, `action='refund_normal' | 'refund_deficit'` ($transaction 외부 호출)
+정책 (CC-2b 갱신):
+- **이중 외상 통합**: 잔액 부족분 → `Author.deficitPoints` 가산 + `CreditLedger type='deficit_incur'` row (reason=`refund_deficit:..`). 외상 정본 단일화 — 다음 충전 시 자동 회수.
+- **4 출처 환수 우선순위**: charged → gift → subscription → free (`REFUND_RECOVERY_ORDER`). 출처별 `CreditLedger type='spend'` row 박제.
+- **PAY-P3-A CAS race 차단**: `$executeRawUnsafe UPDATE ... WHERE 컬럼 >= 환수액` count=0 시 throw CAS_MISMATCH (DLQ retry 위임).
+- **AdminAuditLog 후행**: `operator='system_refund'`, `action='refund_normal' | 'refund_partial' | 'refund_deficit' | 'refund_partial_deficit'` ($transaction 외부).
 
 3중 멱등성:
 - L1: PAY-P0-1 `webhook_events.eventId @unique` (재전송 차단)
-- L2: payment.usecase 진입 시 `payment.status='completed'` 체크 (이미 환불된 payment skip)
+- L2: payment.usecase 진입 시 status 체크 (`already_completed` / `already_refunded` / `already_partial_refunded` skip)
 - L3: refund_logs 박제 (조회 + 추적)
 
-정본: `.claude/shared-contracts.md` §13 RefundPaymentAtomically
+정본: `.claude/shared-contracts.md` §13 RefundPaymentAtomically + §30 CreditOverhaul (CC-2b 변경 이력)
 
 ---
 
@@ -304,7 +316,56 @@ Polar 환불 webhook 수신 시 크레딧 환수 트랜잭션의 영구 박제 �
 | session_id | uuid | FK→chat_sessions, index(session+created) | 세션 |
 | role | text | - | 역할 ("user" \| "assistant") |
 | content | text | - | 메시지 내용 |
+| input_tokens | integer (nullable) | - | **크레딧 개편 I Phase** — API 응답 usage.input_tokens. assistant 메시지만, 과거 무료 row 는 null (§8-8 #3 — 토큰 실측 선행) |
+| output_tokens | integer (nullable) | - | **크레딧 개편 I Phase** — API 응답 usage.output_tokens |
+| model | text (nullable) | - | **크레딧 개편 I Phase** — 'claude-sonnet-4-...' 모델 식별자 (차감 N 재산정 시 사용) |
+| charged_points | integer (nullable) | - | **크레딧 개편 I Phase** — 이 턴에 차감된 pt (4구간 정액). null = 미차감(과거 무료) |
+| charge_tier | text (nullable) | - | **크레딧 개편 I Phase** — 차감 구간 'short'\|'normal'\|'long'\|'xlong'. 경계 재확정 후에도 근거 보존 |
 | created_at | timestamptz | default(now()) | 작성일 |
+
+> **크레딧 개편 I Phase (2026-05-17)**: 채팅 4구간 사후 차감을 위해 토큰 실측 5 필드 추가. 전부 nullable — `role='user'` 메시지·과거 무료 시대 row 는 null("0 토큰"과 "미측정" 구분 보존). §8-8 CRITICAL #3.
+
+### credit_ledgers (크레딧 개편 I Phase, 2026-05-17)
+
+포인트 입출금 원장 (1-C 하이브리드의 원장 측 — `authors.points_*` 4 필드는 잔액 캐시, 본 테이블이 audit 정본).
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 원장 엔트리 식별자 |
+| author_id | text | FK→authors (Restrict), index(author+created), index(author+source) | 작가. **Restrict** — 회계 영구 보존 (ADR-007 정합, Author hard delete 시 PG 차단) |
+| source | text | - | 출처: free \| subscription \| gift \| charged (§8-2 분리 회계) |
+| type | text | - | earn \| spend \| deficit_incur \| deficit_settle \| expire |
+| amount | integer | - | 변동 포인트 (부호 有 — earn 양수 / spend·expire 음수) |
+| balance_after | integer | - | 이 row 직후 총 잔액 (4 출처 합) |
+| expires_at | timestamptz (nullable) | index(expires_at) | 구독풀 row 만 — 다음 리셋일. 만료 row 는 잔액 집계 제외 → **이월 구조적 차단** (§8-8 #2) |
+| reason | text | - | 변동 사유 |
+| related_id | text (nullable) | - | ChatMessage/Payment/AnalysisReport id 약결합 (FK 미설정 — 회계 row 영구 보존) |
+| created_at | timestamptz | default(now()) | 기록일 |
+
+관계: Author (N:1, Restrict)
+
+### membership_plans (크레딧 개편 I Phase, 2026-05-17)
+
+멤버십 등급 + 월 포인트 풀 (4-C 구조). 현행 `subscriptions`(독자→작가 팔로우)와 **완전히 다른 도메인** — 명명 충돌 회피 위해 `membership_plans`.
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 멤버십 식별자 |
+| author_id | text | FK→authors (Restrict), index(author_id) | 작가. **Restrict** — 구독 이력 영구 보존 (ADR-007 정합) |
+| tier | text | default("free") | **CC-5 (ADR-015 案 B)** — tier 정본. free \| pro \| premium |
+| monthly_pool_points | integer | default(0) | 월 풀 크기 (free 0 / pro 93,000 / premium 191,500 — §8-3) |
+| pool_balance | integer | default(0) | 현재 잔여 풀 (캐시 — 리셋 시 monthly_pool_points 로 재설정) |
+| pool_reset_at | timestamptz | index(pool_reset_at) | 다음 리셋 시각 (cron + lazy 이중 안전망) |
+| started_at | timestamptz | default(now()) | 멤버십 시작일 |
+| expires_at | timestamptz (nullable) | - | 멤버십 만료일. **CC-5** — `changeTier` 가 갱신 (free 다운그레이드 → now / pro·premium → 다음 풀 리셋일) |
+| polar_subscription_id | text (nullable) | unique | **CC-5 (PAY-P1-4)** — Polar 구독 결제 매핑. 구독 webhook 처리 시 `changeTier(_, _, _, polarSubscriptionId)` 가 저장 |
+| status | text | default("active"), index(status) | active \| expired \| cancelled. **CC-5** — 구독 해지/revoke 시 `changeTier` 가 `cancelled` 로 갱신 |
+| created_at | timestamptz | default(now()) | 생성일 |
+| updated_at | timestamptz | auto-update | 수정일 |
+
+관계: Author (N:1, Restrict)
+
+> **CC-5 (2026-05-22, ADR-015) — Polar 구독 정기결제 연동**: `MembershipPlan.tier` 가 tier 정본(案 B). 구독 webhook(`subscription.created/updated/canceled/revoked`)이 `ProcessSubscriptionWebhookUseCase` → `MembershipPlanPort.changeTier` 로 등급/`polar_subscription_id`/`status`/`expires_at` 갱신. 정기결제 갱신 ↔ 풀 리셋 cron 정합 案 A 분리 — 구독 webhook 은 등급 변경만, 풀 리셋은 `resetMonthlyPool` cron 단독. 마이그레이션 0건(필드 추가 0 — `polar_subscription_id` 는 I Phase 부터 존재).
 
 ---
 
@@ -317,7 +378,7 @@ Work ──1:N── Episode                  (onDelete: Cascade — Work 삭제
 Work ──N:1── Theme                    (onDelete: SetNull — Theme 삭제 시 default 유지)
 Work ──1:N── DailyView                (onDelete: Cascade)
 Author ──1:N── SocialAccount          (onDelete: Cascade — 계정 종속)
-Author ──1:N── CreditLog              (onDelete: Restrict — 회계/감사 영구 보존)
+// [CC-4 Phase 3 DROP, 2026-05-21] Author ──1:N── CreditLog — 테이블/모델 폐기. 신 CreditLedger 단일 정본.
 Author ──1:N── Payment                (onDelete: Restrict — 회계/세무 영구 보존)
 Author ──1:N── AnalysisReport         (onDelete: Restrict — 환불 추적 + 감사)
 Author ──1:N── AdminAuditLog (admin)  (onDelete: Restrict — 감사 영구 보존)
@@ -345,7 +406,7 @@ ReconciliationCheckpoint (cron checkpoint, 단일 row)
 
 **FK Cascade 정책 박제 (PAY-P3-E §3-1, 2026-05-10)**:
 - 4 전략 분포: **Cascade 16건** (사용자 종속 + Work/Episode 종속) + **Restrict 8건** (회계/세무/감사 영구 보존) + **SetNull 9건** (익명화 + 운영자 변경 보존) + **NoAction 0건**
-- Restrict 8 영역: `payments.authorId` / `credit_logs.authorId` / `works.authorId` / `user_sanctions.authorId` / `analysis_reports.authorId` / `admin_audit_logs.adminId` / `refund_logs.paymentId`
+- Restrict 7 영역 (CC-4 Phase 3 후 — `credit_logs.authorId` 폐기): `payments.authorId` / `works.authorId` / `user_sanctions.authorId` / `analysis_reports.authorId` / `admin_audit_logs.adminId` / `refund_logs.paymentId` / `subscriptions.targetAuthorId` (PAY-P3-E 박제 영역) — 회계/세무/감사 영구 보존
 - 정본: `prisma/schema.prisma` + `prisma/migrations/20260510_pay_p3_e_fk_cascade_policy/migration.sql` + `ADR.md ADR-007`
 - archive 테이블 (옵션 C 강제 박제, 단계 2 dev 영역): `credit_logs_archive_pay_p3_e` (1 row) + `admin_audit_logs_archive_pay_p3_e` (2 row) — 회계/감사 영구 보존
 

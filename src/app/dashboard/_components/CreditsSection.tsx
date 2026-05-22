@@ -14,7 +14,10 @@ export function CreditsSection({ credits }: CreditsSectionProps) {
           <h2 className="text-2xl font-black text-black">크레딧</h2>
           <div className="flex-1 h-px bg-black" />
         </div>
-        <Link href="/dashboard/credits" className="text-sm text-[#e53e3e] hover:underline ml-4">충전하기 &rarr;</Link>
+        <div className="flex items-baseline gap-4 ml-4">
+          <Link href="/dashboard/membership" className="text-sm text-neutral-500 hover:text-black hover:underline">멤버십 &rarr;</Link>
+          <Link href="/dashboard/credits" className="text-sm text-[#e53e3e] hover:underline">충전하기 &rarr;</Link>
+        </div>
       </div>
       <div className="flex items-center gap-8">
         <div>
