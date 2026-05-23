@@ -33,6 +33,7 @@
 | AI 채팅 | `/dashboard/chat` | 구현 완료 (크레딧 개편 I Phase — 메시지별 4구간 차감 배지) | listChatSessions, createChatSession, sendChatMessage, getChatMessages |
 | 관리자 로그인 | `/admin/login` | 구현 완료 | adminLogin (독립 인증, reCAPTCHA 없음) |
 | 관리자 패널 | `/admin` | 구현 완료 | 통계/사용자/콘텐츠/제재/신고/댓글/결제/접근로그/설정/감사로그 |
+| 관리자 — Circuit Breaker 패널 (PAY-S3) | `/admin` → SettingsTab → "결제 인프라" sub-section | 구현 완료 (2026-05-23) | `adminGetCircuitBreakerState` / `adminResetCircuitBreaker` / `adminTripCircuitBreaker` — `CircuitBreakerPanel.tsx`, AccessLogsTab `ACTION_COLORS` 정합(CLOSED 녹/OPEN 적/HALF_OPEN 황) + 네이티브 prompt/confirm 다이얼로그 + Trip ⚠️ 경고 + 30초 폴링. VCK PASS 4/4 + vitest 6 케이스 |
 
 ---
 
