@@ -768,6 +768,68 @@ class ApiClient extends BaseApiClient {
     if (params?.action) qs.set('action', params.action)
     return this.fetch<{ items: any[]; total: number }>(`/admin/audit-logs?${qs}`)
   }
+
+  // ─── Circuit Breaker admin (PAY-S3) ───
+  // Polar SDK 호출 경계 가용성 정책의 (LOL) 운영자 UI.
+  // shared-contracts §27 + server admin endpoint 3 정합 — BFF catchall(`/api/admin/circuit-breaker/*`) 경유.
+  // forceOpen/forceClose는 port에서 박제됨 (in-memory-circuit-breaker.adapter) — 본 메서드는 HTTP 노출만.
+  async adminGetCircuitBreakerState(key?: 'polar:checkouts:create' | 'polar:checkouts:list') {
+    const qs = key ? `?key=${encodeURIComponent(key)}` : ''
+    return this.fetch<CircuitBreakerStateResponseDto | { states: CircuitBreakerStateResponseDto[] }>(
+      `/admin/circuit-breaker/state${qs}`,
+    )
+  }
+
+  async adminResetCircuitBreaker(key: 'polar:checkouts:create' | 'polar:checkouts:list', reason: string) {
+    return this.fetch<CircuitBreakerActionResponseDto>('/admin/circuit-breaker/reset', {
+      method: 'POST',
+      body: JSON.stringify({ key, reason }),
+    })
+  }
+
+  async adminTripCircuitBreaker(key: 'polar:checkouts:create' | 'polar:checkouts:list', reason: string) {
+    return this.fetch<CircuitBreakerActionResponseDto>('/admin/circuit-breaker/trip', {
+      method: 'POST',
+      body: JSON.stringify({ key, reason }),
+    })
+  }
+}
+
+/**
+ * Circuit Breaker 상태 응답 DTO — shared-contracts §27 + planner §5-2 정본.
+ *
+ * server `admin.controller.ts`의 (LOL) `GET /admin/circuit-breaker/state` 응답 정합.
+ * - key: 호출점 — `polar:checkouts:create` 또는 `polar:checkouts:list` (2 호출점만 허용)
+ * - state: 'closed' | 'open' | 'half_open' (3상 상태머신)
+ * - policy: env 4값 (failureThreshold / cooldownMs / halfOpenTrial / resetWindowMs) — 운영자 정책 가시화
+ */
+export interface CircuitBreakerStateResponseDto {
+  key: 'polar:checkouts:create' | 'polar:checkouts:list'
+  state: 'closed' | 'open' | 'half_open'
+  failureCount: number
+  openedAt?: string
+  halfOpenAt?: string
+  halfOpenTrialCount: number
+  halfOpenSuccessCount: number
+  lastSuccessAt?: string
+  lastFailureAt?: string
+  policy: {
+    failureThreshold: number
+    cooldownMs: number
+    halfOpenTrial: number
+    resetWindowMs: number
+  }
+}
+
+/**
+ * Circuit Breaker 수동 조작 응답 DTO — `POST /reset` / `POST /trip` 공통.
+ *
+ * beforeState/afterState는 §20 AuditLog 정합 (operator 행위 추적 강화).
+ */
+export interface CircuitBreakerActionResponseDto {
+  success: boolean
+  beforeState: 'closed' | 'open' | 'half_open'
+  afterState: 'closed' | 'open' | 'half_open'
 }
 
 export const api = new ApiClient()
