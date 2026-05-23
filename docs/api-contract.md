@@ -280,6 +280,9 @@ HTTP 미노출. NestJS `@Cron('0 0 4 * * *')` 매일 새벽 4시 1회 — PAY-P0
 | PATCH | `/api/admin/settings/:key` | 시스템 설정 변경 | JWT, admin |
 | GET | `/api/admin/access-logs` | 접근 로그 조회 | JWT, admin |
 | GET | `/api/admin/audit-logs` | 감사 로그 조회 | JWT, admin |
+| GET | `/api/admin/circuit-breaker/state` | Circuit Breaker 상태 조회 (PAY-S3, 2026-05-23) — 2 호출점(`polar:checkouts:create`/`polar:checkouts:list`) state + 메트릭 + policy 4 env값. `?key=` 미지정 시 전체, 지정 시 단일. @Throttle 분당 60. 응답에 내부 ID 노출 0 | JWT, admin |
+| POST | `/api/admin/circuit-breaker/reset` | Circuit Breaker 수동 복구 (PAY-S3) — body `{key, reason}` (reason 필수, key 화이트리스트 검증). AuditLog `circuit_breaker.manual_reset` 박제(operator_id + reason + beforeState/afterState). @Throttle 분당 5 | JWT, admin |
+| POST | `/api/admin/circuit-breaker/trip` | Circuit Breaker 수동 차단 (PAY-S3) — body `{key, reason}`. 결제 즉시 503 변환. AuditLog `circuit_breaker.manual_trip` 박제. @Throttle 분당 5. ⚠️ 파괴적 액션 (사고 대응·연습 전용) | JWT, admin |
 
 ### Chat (AI 어시스턴트)
 
