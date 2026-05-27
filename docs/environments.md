@@ -84,6 +84,19 @@ POLAR_PRODUCT_SUBSCRIPTION_PREMIUM=...  # Premium 구독 ₩19,900/월 (recurrin
 # PAY-P3-B (2026-05-09) — Polar SDK timeout (워커 자원 leak 차단). 미설정 시 30000ms 기본값.
 POLAR_SDK_TIMEOUT_MS=30000
 
+# EMAIL-POLAR-READY Phase B+C (2026-05-27) — Email SaaS factory 분기. **Optional**.
+#   미설정 = NullEmailAdapter (외부 호출 0건, logger.warn만) — 사용자 절대 규정 0-1 default
+#   resend = ResendEmailAdapter (RESEND_API_KEY 실값 필요)
+#   sendgrid = SendgridEmailAdapter (SENDGRID_API_KEY 실값 필요)
+#   미지원 값(ses/postmark 등) = NullEmailAdapter 폴백 + logger.warn
+EMAIL_PROVIDER=null
+RESEND_API_KEY=placeholder      # Secret Manager `resend-api-key-{env}-an1` 바인딩 권장. placeholder 시 isEnabled=false
+SENDGRID_API_KEY=placeholder    # Secret Manager `sendgrid-api-key-{env}-an1` 바인딩 권장
+EMAIL_FROM_ADDRESS=noreply@grimoire-book.com   # 발신자 주소 (기본값)
+# EMAIL-POLAR-READY Phase C (2026-05-27) — 토큰 hash pepper (rainbow table 차단).
+#   미설정 시 빈 문자열 폴백 (개발용). prod에서는 반드시 실값 + Secret Manager 권장.
+EMAIL_TOKEN_PEPPER=             # 권장: openssl rand -base64 32
+
 # Azure Blob Storage (없으면 업로드 비활성화, API 폴백)
 AZURE_STORAGE_ACCOUNT_NAME=grimoire0storage
 AZURE_STORAGE_ACCOUNT_KEY=...

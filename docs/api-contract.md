@@ -52,6 +52,19 @@
 | POST | `/api/auth/google` | Google OAuth 로그인 | - |
 | POST | `/api/auth/logout` | 로그아웃 (쿠키 삭제) | JWT |
 | POST | `/api/auth/change-password` | 비밀번호 변경 | JWT |
+| POST | `/api/auth/email/verify-request` | 이메일 인증 토큰 발급 + 발송 (EMAIL-POLAR-READY Phase C) | JWT, @Throttle 3/분 |
+| POST | `/api/auth/email/verify-confirm` | 이메일 인증 토큰 검증 (본인 토큰만) | JWT, @Throttle 10/분 |
+| POST | `/api/auth/password/reset-request` | 비밀번호 초기화 토큰 발급 (비로그인 OK, enumeration 차단) | - , @Throttle 3/분 |
+| POST | `/api/auth/password/reset-confirm` | 비밀번호 초기화 토큰 검증 (purpose='password_reset' 강제) | - , @Throttle 10/분 |
+
+**EMAIL-POLAR-READY Phase C 정합 (2026-05-27)**:
+- `EMAIL_PROVIDER=null` (default) 시 토큰 DB 박제 + 검증 흐름 정상 + 외부 발송 0건 (logger.warn만 박제)
+- `EMAIL_PROVIDER=resend` 또는 `sendgrid` 시 자동 실 발송 (사용자 라이브 액션 — Cloud Run env 1줄 갱신)
+- 토큰 보안: sha256(plainToken + EMAIL_TOKEN_PEPPER) hash만 DB 저장, 평문은 발송 시점만 메모리
+- 만료: verify_email=60분 / password_reset=30분
+- 재사용 차단: `redeemedAt NOT NULL` 시 BadRequest "이미 사용된 토큰입니다"
+- 본 sprint는 토큰 발급/검증만 박제 — `Author.emailVerifiedAt` 컬럼 갱신은 별 sprint (마이그레이션 ≤1건 제약)
+- 정본: `shared-contracts.md` §32 EmailVerificationTokenPolicy
 
 ### Theme
 
