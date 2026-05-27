@@ -508,6 +508,36 @@ ReconciliationCheckpoint (cron checkpoint, 단일 row)
 
 ---
 
+### email_verification_tokens (EMAIL-POLAR-READY Phase C, 2026-05-27)
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 토큰 고유 식별자 |
+| author_id | text | FK Restrict → authors.id | 발급 대상 작가 (Author hard delete 시 차단, 영구 보존 — 감사용) |
+| email | text | NOT NULL | 발급 시점 이메일 (Author.email 변경 시 stale 방지) |
+| token_hash | text | unique | sha256(plainToken + EMAIL_TOKEN_PEPPER) — 평문 0건, hash만 |
+| purpose | text | NOT NULL | 'verify_email' (60분 만료) \| 'password_reset' (30분 만료) |
+| expire_at | timestamptz(3) | NOT NULL | 만료 시각 — 이후 verify 시 BadRequest |
+| redeemed_at | timestamptz(3) | nullable | 사용 완료 시각 (NULL=미사용, NOT NULL=사용됨 — 재사용 차단) |
+| created_at | timestamptz(3) | default now | 발급 시각 |
+
+**index**:
+- `token_hash` unique — verify 진입점 O(1) 조회
+- `(author_id, expire_at)` — 작가별 유효 토큰 조회
+- `(purpose, expire_at)` — 만료 토큰 일괄 정리 cron 용
+
+**보안 규약**:
+- 평문 토큰은 발송 시점만 메모리에 박제, DB 0건 (sha256 hash만)
+- `EMAIL_TOKEN_PEPPER` env로 hash 강화 (rainbow table 차단)
+- `redeemedAt` 박제 시 재사용 차단 — verify 호출 BadRequest "이미 사용된 토큰입니다"
+- `expire_at` 경과 시 verify 호출 BadRequest "토큰이 만료되었습니다"
+
+**마이그레이션**: `20260527_email_verification_token`
+
+**정본**: `shared-contracts.md` §32 EmailVerificationTokenPolicy + `sprint-email-polar-ready-plan-draft.md` §7
+
+---
+
 ## 참조
 
 - `server/SCHEMA.md` — Prisma 구현 상세

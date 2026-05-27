@@ -793,6 +793,24 @@ class ApiClient extends BaseApiClient {
       body: JSON.stringify({ key, reason }),
     })
   }
+
+  /**
+   * 구독 정기결제 시작 (CC-5 + EMAIL-POLAR-READY Phase A, 2026-05-27) — Polar Checkout recurring URL 반환.
+   *
+   * 사용자 라이브 액션: web Cloud Run env `NEXT_PUBLIC_SUBSCRIPTION_LIVE=true` 박제 후 호출, 아니면 ComingSoonModal fallback.
+   * server graceful 503: Polar 구독 product env 미설정 시 503 throw — 호출자(MembershipPage)가 catch 후 모달 fallback.
+   */
+  async startSubscriptionCheckout(body: { tier: 'pro' | 'premium'; returnUrl: string }) {
+    return this.fetch<{ paymentUrl: string; tradeNo: string }>('/subscriptions/checkout', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+  }
+
+  /** 멤버십 등급/풀 조회 (CC-5) — env 미설정 시에도 정상 응답 (DB 조회만). */
+  async getMembership() {
+    return this.fetch<{ tier: 'free' | 'pro' | 'premium'; monthlyPool: number; used: number; expiresAt?: string }>('/membership')
+  }
 }
 
 /**
