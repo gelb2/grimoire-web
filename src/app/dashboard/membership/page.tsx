@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { PlatformNav } from '@/components/PlatformNav'
 import { MembershipPlans, ComingSoonModal, type MembershipTier } from '@/features/credits'
+import { api } from '@/lib/api'
 
 /**
  * 멤버십(구독) 플랜 화면 (크레딧 개편 I Phase — §8-3 free/pro/premium).
@@ -33,10 +34,26 @@ export default function MembershipPage() {
 
   if (loading || !user) return null
 
-  // CC-5: 모든 구독 액션의 단일 진입점. 현재는 "준비중" 모달만.
-  // Polar KYC 승인 시 이 한 곳을 실 checkout 호출로 교체.
-  const handleSelect = (_tier: MembershipTier) => {
-    setComingSoonOpen(true)
+  // EMAIL-POLAR-READY Phase A (2026-05-27) — env flag 분기로 사용자 라이브 액션 1줄 박제.
+  // NEXT_PUBLIC_SUBSCRIPTION_LIVE=true 시 실 Polar checkout 호출, 아니면 "준비중" 모달.
+  // server graceful 503 (Polar product env 미설정) 시 catch 후 모달 fallback (UX 보존).
+  const live = process.env.NEXT_PUBLIC_SUBSCRIPTION_LIVE === 'true'
+  const handleSelect = async (tier: MembershipTier) => {
+    if (!live || tier === 'free') {
+      setComingSoonOpen(true)
+      return
+    }
+    try {
+      const { paymentUrl } = await api.startSubscriptionCheckout({
+        tier,
+        returnUrl: typeof window !== 'undefined' ? window.location.href : '',
+      })
+      window.location.href = paymentUrl
+    } catch (err) {
+      // server graceful 503 또는 네트워크 에러 → 모달 fallback (UX 보존)
+      console.error('구독 결제 시작 실패:', err)
+      setComingSoonOpen(true)
+    }
   }
 
   return (
