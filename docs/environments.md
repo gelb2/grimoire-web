@@ -1,9 +1,10 @@
 # Environments — ProjectGrimoire
 
 > 정본: grimoire-server (이 파일) → grimoire-web에 동기화
+> 2026-05-27: Azure → GCP 마이그레이션 완료. Cloud Run + Cloud SQL + Artifact Registry + GCS 정합.
 > 2026-04-19: `inhouse` 환경 제거. QA는 dev 환경에서 develop 브랜치로 수행.
 
-## 3단계 환경
+## 2단계 환경 (+ 로컬)
 
 | 환경 | 용도 | 브랜치 | 데이터 관리 |
 |------|------|--------|------------|
@@ -19,21 +20,29 @@
 | 환경 | Web | API | DB |
 |------|-----|-----|----|
 | localhost | localhost:3001 | localhost:3000 | localhost:5432 (Docker) |
-| development | dev.grimoire-book.com | dev-api.grimoire-book.com | Azure grimoire-db-dev |
-| production | grimoire-book.com | api.grimoire-book.com | Azure grimoire-db-prod |
+| development | dev.grimoire-book.com | dev-api.grimoire-book.com | Cloud SQL grimoire-db-dev (Auth Proxy) |
+| production | grimoire-book.com | api.grimoire-book.com | Cloud SQL grimoire-db-prod (Auth Proxy) |
 
-## Azure 리소스
+## GCP 리소스 (2026-05-27 정합)
 
 | 리소스 | 서비스 | 용도 |
 |--------|--------|------|
-| grimoire-web-{env} | Azure Container Apps | 웹 호스팅 (dev/prod) |
-| grimoire-server-{env} | Azure Container Apps | API 서버 (dev/prod) |
-| grimoire-db-{env} | Azure Database for PostgreSQL | 데이터베이스 (dev/prod) |
-| grimoireacr | Azure Container Registry | Docker 이미지 |
-| grimoire0storage | Azure Blob Storage | 테마 CSS + 커버 이미지 |
+| grimoire-web-{env} | Cloud Run (asia-northeast1) | 웹 호스팅 (dev/prod) |
+| grimoire-server-{env} | Cloud Run (asia-northeast1) | API 서버 (dev/prod) |
+| grimoire-db-{env} | Cloud SQL for PostgreSQL 16 (db-f1-micro Enterprise) | 데이터베이스 (dev/prod) |
+| grimoire-docker | Artifact Registry (DOCKER) | Docker 이미지 (수동 push) |
+| grimoire-blob-{env} | Cloud Storage (Standard) | 테마 CSS + 커버 이미지 (public IAM) |
+| Secret Manager (16건, asia-northeast1) | Secret Manager | DATABASE_URL/JWT/API keys/Polar tokens |
+| Cloud Run Domain Mapping × 4 | Cloud Run | 커스텀 도메인 + Google managed cert |
 
-> localhost는 Azure 리소스를 사용하지 않는다. Docker Compose로 로컬 DB를 띄운다.
+> 프로젝트: `grimoire-491708` (project number `23295981916`) / 리전: `asia-northeast1` 단일.
+> localhost는 GCP 리소스를 사용하지 않는다. Docker Compose로 로컬 DB를 띄운다.
 > 상세 인프라 구성: `INFRASTRUCTURE.md` 참조.
+
+## Azure 잔존 (Phase 7 정리 대기)
+
+> 모든 Azure 리소스는 사용 중지 상태이나 미삭제. Phase 7 정리 sprint 후 삭제 예정.
+> 잔존 영역 상세: `INFRASTRUCTURE.md §12` 참조 — Container Apps × 4 / Postgres × 2 / ACR / Blob / Log Analytics + `azure-storage-account-key-*` Secret.
 
 ## 환경변수
 
