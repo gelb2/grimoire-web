@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '@/lib/api'
 import { CircuitBreakerPanel } from './components/CircuitBreakerPanel'
+import { PaymentInfraAlertBadge } from './components/PaymentInfraAlertBadge'
 
 const SETTING_LABELS: Record<string, { label: string; type: 'toggle' | 'number' }> = {
   maintenance_mode: { label: '점검 모드', type: 'toggle' },
@@ -67,6 +68,8 @@ export function SettingsTab() {
             Polar SDK 호출 경계 가용성 정책. 사고 대응·연습 시 수동 차단/복구.
           </p>
         </div>
+        {/* PAY-S6 — 운영 경보 배지 (Circuit OPEN / permanent_failed / reconciliation mismatch) */}
+        <PaymentInfraAlertBadge />
         <CircuitBreakerPanel />
       </section>
     </div>
