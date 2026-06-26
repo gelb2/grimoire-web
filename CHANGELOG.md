@@ -2,6 +2,17 @@
 
 ## [Unreleased] - 2026-06-27
 
+### Docs — 문서 감사 정정 (코드 무변경, 문서를 코드 실측에 정합) (docs/audit-doc-sync)
+
+문서 전수감사 후속 — grimoire-web 문서를 코드 실측(`src/app/theme.css`, `find src/app -name page.tsx`)에 맞춰 정정. **코드(theme.css/globals.css) 절대 무변경 — 문서/마크다운만 수정. 시각 렌더링 변경 0.**
+
+- **`SCREENS.md` 라우트 누락 10건 추가** — 실제 `page.tsx` 26개 中 라우트 테이블 누락분: `/admin/login`·`/shared/[token]`·`/privacy`·`/terms`(플랫폼) + `/dashboard/chat`·`/dashboard/analysis`·`/dashboard/analysis/history`·`/dashboard/episodes`·`/dashboard/episodes/[episodeId]/edit`(대시보드) + `/[author]/profile`(작가 공간). 각 행에 파일/설명/인증/API 실측 기재. → 26 라우트 전건 문서화(누락 0).
+- **`docs/DEPLOY.md` 이중정본 해소** — L5 "정본: 이 문서" ↔ STALE 경고(정본=server) 자가모순 + 2026-05-27 GCP 마이그레이션 후 stale 중복 두 사유로, 전체 Azure 기반 절차본을 제거하고 **정본 포인터 stub**으로 일원화(정본 = `grimoire-server/docs/DEPLOY.md`). server DEPLOY.md 무변경.
+- **`docs/design-tokens.md` theme.css 코드싱크** — `@layer utilities` fallback 발산 정정: `tracking-wide-g` 변수/값(`--g-tracking-wide` 0.08em → 실측 `--g-label-letter-spacing` 0.25em), `tracking-normal-g`(0.04em → 0.1em), `tracking-tight-g`(0.02em → 0.05em), `pill-radius` 변수/값(`--g-pill-radius` 9999px → 실측 `--g-tab-pill-radius` 20px).
+- **`DESIGN.md` 코드싱크 + 유령토큰 제거** — fs-label/fs-caption 크기 오기(10px/11px → theme.css 실측 `0.8125rem`/`0.75rem`) 정정. 코드 0건 유령토큰(`max-w-g-landing`/`max-w-g-reader`/`max-w-g-reader-narrow`) 표·prose 제거 → 실제 표준 Tailwind 컨테이너 클래스(`max-w-6xl`/`max-w-4xl`/`max-w-prose`/`max-w-2xl` 등) 실측 서술. landing 800px(표)/900px(prose) 자기모순 동반 해소.
+- **`CLAUDE.md §7` 참조 경로 오기 정정** — `docs/DESIGN_REFERENCE_READYMAG.md` → 실제 `research/DESIGN_REFERENCE_READYMAG.md`.
+- 시각 정본(사슴악마) 변경 0 — design-tokens/DESIGN 수정은 theme.css 실측치 반영만(런타임 주입 deerdevil baseline hex 미접근). 코드 git status 무변경 확인.
+
 ### Added — PAY-S6 결제 인프라 운영 경보 배지 (admin) (feature/pay-s6-payment-infra-alert)
 
 Circuit Breaker OPEN / 결제 `permanent_failed` / reconciliation mismatch가 현재 AuditLog 에만 박제돼 운영자가 실시간으로 못 보던 갭을 최소안으로 해소. PAY-S3 `CircuitBreakerPanel`(SettingsTab "결제 인프라" 섹션) 상단에 경보 인디케이터를 결합. 외부 SaaS(Sentry)는 boundary라 제외 — 가용 admin 데이터 재활용. **server 변경 0건**.

@@ -51,15 +51,15 @@ Tailwind CSS 4의 opacity modifier(`bg-g-bg/50` 등)를 사용하려면 `@theme 
 
 | 유틸리티 클래스 | CSS 변수 (fallback) | 용도 |
 |---------------|-------------------|------|
-| `tracking-wide-g` | `--g-tracking-wide` (0.08em) | 넓은 자간 |
-| `tracking-normal-g` | `--g-tracking-normal` (0.04em) | 기본 자간 |
-| `tracking-tight-g` | `--g-tracking-tight` (0.02em) | 좁은 자간 |
+| `tracking-wide-g` | `--g-label-letter-spacing` (0.25em) | 넓은 자간 |
+| `tracking-normal-g` | `--g-tracking-normal` (0.1em) | 기본 자간 |
+| `tracking-tight-g` | `--g-tracking-tight` (0.05em) | 좁은 자간 |
 
 ### 라운딩
 
 | 유틸리티 클래스 | CSS 변수 (fallback) | 용도 |
 |---------------|-------------------|------|
-| `pill-radius` | `--g-pill-radius` (9999px) | 필 버튼 라운딩 |
+| `pill-radius` | `--g-tab-pill-radius` (20px) | 필 버튼/탭 라운딩 |
 
 ### 폰트 패밀리
 
