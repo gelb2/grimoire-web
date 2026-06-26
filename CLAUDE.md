@@ -128,7 +128,7 @@ src/
 | 테스트 (유닛) | Vitest + @testing-library/react + v8 coverage |
 | 테스트 (E2E) | Playwright |
 | 린트 | ESLint 9 + next config |
-| 배포 | Azure Container Apps (`docs/environments.md` 참조) |
+| 배포 | GCP Cloud Run (asia-northeast1, `docs/environments.md` 참조) |
 
 > 정확한 버전은 `package.json` 참조.
 
@@ -203,7 +203,7 @@ API_URL=http://localhost:3000/api
 
 | 문서 | 내용 |
 |------|------|
-| `docs/DESIGN_REFERENCE_READYMAG.md` | 레디맥 디자인 리서치 (테마 Phase 1/2 참고) |
+| `research/DESIGN_REFERENCE_READYMAG.md` | 레디맥 디자인 리서치 (테마 Phase 1/2 참고) |
 
 ---
 

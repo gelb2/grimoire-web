@@ -17,7 +17,11 @@
 | `/register` | `app/register/page.tsx` | 회원가입 (3 크레딧 보너스) | - | `POST /api/auth/register` |
 | `/explore` | `app/explore/page.tsx` | 작품 탐색 (검색, 인기, 최신) | - | `GET /api/discover/*` |
 | `/library` | `app/library/page.tsx` | 독자 서재 (북마크, 구독) | JWT | `GET /api/reader/bookmarks`, `GET /api/social/subscriptions` |
+| `/admin/login` | `app/admin/login/page.tsx` | 관리자 로그인 (email + password 폼 → `api.adminLogin` → `/admin` replace) | - | `POST /api/auth/admin/login` |
 | `/admin` | `app/admin/page.tsx` | 관리자 패널 — 16 탭 (통계/사용자/**탈퇴·익명화**/콘텐츠/제재/신고/댓글/결제/수익/**크레딧**/공지/추천/테마/접근로그/설정/감사로그). 크레딧 탭은 `tabs/CreditsTab.tsx` 분리 (PAY-P0-3). 탈퇴·익명화 탭은 `tabs/UsersTab.tsx` (USER-SOFT-DELETE sprint §15-1 — 강제 탈퇴 + GDPR 익명화 + 사유 필수 + 멀티콘펌 + sonner toast + AdminAuditLog 박제). 설정 탭 "결제 인프라" 섹션은 `tabs/SettingsTab.tsx` → `CircuitBreakerPanel`(PAY-S3) + `PaymentInfraAlertBadge`(PAY-S6 운영 경보 — Circuit OPEN/permanent_failed/reconciliation mismatch 가시화) | JWT, admin | `GET /api/admin/stats`, `GET /api/admin/authors?q`, `POST /api/admin/credits/grant`, `POST /api/admin/credits/deduct`, `POST /api/admin/authors/:id/force-delete`, `POST /api/admin/authors/:id/anonymize`, `GET /api/admin/circuit-breaker/state`, `GET /api/admin/audit-logs?action=` |
+| `/shared/[token]` | `app/shared/[token]/page.tsx` | 에피소드 공유 링크 뷰 (서버 컴포넌트, `force-dynamic`, 토큰 기반 단일 에피소드 표시. 미존재/만료 시 `notFound`) | - (토큰) | `GET /api/episodes/shared/:token` |
+| `/privacy` | `app/privacy/page.tsx` | 개인정보보호방침 (정적 페이지, neutral-* 팔레트) | - | - |
+| `/terms` | `app/terms/page.tsx` | 이용약관 (정적 페이지, neutral-* 팔레트) | - | - |
 
 ### 작가 대시보드
 
@@ -30,12 +34,18 @@
 | `/dashboard/credits` | `app/dashboard/credits/page.tsx` | 포인트 충전 + 잔액 (크레딧 개편 I Phase — 디노미네이션 1크레딧=1,000pt, 4 출처 + deficit 잔액 표시, 채팅 4구간 차감 안내, 충전 패키지) | `GET /api/credits/balance`, `GET /api/payments/products`, `GET /api/credits/logs`, `POST /api/payments/initiate` |
 | `/dashboard/membership` | `app/dashboard/membership/page.tsx` | 멤버십 플랜 (크레딧 개편 I Phase — free/pro/premium 3등급 + 월 포인트 풀). CC-5(2026-05-22): 구독 액션 버튼(구독하기/해지) 노출 + "준비중" 모달 가드 — Polar KYC 미완으로 server 구독 API 실호출 0건 | — (구독 API 미호출, §30 상수) |
 | `/dashboard/profile` | `app/dashboard/profile/page.tsx` | 프로필 설정 + **계정 탈퇴** (USER-SOFT-DELETE sprint §15-1 — `AccountDeleteDialog` 모달 영역 + slug 재입력 검증 + 30일 유예 안내 + GDPR basic 익명화 박제) | `GET /api/auth/profile`, `DELETE /api/auth/me` |
+| `/dashboard/chat` | `app/dashboard/chat/page.tsx` | AI 채팅 (작품 컨텍스트 기반 대화, 세션 사이드바, 스트리밍 응답 + 4구간 사후 차감 배지 `ChatChargeBadge`). 정본: `.claude/shared-contracts.md` §30 CHAT_CHARGE_TIERS | `GET /api/works/...`, `POST /api/chat/sessions`, `GET /api/chat/sessions`, `GET /api/chat/sessions/:id/messages`, `POST /api/chat/sessions/:id/messages` |
+| `/dashboard/analysis` | `app/dashboard/analysis/page.tsx` | AI 작품 분석 실행 (작품 → 에피소드 선택 → 분석 요청 + 상태 폴링). 정본: `docs/ai-analysis-spec.md` | `GET /api/works/...`, `POST /api/analysis/episodes/:id`, `GET /api/analysis/status/...` |
+| `/dashboard/analysis/history` | `app/dashboard/analysis/history/page.tsx` | AI 분석 리포트 이력 (리스트 + 항목 클릭 시 모달 상세). DB 저장된 `AnalysisReport` 표시 | `GET /api/analysis/reports`, `GET /api/analysis/reports/:id` |
+| `/dashboard/episodes` | `app/dashboard/episodes/page.tsx` | 에피소드 관리 (작품별 에피소드 목록 + 재업로드/삭제) | `GET /api/works/...`, `POST /api/episodes/:id/reupload`, `DELETE /api/episodes/:id` |
+| `/dashboard/episodes/[episodeId]/edit` | `app/dashboard/episodes/[episodeId]/edit/page.tsx` | 에피소드 원문(rawMd) 편집 (작가 본인 검증 → 로드 → 저장은 기존 reupload API) | `GET /api/episodes/:episodeId/raw`, `PATCH /api/episodes/:episodeId/reupload` |
 
 ### 작가 공간 (멀티테넌트)
 
 | 경로 | 파일 | 설명 | API |
 |------|------|------|-----|
 | `/[author]` | `app/[author]/page.tsx` | 작가 랜딩 (작품 목록) | `GET /api/authors/:slug` |
+| `/[author]/profile` | `app/[author]/profile/page.tsx` | 작가 공개 프로필 (소개 + 구독 토글 + 크레딧 선물) | `GET /api/authors/:slug/profile`, `POST /api/social/subscriptions/toggle`, `POST /api/credits/gift` |
 | `/[author]/[slug]` | `app/[author]/[slug]/page.tsx` | 작품 페이지 (에피소드 목록) | `GET /api/works/:authorSlug/:workSlug` |
 | `/[author]/[slug]/[episode]` | `app/[author]/[slug]/[episode]/page.tsx` | 에피소드 읽기 뷰어 | `GET /api/episodes/:a/:w/:e` |
 
