@@ -1,5 +1,18 @@
 # CHANGELOG.md — 변경 이력
 
+## [Unreleased] - 2026-06-27
+
+### Added — PAY-S6 결제 인프라 운영 경보 배지 (admin) (feature/pay-s6-payment-infra-alert)
+
+Circuit Breaker OPEN / 결제 `permanent_failed` / reconciliation mismatch가 현재 AuditLog 에만 박제돼 운영자가 실시간으로 못 보던 갭을 최소안으로 해소. PAY-S3 `CircuitBreakerPanel`(SettingsTab "결제 인프라" 섹션) 상단에 경보 인디케이터를 결합. 외부 SaaS(Sentry)는 boundary라 제외 — 가용 admin 데이터 재활용. **server 변경 0건**.
+
+- **신설 `PaymentInfraAlertBadge`** (`src/app/admin/tabs/components/PaymentInfraAlertBadge.tsx`) — 3 신호 가시화: ① Circuit OPEN (`adminGetCircuitBreakerState()` 2 호출점 中 하나라도 state='open') ② permanent_failed 누적 (`adminGetAuditLogs({ action: 'webhook_permanent_failed' })`.total — server `webhook-retry.job` DLQ 박제) ③ reconciliation mismatch 누적 (`adminGetAuditLogs({ action: 'reconciliation_refund_mismatch' })`.total — server `payment-reconciliation.job` S2 박제). 30초 폴링. 모두 정상이면 작은 "정상" 배지(과한 시각 변경 금지), 이상 시 빨강 경보 배너 + 세부 배지.
+- **`SettingsTab` "결제 인프라" 섹션** — `CircuitBreakerPanel` 위에 `PaymentInfraAlertBadge` 1줄 결합 (+3 라인). 기존 admin 구조 유지.
+- **기존 admin endpoint 소비 — server 추가 0건.** `adminGetCircuitBreakerState`(PAY-S3) + `adminGetAuditLogs`(action 필터, Prisma 정확매칭) 재활용. BFF 프록시 경유 (`/api/admin/*`). 단일 객체 응답(states 없음) catchall 방어.
+- **한계 (server 위임)** — permanent_failed / reconciliation mismatch는 AuditLog '누적' total만 노출 (시간범위/미해결 필터 endpoint 부재 → "누적" 라벨 명시). 운영 경보 정밀화는 server 영역.
+- **시각** — 플랫폼 admin neutral-* 스코프 (사슴악마 직접 대상 아님). 경보 배너 `bg-red-900/30 border-red-800`(CircuitBreakerPanel error 패턴), OPEN/정상 배지 `bg-red-900/50`·`bg-green-900/50`(AccessLogsTab `ACTION_COLORS` 패턴), 카운트 강조 `bg-yellow-900/50`. **새 시각 정본 신설 0건** — AccessLogsTab + CircuitBreakerPanel 패턴 차용. admin neutral 스코프라 DESIGN.md(작가공간 시각 정본) 미반영이 적절.
+- 검증: vitest — 신규 `PaymentInfraAlertBadge.test.tsx` (7 it: 정상/Circuit OPEN/permanent_failed count/mismatch count/audit action 정확매칭 인자/단일객체 catchall/API 실패 fallback). tsc --noEmit 0 errors / eslint 0 / Next.js build PASS. VCK PASS (neutral 스코프, 기존 패턴 차용, 새 정본 0).
+
 ## [Unreleased] - 2026-05-22
 
 ### Added — CC-5 web 구독 페이지 노출 (준비중 모드) (sprint-cc5-web-subscription)

@@ -17,7 +17,7 @@
 | `/register` | `app/register/page.tsx` | 회원가입 (3 크레딧 보너스) | - | `POST /api/auth/register` |
 | `/explore` | `app/explore/page.tsx` | 작품 탐색 (검색, 인기, 최신) | - | `GET /api/discover/*` |
 | `/library` | `app/library/page.tsx` | 독자 서재 (북마크, 구독) | JWT | `GET /api/reader/bookmarks`, `GET /api/social/subscriptions` |
-| `/admin` | `app/admin/page.tsx` | 관리자 패널 — 16 탭 (통계/사용자/**탈퇴·익명화**/콘텐츠/제재/신고/댓글/결제/수익/**크레딧**/공지/추천/테마/접근로그/설정/감사로그). 크레딧 탭은 `tabs/CreditsTab.tsx` 분리 (PAY-P0-3). 탈퇴·익명화 탭은 `tabs/UsersTab.tsx` (USER-SOFT-DELETE sprint §15-1 — 강제 탈퇴 + GDPR 익명화 + 사유 필수 + 멀티콘펌 + sonner toast + AdminAuditLog 박제) | JWT, admin | `GET /api/admin/stats`, `GET /api/admin/authors?q`, `POST /api/admin/credits/grant`, `POST /api/admin/credits/deduct`, `POST /api/admin/authors/:id/force-delete`, `POST /api/admin/authors/:id/anonymize` |
+| `/admin` | `app/admin/page.tsx` | 관리자 패널 — 16 탭 (통계/사용자/**탈퇴·익명화**/콘텐츠/제재/신고/댓글/결제/수익/**크레딧**/공지/추천/테마/접근로그/설정/감사로그). 크레딧 탭은 `tabs/CreditsTab.tsx` 분리 (PAY-P0-3). 탈퇴·익명화 탭은 `tabs/UsersTab.tsx` (USER-SOFT-DELETE sprint §15-1 — 강제 탈퇴 + GDPR 익명화 + 사유 필수 + 멀티콘펌 + sonner toast + AdminAuditLog 박제). 설정 탭 "결제 인프라" 섹션은 `tabs/SettingsTab.tsx` → `CircuitBreakerPanel`(PAY-S3) + `PaymentInfraAlertBadge`(PAY-S6 운영 경보 — Circuit OPEN/permanent_failed/reconciliation mismatch 가시화) | JWT, admin | `GET /api/admin/stats`, `GET /api/admin/authors?q`, `POST /api/admin/credits/grant`, `POST /api/admin/credits/deduct`, `POST /api/admin/authors/:id/force-delete`, `POST /api/admin/authors/:id/anonymize`, `GET /api/admin/circuit-breaker/state`, `GET /api/admin/audit-logs?action=` |
 
 ### 작가 대시보드
 
@@ -116,6 +116,15 @@
 | 컴포넌트 | 설명 |
 |---------|------|
 | ChatChargeBadge | 채팅 메시지 차감 배지 — server `sendMessage` 응답의 `chargedPoints`/`chargeTier` (4구간 사후 차감 결과) 표시. 차감 정보 없으면 미렌더 (캡션 크기 — 본문 미간섭) |
+
+### 관리자 탭 컴포넌트 (`src/app/admin/tabs/components/`)
+
+> 플랫폼 admin 스코프 — neutral-* 팔레트 (작가공간 g-* / 사슴악마 시각 정본 직접 대상 아님, 플랫폼 일관성 유지). 색/배지 패턴은 기존 admin 탭(AccessLogsTab `ACTION_COLORS`) + CircuitBreakerPanel 차용 — 새 시각 정본 신설 0건.
+
+| 컴포넌트 | 설명 |
+|---------|------|
+| CircuitBreakerPanel | SettingsTab "결제 인프라" 섹션 — Polar SDK 호출 경계 Circuit Breaker 상태 조회 + 수동 차단/복구 (PAY-S3, shared-contracts §27). admin endpoint 3 소비 (`/admin/circuit-breaker/state·trip·reset`) |
+| PaymentInfraAlertBadge | SettingsTab "결제 인프라" 섹션 상단 운영 경보 배지 (PAY-S6) — ① Circuit OPEN (`adminGetCircuitBreakerState` state='open') ② permanent_failed 누적 (`adminGetAuditLogs` action=`webhook_permanent_failed`.total) ③ reconciliation mismatch 누적 (action=`reconciliation_refund_mismatch`.total) 가시화. 30초 폴링. 모두 정상이면 작은 "정상" 배지, 이상 시 빨강 경보 배너 + 세부 배지. 기존 admin endpoint 소비 — **server 추가 0건**. 누적 카운트(AuditLog total)만 노출 — 시간범위/미해결 필터는 server 위임 |
 
 ### 테마 (`src/features/theme/`)
 
