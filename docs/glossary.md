@@ -22,9 +22,10 @@
 | Like | 독자가 에피소드에 남긴 좋아요 |
 | Subscription | 독자가 작가를 구독한 관계 |
 | Comment | 독자가 에피소드에 남긴 댓글 |
-| Payment | 크레딧 구매 결제 기록 |
-| Credit | AI 기능 사용에 필요한 내부 화폐 단위 |
-| Plan | 구독 플랜 (free/pro/premium). 슬롯 개수와 기능 제한을 결정 |
+| Payment | 포인트 충전 결제 기록 (구 "크레딧 구매" — CC-4 디노미네이션) |
+| Credit / Point | AI 기능 사용에 필요한 내부 단위. **크레딧 개편(2026-05, ADR-012)으로 디노미네이션 1:1,000 — 구 "크레딧" 1 = 신 1,000pt**. 차감/적립은 `CreditLedger` 원장에 기록 (코드 단위는 pt). 출처 4종(`free`/`subscription`/`gift`/`charged`)별 잔액을 `Author.points*` 캐시로 보관 |
+| CreditLedger | 포인트 입출금 원장 (크레딧 개편 I Phase, ADR-012). source 4종(free/subscription/gift/charged) × type(earn/spend/deficit_incur/deficit_settle/expire). 구 `CreditLog`(단순 적립/차감 로그)를 대체 — `CreditLog`/`Author.credits`는 CC-4 Phase 3(2026-05-21)에 폐기/DROP |
+| Membership Tier | 멤버십 등급 (`free`/`pro`/`premium`). 월 포인트 풀 + 테마 슬롯 개수를 결정. 정본은 `MembershipPlan.tier` (CC-5 案 B, ADR-015 — 구 `Author.plan`은 deprecated 미러). 구 용어 "Plan"을 대체 |
 | Slot / isSlotted | 테마 활성화 슬롯. isSlotted=true면 공개 렌더링에 사용, false면 보관 상태 |
 | Context | 작품 프로젝트 메모리 (Work.context). AI가 매일 자정 대화 기반으로 자동 재생성 |
 | Instructions | 작품 지침 (Work.instructions). 작가가 직접 작성하는 문체 규칙/톤/금지사항 |
