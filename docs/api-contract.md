@@ -801,12 +801,12 @@ PG (Polar 등) 웹훅 콜백 — 서명 검증 + 멱등성 게이트 + 원자적
 { "processed": false, "reason": "invalid_or_ignored" }                          // 서명 검증 실패 또는 webhook-id 헤더 누락
 { "processed": false, "reason": "duplicate_event" }                             // 동일 eventId 재전송 — 첫 호출만 처리, 두 번째 즉시 skip
 { "processed": false, "reason": "unknown_trade" }                               // tradeNo 매칭 실패
-{ "processed": false, "reason": "already_completed" }                           // 약식 멱등성 (이전 webhook 박제 누락된 PROD 데이터 안전망)
+{ "processed": false, "reason": "already_completed" }                           // 멱등성 — (a) 약식 게이트(이전 webhook 박제 누락 PROD 안전망) 또는 (b) 충전 success 동시성 패자(status CAS count=0, R1-notify 2026-06-28). 둘 다 알림·적립 0건.
 ```
 
 **멱등성 보장**: 동일 `webhook-id`로 두 번째 호출이 들어와도 `completePaymentWithPoints` / `refundPaymentAtomically`는 단 1회만 실행. DB `webhook_events.event_id` UNIQUE 제약으로 race condition 차단 (P2002 → safe skip).
 
-**충전 적립 (CC-2a, 2026-05-20)**: `event.status='success'` 분기에서 `PaymentRepositoryPort.completePaymentWithPoints` 호출. 단일 `$transaction`으로 Payment.status='completed' + deficit(외상) 우선 상계(`CreditLedger` type='deficit_settle') + 남은 충전액 적립(`CreditLedger` source='charged' type='earn') + `Author.pointsCharged`/`deficitPoints` 캐시 갱신. 충전 시 외상이 먼저 상계되어 채팅 차단(`deficitPoints` 상한)이 해제된다. 응답 `credits` 필드 = 충전 총 pt.
+**충전 적립 (CC-2a, 2026-05-20)**: `event.status='success'` 분기에서 `PaymentRepositoryPort.completePaymentWithPoints` 호출. 단일 `$transaction`으로 Payment.status='completed' + deficit(외상) 우선 상계(`CreditLedger` type='deficit_settle') + 남은 충전액 적립(`CreditLedger` source='charged' type='earn') + `Author.pointsCharged`/`deficitPoints` 캐시 갱신. 충전 시 외상이 먼저 상계되어 채팅 차단(`deficitPoints` 상한)이 해제된다. 응답 `credits` 필드 = 충전 총 pt. **동시성 패자(R1-notify, 2026-06-28)**: 서로 다른 Polar 이벤트(order.paid/order.updated/checkout.updated)가 eventId 가 달라 멱등 게이트를 둘 다 통과해도 status CAS(`updateMany WHERE status='pending'`)가 적립 이중화를 차단(승자 1건만 적립). 패자는 `completePaymentWithPoints` 가 `alreadyCompleted:true` 멱등 no-op 반환 → 호출처가 성공 알림(`notifyChargeSuccess`)·`payment_completed` AuditLog 를 skip 하고 `{processed:false, reason:'already_completed'}` 응답(약식 게이트와 동일 멱등 의미).
 
 **환불 처리 (PAY-P1-1, 2026-05-03)**: `event.status='cancel'` 분기에서 `RefundPaymentUseCase.execute` 호출. $transaction 내부에서 Payment.status='refunded' + Author.credits decrement(0 fix) + CreditLog 음수 amount + RefundLog 박제. 후행으로 AdminAuditLog(operator='system_refund', action='refund_normal' | 'refund_deficit'). 잔액 부족 시 deficitCredits 양수 응답으로 운영자 추적 가능.
 
