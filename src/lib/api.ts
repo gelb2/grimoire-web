@@ -312,7 +312,8 @@ class ApiClient extends BaseApiClient {
   }
 
   async getSharedEpisode(token: string) {
-    return this.fetch<any>(`/episodes/shared/${token}`)
+    // server 실제 라우트 = ContentController(@Controller()) @Get('shared/:token') → /shared/:token (구 /episodes/shared 404)
+    return this.fetch<any>(`/shared/${token}`)
   }
 
   // 원고 파싱 (텍스트)

@@ -15,7 +15,8 @@ interface SharedEpisodeData {
 async function fetchSharedEpisode(token: string): Promise<{ status: number; data: SharedEpisodeData | null }> {
   const apiUrl = process.env.API_URL || 'http://localhost:3000/api'
   try {
-    const res = await fetch(`${apiUrl}/episodes/shared/${token}`, {
+    // server 실제 라우트 = ContentController @Get('shared/:token') → /shared/:token (구 /episodes/shared 404)
+    const res = await fetch(`${apiUrl}/shared/${token}`, {
       signal: AbortSignal.timeout(5000),
     })
     if (!res.ok) {
