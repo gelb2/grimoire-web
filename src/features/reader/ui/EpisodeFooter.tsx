@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { useThrottledAction } from '@/hooks/useThrottle'
+import { GIFT_POINT_OPTIONS, formatPoints } from '@/features/credits'
 
 interface EpisodeFooterProps {
   episodeId: string
@@ -215,7 +216,7 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
     setGiftSending(true)
     try {
       await api.giftCredits(authorSlug, amount)
-      setGiftMessage(`${amount} 크레딧을 선물했습니다!`)
+      setGiftMessage(`${formatPoints(amount)}pt를 응원했습니다!`)
       setShowGiftPopup(false)
       setTimeout(() => setGiftMessage(null), 3000)
       // 본인 크레딧 차감분 네비바 동기화
@@ -270,14 +271,14 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-3 rounded-xl border border-g-border bg-g-bg2 shadow-lg z-10">
                 <p className="text-xs text-g-text-muted mb-2 text-center whitespace-nowrap">크레딧 선물</p>
                 <div className="flex gap-2">
-                  {[1, 3, 5].map(amount => (
+                  {GIFT_POINT_OPTIONS.map(amount => (
                     <button
                       key={amount}
                       onClick={() => handleGift(amount)}
                       disabled={giftSending}
                       className="px-3 py-1.5 rounded-lg text-sm border border-g-border text-g-text hover:bg-g-accent hover:text-g-bg transition disabled:opacity-30"
                     >
-                      {amount}
+                      {formatPoints(amount)}pt
                     </button>
                   ))}
                 </div>
