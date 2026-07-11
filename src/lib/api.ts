@@ -69,10 +69,11 @@ class ApiClient extends BaseApiClient {
    * - 작품/episode 영역은 별도 archive 0건 (PAY-P3-E `works.authorId onDelete=Restrict` 정합 강제)
    * - audit log 박제 (action=`self_account_delete`)
    *
-   * @returns `{ deletedAt: string }` — soft delete 박제 시각 (ISO 8601)
+   * @returns `{ deleted: boolean; message: string }` — server AuthorController @Delete('me') 응답
    */
   async deleteMyAccount(reason?: string) {
-    return this.fetch<{ deletedAt: string }>('/auth/me', {
+    // server 실제 라우트 = AuthorController @Delete('me') → /authors/me (구 /auth/me 404)
+    return this.fetch<{ deleted: boolean; message: string }>('/authors/me', {
       method: 'DELETE',
       body: JSON.stringify({ reason: reason ?? null }),
     })
