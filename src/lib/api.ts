@@ -1,5 +1,5 @@
 import type {
-  AuthResponse, AuthUser, Theme, GiftedAuthor, WorkStats, Product,
+  AuthResponse, AuthUser, Theme, GiftedAuthor, WorkStats, Product, CreditLogEntry,
   AnalysisResult, IndexStatus, AnalysisReport, AnalysisReportSummary,
 } from "@/types/api"
 import { BaseApiClient, getApiBaseUrl } from "./api/client"
@@ -69,10 +69,11 @@ class ApiClient extends BaseApiClient {
    * - 작품/episode 영역은 별도 archive 0건 (PAY-P3-E `works.authorId onDelete=Restrict` 정합 강제)
    * - audit log 박제 (action=`self_account_delete`)
    *
-   * @returns `{ deletedAt: string }` — soft delete 박제 시각 (ISO 8601)
+   * @returns `{ deleted: boolean; message: string }` — server AuthorController @Delete('me') 응답
    */
   async deleteMyAccount(reason?: string) {
-    return this.fetch<{ deletedAt: string }>('/auth/me', {
+    // server 실제 라우트 = AuthorController @Delete('me') → /authors/me (구 /auth/me 404)
+    return this.fetch<{ deleted: boolean; message: string }>('/authors/me', {
       method: 'DELETE',
       body: JSON.stringify({ reason: reason ?? null }),
     })
@@ -311,7 +312,8 @@ class ApiClient extends BaseApiClient {
   }
 
   async getSharedEpisode(token: string) {
-    return this.fetch<any>(`/episodes/shared/${token}`)
+    // server 실제 라우트 = ContentController(@Controller()) @Get('shared/:token') → /shared/:token (구 /episodes/shared 404)
+    return this.fetch<any>(`/shared/${token}`)
   }
 
   // 원고 파싱 (텍스트)
@@ -463,9 +465,9 @@ class ApiClient extends BaseApiClient {
     return normalizePointBalance(raw)
   }
 
-  // 크레딧 사용 로그
+  // 크레딧 사용 로그 (신 4 출처 원장 — reason/amount(pt, spend 음수)/source/type/balanceAfter)
   async getCreditLogs() {
-    return this.fetch<{ id: string; type: string; amount: number; description: string; createdAt: string }[]>('/credits/logs')
+    return this.fetch<CreditLogEntry[]>('/credits/logs')
   }
 
   // AI 분석

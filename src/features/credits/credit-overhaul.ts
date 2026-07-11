@@ -74,6 +74,15 @@ export const ANALYSIS_POINT_COST = 2440
 /** 테마 AI 생성 1회 정액 차감 (§8-4 — 구 1 크레딧 디노미 환산) */
 export const THEME_POINT_COST = 590
 
+/**
+ * 응원(선물) 포인트 옵션 — server `GIFT_POINT_OPTIONS` 미러.
+ *
+ * server 는 pt 단위 [1000, 3000, 5000] 만 허용(`isGiftPointOption` 검증) → 그 외 값은 400.
+ * web 은 이 값을 그대로 전송하고 버튼 라벨도 pt 로 표기한다.
+ * 정본: grimoire-server `domain/model/gift-points.ts` (값 변경 시 server 와 동시 갱신 필수).
+ */
+export const GIFT_POINT_OPTIONS = [1000, 3000, 5000] as const
+
 /** 멤버십 등급 3종 */
 export type MembershipTier = 'free' | 'pro' | 'premium'
 

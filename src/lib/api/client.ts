@@ -9,13 +9,27 @@ function getApiBase(): string {
 
 export function getApiBaseUrl() { return getApiBase() }
 
+/**
+ * 401 자동 리프레시에서 제외할 경로 (F-7).
+ *
+ * 401 이 access 토큰 만료가 아니라 (1) 인증 자체 실패(로그인/가입/구글 — 비인증 계열) 또는
+ * (2) 리프레시 무한루프 위험(refresh)인 경로만 제외한다.
+ * `/auth/profile`·`/auth/logout`·`/auth/me`·`/authors/me` 등 인증 필요 경로는 access(15분)
+ * 만료 시 refresh 후 재시도되어야 한다 — 제외하면 리로드 때마다 강제 로그아웃된다.
+ */
+const REFRESH_EXCLUDED_PATHS = ['/auth/refresh', '/auth/login', '/auth/register', '/auth/google']
+
 export class BaseApiClient {
   private refreshing: Promise<boolean> | null = null
 
   protected async fetch<T>(path: string, options?: RequestInit): Promise<T> {
     const res = await this.rawFetch(path, options)
 
-    if (res.status === 401 && typeof window !== 'undefined' && !path.startsWith('/auth/')) {
+    if (
+      res.status === 401 &&
+      typeof window !== 'undefined' &&
+      !REFRESH_EXCLUDED_PATHS.some((p) => path.startsWith(p))
+    ) {
       const refreshed = await this.tryRefresh()
       if (refreshed) {
         const retry = await this.rawFetch(path, options)

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { api } from "@/lib/api"
 import { useAuth } from "@/features/auth"
+import { toast } from "sonner"
 
 import { ThinkingIndicator } from "./_components/ThinkingIndicator"
 import { StreamedMessage } from "./_components/StreamedMessage"
@@ -91,8 +92,12 @@ export default function ChatPage() {
     try {
       await api.updateWork(selectedWorkId, { context: workContext || null, instructions: workInstructions || null })
       setShowSettings(false)
-    } catch {}
-    setSavingSettings(false)
+    } catch (e) {
+      // F-5: 무증상 은폐(빈 catch) 제거 — 프로젝트 메모리/지침 저장 실패를 사용자에게 노출.
+      toast.error(e instanceof Error && e.message ? e.message : "설정 저장에 실패했습니다. 잠시 후 다시 시도해주세요.")
+    } finally {
+      setSavingSettings(false)
+    }
   }, [selectedWorkId, workContext, workInstructions])
 
   const handleNewSession = useCallback(async () => {
