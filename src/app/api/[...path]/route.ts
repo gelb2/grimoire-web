@@ -50,9 +50,15 @@ async function proxyRequest(
     signal: request.signal,
   }
 
-  // GET/HEAD 외에는 body 전달
+  // GET/HEAD 외에는 body 전달 — arrayBuffer로 원본 바이트 무손실 중계 (F-6).
+  // request.text()는 UTF-8 lossy 디코딩이라 커버 이미지·DOCX 등 바이너리/multipart 바이트를
+  // 손상시킨다(예: 0x89 PNG 헤더 → U+FFFD 치환). Content-Type(=boundary)은 위에서 원본 그대로
+  // 전달하므로, 바디도 원본 바이트 그대로 전달해야 서버가 multipart를 정상 파싱한다.
   if (method !== 'GET' && method !== 'HEAD') {
-    fetchOptions.body = await request.text()
+    const bodyBuffer = await request.arrayBuffer()
+    if (bodyBuffer.byteLength > 0) {
+      fetchOptions.body = bodyBuffer
+    }
   }
 
   try {
