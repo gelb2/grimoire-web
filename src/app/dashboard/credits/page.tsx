@@ -11,27 +11,12 @@ import { PlatformNav } from '@/components/PlatformNav'
 import {
   CreditBalanceCard,
   ChatChargeGuide,
-  creditsToPoints,
   formatPoints,
   ANALYSIS_POINT_COST,
   THEME_POINT_COST,
   type PointBalanceView,
 } from '@/features/credits'
-
-interface Product {
-  id: string
-  credits: number
-  price: number
-  pricePerCredit: number
-}
-
-interface CreditLog {
-  id: string
-  type: string
-  amount: number
-  description: string
-  createdAt: string
-}
+import type { Product, CreditLogEntry } from '@/types/api'
 
 /**
  * 포인트 충전·잔액 화면 (크레딧 개편 I Phase — 디노미네이션 1크레딧=1,000pt).
@@ -48,7 +33,7 @@ export default function CreditsPage() {
   const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null)
-  const [logs, setLogs] = useState<CreditLog[]>([])
+  const [logs, setLogs] = useState<CreditLogEntry[]>([])
   const [balance, setBalance] = useState<PointBalanceView | null>(null)
   const purchaseAction = useLoadingAction()  // 결제 버튼 더블클릭 방지
 
@@ -77,11 +62,12 @@ export default function CreditsPage() {
 
   useEffect(() => {
     api.getProducts().then(setProducts).catch(() => {
-      // 서버 미연결 시 기본값 (server CREDIT_PRODUCTS 정본 — 미연결 폴백)
+      // 서버 미연결 시 기본값 (server domain/model/config.ts CREDIT_PRODUCTS 정본 미러 — points/pricePerPoint pt 단위)
       setProducts([
-        { id: 'credit-5', credits: 5, price: 2000, pricePerCredit: 400 },
-        { id: 'credit-20', credits: 20, price: 3000, pricePerCredit: 150 },
-        { id: 'credit-50', credits: 50, price: 5000, pricePerCredit: 100 },
+        { id: 'credit-starter', name: '입문 패키지', points: 25000, bonusRate: 0, price: 3000, pricePerPoint: 0.12 },
+        { id: 'credit-basic', name: '기본 패키지', points: 41667, bonusRate: 0, price: 5000, pricePerPoint: 0.12 },
+        { id: 'credit-popular', name: '인기 패키지', points: 91667, bonusRate: 0.1, price: 10000, pricePerPoint: 0.10909 },
+        { id: 'credit-best', name: '베스트 패키지', points: 287500, bonusRate: 0.15, price: 30000, pricePerPoint: 0.10435 },
       ])
     })
     api.getPointBalance().then(setBalance).catch(() => {})
@@ -90,9 +76,11 @@ export default function CreditsPage() {
 
   if (loading || !user) return null
 
-  // 잔액: server 응답 우선, 미수신 시 user.credits(정수) 디노미 환산 폴백 (추정 아님 — 동일 출처)
+  // 잔액: server 응답 우선, 미수신 시 user.credits 폴백.
+  // user.credits 는 server `/auth/profile` 가 신 ledger 4 출처 합(total, pt 단위)을 매핑한 값이므로
+  // 이미 pt — ×1,000 환산 금지 (CC-4 Phase 3 案 P3-Y 옵션 A, auth.controller resolveCredits).
   const balanceView: PointBalanceView =
-    balance ?? { available: creditsToPoints(user.credits) }
+    balance ?? { available: user.credits }
 
   return (
     <div className="min-h-screen bg-white">
@@ -126,13 +114,13 @@ export default function CreditsPage() {
               }`}
             >
               <p className="text-2xl font-bold text-black tabular-nums">
-                {formatPoints(creditsToPoints(product.credits))} pt
+                {formatPoints(product.points)} pt
               </p>
               <p className="text-[#e53e3e] text-lg mt-1">₩{product.price.toLocaleString()}</p>
               <p className="text-neutral-400 text-sm mt-2">
-                1,000pt당 ₩{(product.pricePerCredit).toLocaleString()}
+                1,000pt당 ₩{Math.round(product.pricePerPoint * 1000).toLocaleString()}
               </p>
-              {product.id === 'credit-50' && (
+              {product.id === 'credit-best' && (
                 <span className="inline-block mt-2 px-2 py-0.5 bg-black text-white text-xs rounded">베스트</span>
               )}
             </button>
@@ -187,11 +175,11 @@ export default function CreditsPage() {
               {logs.map(log => (
                 <div key={log.id} className="flex items-center justify-between px-4 py-3 border-b border-neutral-100 last:border-0">
                   <div>
-                    <p className="text-sm text-black">{log.description}</p>
+                    <p className="text-sm text-black">{log.reason}</p>
                     <p className="text-xs text-neutral-400">{new Date(log.createdAt).toLocaleDateString('ko-KR')}</p>
                   </div>
                   <span className={`text-sm font-bold tabular-nums ${log.amount > 0 ? 'text-green-600' : 'text-[#e53e3e]'}`}>
-                    {log.amount > 0 ? '+' : ''}{formatPoints(creditsToPoints(log.amount))} pt
+                    {log.amount > 0 ? '+' : ''}{formatPoints(log.amount)} pt
                   </span>
                 </div>
               ))}

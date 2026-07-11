@@ -1,5 +1,5 @@
 import type {
-  AuthResponse, AuthUser, Theme, GiftedAuthor, WorkStats, Product,
+  AuthResponse, AuthUser, Theme, GiftedAuthor, WorkStats, Product, CreditLogEntry,
   AnalysisResult, IndexStatus, AnalysisReport, AnalysisReportSummary,
 } from "@/types/api"
 import { BaseApiClient, getApiBaseUrl } from "./api/client"
@@ -463,9 +463,9 @@ class ApiClient extends BaseApiClient {
     return normalizePointBalance(raw)
   }
 
-  // 크레딧 사용 로그
+  // 크레딧 사용 로그 (신 4 출처 원장 — reason/amount(pt, spend 음수)/source/type/balanceAfter)
   async getCreditLogs() {
-    return this.fetch<{ id: string; type: string; amount: number; description: string; createdAt: string }[]>('/credits/logs')
+    return this.fetch<CreditLogEntry[]>('/credits/logs')
   }
 
   // AI 분석
