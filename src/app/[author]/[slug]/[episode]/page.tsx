@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { api } from "@/lib/api"
+import { ApiError } from "@/lib/api/client"
+import { ErrorPopup } from "@/components/ErrorPopup"
 import { EpisodeViewer } from "@/features/reader/ui/EpisodeViewer"
 import { EpisodeFooter } from "@/features/reader/ui/EpisodeFooter"
 // WorkNav 제거 — SeriesNav가 [author]/layout.tsx에서 항상 렌더링됨
@@ -128,7 +130,14 @@ export default async function EpisodePage({ params }: Props) {
         />
       </>
     )
-  } catch {
-    notFound()
+  } catch (err) {
+    // F-16: 진짜 404(회차/작품 부재)만 notFound 로 수렴. 네트워크/타임아웃/5xx 일시 오류는
+    // 404 로 오분류하지 않고 오류 UI(재시도 유도)로 표시 — 부재와 장애를 구분한다.
+    if (err instanceof ApiError && err.status === 404) {
+      notFound()
+    }
+    return (
+      <ErrorPopup message="회차를 불러오지 못했어요. 네트워크 문제이거나 일시적인 서버 오류일 수 있어요. 잠시 후 다시 시도해주세요." />
+    )
   }
 }

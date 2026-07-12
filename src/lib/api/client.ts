@@ -19,6 +19,22 @@ export function getApiBaseUrl() { return getApiBase() }
  */
 const REFRESH_EXCLUDED_PATHS = ['/auth/refresh', '/auth/login', '/auth/register', '/auth/google']
 
+/**
+ * HTTP 비정상 응답(4xx/5xx)을 status 코드와 함께 전달하는 에러 (F-16).
+ *
+ * 기존 `new Error(message)`는 status를 잃어 호출자가 진짜 404(리소스 없음)와
+ * 네트워크/5xx 일시 오류를 구분할 수 없었다(episode page가 모든 예외를 notFound로 수렴).
+ * `Error`를 확장하므로 `instanceof Error`·`.message` 는 그대로 유지(후향호환) —
+ * `.status` 로 404 여부만 추가 판별한다. 네트워크 실패(TypeError/AbortError)는
+ * `res.ok` 체크 이전에 던져지므로 ApiError가 아니다(구분 가능).
+ */
+export class ApiError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message)
+    this.name = 'ApiError'
+  }
+}
+
 export class BaseApiClient {
   private refreshing: Promise<boolean> | null = null
 
@@ -35,7 +51,7 @@ export class BaseApiClient {
         const retry = await this.rawFetch(path, options)
         if (!retry.ok) {
           const body = await retry.json().catch(() => ({}))
-          throw new Error(body.message || `API 오류: ${retry.status}`)
+          throw new ApiError(body.message || `API 오류: ${retry.status}`, retry.status)
         }
         return retry.json()
       }
@@ -43,7 +59,7 @@ export class BaseApiClient {
 
     if (!res.ok) {
       const body = await res.json().catch(() => ({}))
-      throw new Error(body.message || `API 오류: ${res.status}`)
+      throw new ApiError(body.message || `API 오류: ${res.status}`, res.status)
     }
 
     return res.json()

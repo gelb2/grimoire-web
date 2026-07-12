@@ -109,6 +109,7 @@
 | PATCH | `/api/works/:id` | 작품 수정 | JWT |
 | DELETE | `/api/works/:id` | 작품 삭제 | JWT |
 | POST | `/api/works/:workId/episodes` | 에피소드 생성 | JWT |
+| PATCH | `/api/works/:id/episodes/reorder` | **F-20** 에피소드 순서 변경 — body `{episodeIds}` (새 순서대로 작품 전체 에피소드 id). 소유권 + 집합 일치(개수/중복/소속) 검증 후 `$transaction` 원자 재부여 | JWT |
 | DELETE | `/api/episodes/:id` | 에피소드 삭제 | JWT |
 | PUT | `/api/works/:id/cover` | 커버 이미지 업로드 | JWT |
 | PATCH | `/api/works/:workId/episodes/:episodeId/status` | 에피소드 상태 변경 | JWT |
@@ -251,7 +252,8 @@ HTTP 미노출. NestJS `@Cron('0 0 4 * * *')` 매일 새벽 4시 1회 — PAY-P0
 | POST | `/api/credits/gift` | 응원 선물 (독자 → 작가) — body `{receiverId, amount}` `amount` **단위 pt** (1,000/3,000/5,000pt 3단계, CC-2b §6 결정) | JWT |
 | GET | `/api/credits/ranking` | 응원받는 작가 랭킹 — **CC-3 (HIGH-3) 재작성**: `CreditLedger source='gift', type='earn'` groupBy. 반환 `{authorId, totalGifted}[]` (구 `CreditLog reason='gift_received'` 집계 폐기 — CC-2b 신 선물 정합) | - |
 | GET | `/api/credits/balance` | 4 출처 포인트 잔액 (`CreditBalance` — bySource/total/deficit/available). **CC-3 (CRITICAL-1) lazy 안전망 진입점** — 호출 시 `MembershipPlanPort.checkAndResetExpiredPool` 자동 실행 (poolResetAt 만료 시 풀 리셋). cron 실패 백업 — 이월 금지 코드 강제 | JWT |
-| GET | `/api/credits/logs` | 크레딧 로그 조회 — **CC-3 (HIGH-3) 응답 형태 변경**: `CreditLog[]` → `CreditLedgerEntry[]` (source/type/amount/balanceAfter/expiresAt/relatedId/reason/createdAt). 4 출처 분리 + 만료 + relatedId 까지 노출 | JWT |
+| GET | `/api/credits/logs` | 크레딧 로그 조회 — 응답 `CreditLedgerEntry[]` (source/type/amount/balanceAfter/expiresAt/relatedId/reason/createdAt). **F-21** 쿼리 `?from=ISO8601&to=ISO8601&limit=1..100&offset=0..` (기간 필터 + 오프셋 페이지네이션, 전부 optional — 무파라미터 시 최신순 100건 하위호환). 응답은 배열 유지(web 계약 미파손, hasMore 는 `length===limit` 로 클라 추정) | JWT |
+| GET | `/api/credits/expiring` | **F-21** (brightMall #1) 구독 풀 만료 예정 요약 — 활성 유료 구독의 다음 리셋일 소멸 예정 pt. 응답 `{ expiringAmount, expiresAt } \| null`(free/미구독/잔액0 시 null). 구독 풀은 이월 금지(매월 리셋)라 현재 구독 잔액 전액이 poolResetAt 에 소멸 | JWT |
 
 ### Stats
 
@@ -550,6 +552,21 @@ Request:
 { "title": "에피소드 제목", "slug": "ep-slug", "blocks": Block[], "rawMd": "..." }
 
 Response 201: Episode
+```
+
+### PATCH /api/works/:id/episodes/reorder
+
+에피소드 순서 변경 (F-20 — 기획 §13, 작가 전용). `episodeIds` 는 **새 순서대로** 나열한 해당 작품의 **전체** 에피소드 id 배열. 소유권(work.authorId === JWT sub) 검증 후 집합 일치(개수 일치 · 중복 불가 · 전원 소속)를 강제하고, `$transaction` 으로 `orderNum` 을 배열 순서대로 원자 재부여한다. orderNum 은 unique 제약이 없어(논유니크 인덱스) 임시 오프셋 없이 직접 재부여한다.
+
+```
+Headers: Authorization: Bearer <token>
+Request:
+{ "episodeIds": ["ep-3", "ep-1", "ep-2"] }
+
+Response 200: EpisodeSummary[]   // orderNum 오름차순 (목록 조회와 동일 정렬)
+Error 400: 빈 배열 / 중복 id / 작품 전체 에피소드와 집합 불일치(개수·미소속)
+Error 403: 본인 작품 아님
+Error 404: 작품 없음
 ```
 
 ### DELETE /api/episodes/:id
