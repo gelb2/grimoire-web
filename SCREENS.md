@@ -13,8 +13,10 @@
 | 경로 | 파일 | 설명 | 인증 | API |
 |------|------|------|------|-----|
 | `/` | `app/page.tsx` | 루트 — `/explore`로 리다이렉트 | - | - |
-| `/login` | `app/login/page.tsx` | 로그인 — 입력칸 1개 (이메일 또는 슬러그) + 정규식 자동 판별 (EMAIL-P0-3 Phase 2, sprint-email-p0-3-slug-login) | - | `POST /api/auth/login` (`{ email? }` 또는 `{ slug? }` XOR + password) |
+| `/login` | `app/login/page.tsx` | 로그인 — 입력칸 1개 (이메일 또는 슬러그) + 정규식 자동 판별 (EMAIL-P0-3 Phase 2, sprint-email-p0-3-slug-login) + "비밀번호를 잊으셨나요?" → `/reset-password` 링크(F-19) | - | `POST /api/auth/login` (`{ email? }` 또는 `{ slug? }` XOR + password) |
 | `/register` | `app/register/page.tsx` | 회원가입 (3 크레딧 보너스) | - | `POST /api/auth/register` |
+| `/reset-password` | `app/reset-password/page.tsx` | 비밀번호 초기화 요청 (F-19, 비로그인 — 이메일 입력 → enumeration 차단 동일 안내. 이메일 발송은 server EMAIL_PROVIDER 종속, 기본 NullAdapter 미개통 시 메일 미도착 안내 + 프로필 비번변경 유도) | - | `POST /api/auth/password/reset-request` |
+| `/reset-password/confirm` | `app/reset-password/confirm/page.tsx` | 비밀번호 초기화 토큰 확인 (F-19 — `?token=` 검증. 신 비밀번호 설정은 발송 개통과 함께 활성, 현재는 프로필 비번변경 유도) | - (토큰) | `POST /api/auth/password/reset-confirm` |
 | `/explore` | `app/explore/page.tsx` | 작품 탐색 (검색, 인기, 최신) | - | `GET /api/discover/*` |
 | `/library` | `app/library/page.tsx` | 독자 서재 (북마크, 구독) | JWT | `GET /api/reader/bookmarks`, `GET /api/social/subscriptions` |
 | `/admin/login` | `app/admin/login/page.tsx` | 관리자 로그인 (email + password 폼 → `api.adminLogin` → `/admin` replace) | - | `POST /api/auth/admin/login` |
@@ -31,13 +33,13 @@
 | `/dashboard/upload` | `app/dashboard/upload/page.tsx` | 원고 업로드 (드래그앤드롭, 포맷 감지, 미리보기) | `POST /api/manuscripts/parse` |
 | `/dashboard/theme` | `app/dashboard/theme/page.tsx` | 테마 에디터 (편집 전용, `?id=`로 특정 테마 로드) | `GET /api/themes/detail/:themeId`, `POST /api/themes/generate` |
 | `/dashboard/analytics` | `app/dashboard/analytics/page.tsx` | 작품 분석 (요약 카드 + 조회수 차트 + 에피소드 순위) | `GET /api/authors/:slug/profile`, `GET /api/works/:id/stats` |
-| `/dashboard/credits` | `app/dashboard/credits/page.tsx` | 포인트 충전 + 잔액 (크레딧 개편 I Phase — 디노미네이션 1크레딧=1,000pt, 4 출처 + deficit 잔액 표시, 채팅 4구간 차감 안내, 충전 패키지) | `GET /api/credits/balance`, `GET /api/payments/products`, `GET /api/credits/logs`, `POST /api/payments/initiate` |
+| `/dashboard/credits` | `app/dashboard/credits/page.tsx` | 포인트 충전 + 잔액 (크레딧 개편 I Phase — 디노미네이션 1크레딧=1,000pt, 4 출처 + deficit 잔액 표시, 채팅 4구간 차감 안내, 충전 패키지) + **사용 내역 기간 필터**(전체/1·3·6개월/1년 → from/to) + **오프셋 더보기** + **구독 풀 소멸 예정** 표시 (F-21) + **멤버십 현황**(등급/월 풀/잔여/리셋 — F-22, 현황 표시 전용, 가입/해지는 멤버십 페이지 '준비중' 가드 유지) | `GET /api/credits/balance`, `GET /api/payments/products`, `GET /api/credits/logs?from&to&limit&offset`, `GET /api/credits/expiring`, `GET /api/membership`, `POST /api/payments/initiate` |
 | `/dashboard/membership` | `app/dashboard/membership/page.tsx` | 멤버십 플랜 (크레딧 개편 I Phase — free/pro/premium 3등급 + 월 포인트 풀). CC-5(2026-05-22): 구독 액션 버튼(구독하기/해지) 노출 + "준비중" 모달 가드 — Polar KYC 미완으로 server 구독 API 실호출 0건 | — (구독 API 미호출, §30 상수) |
-| `/dashboard/profile` | `app/dashboard/profile/page.tsx` | 프로필 설정 + **계정 탈퇴** (USER-SOFT-DELETE sprint §15-1 — `AccountDeleteDialog` 모달 영역 + slug 재입력 검증 + 30일 유예 안내 + GDPR basic 익명화 박제) | `GET /api/auth/profile`, `DELETE /api/auth/me` |
+| `/dashboard/profile` | `app/dashboard/profile/page.tsx` | 프로필 설정 + **비밀번호 변경**(F-19 — 현재+새+확인 3필드, 클라 사전검증 후 server 현재비번 검증) + **계정 탈퇴** (USER-SOFT-DELETE sprint §15-1 — `AccountDeleteDialog` 모달 영역 + slug 재입력 검증 + 30일 유예 안내 + GDPR basic 익명화 박제) | `GET /api/auth/profile`, `POST /api/auth/change-password`, `DELETE /api/auth/me` |
 | `/dashboard/chat` | `app/dashboard/chat/page.tsx` | AI 채팅 (작품 컨텍스트 기반 대화, 세션 사이드바, 스트리밍 응답 + 4구간 사후 차감 배지 `ChatChargeBadge`). 정본: `.claude/shared-contracts.md` §30 CHAT_CHARGE_TIERS | `GET /api/works/...`, `POST /api/chat/sessions`, `GET /api/chat/sessions`, `GET /api/chat/sessions/:id/messages`, `POST /api/chat/sessions/:id/messages` |
 | `/dashboard/analysis` | `app/dashboard/analysis/page.tsx` | AI 작품 분석 실행 (작품 → 에피소드 선택 → 분석 요청 + 상태 폴링). 정본: `docs/ai-analysis-spec.md` | `GET /api/works/...`, `POST /api/analysis/episodes/:id`, `GET /api/analysis/status/...` |
 | `/dashboard/analysis/history` | `app/dashboard/analysis/history/page.tsx` | AI 분석 리포트 이력 (리스트 + 항목 클릭 시 모달 상세). DB 저장된 `AnalysisReport` 표시 | `GET /api/analysis/reports`, `GET /api/analysis/reports/:id` |
-| `/dashboard/episodes` | `app/dashboard/episodes/page.tsx` | 에피소드 관리 (작품별 에피소드 목록 + 재업로드/삭제) | `GET /api/works/...`, `POST /api/episodes/:id/reupload`, `DELETE /api/episodes/:id` |
+| `/dashboard/episodes` | `app/dashboard/episodes/page.tsx` | 에피소드 관리 (작품별 에피소드 목록 + **순서 변경**(F-20w — 위/아래 이동, 전체 순서 배열 전송, 낙관적 반영·실패 롤백) + 재업로드/삭제) | `GET /api/works/...`, `PATCH /api/works/:id/episodes/reorder`, `POST /api/episodes/:id/reupload`, `DELETE /api/episodes/:id` |
 | `/dashboard/episodes/[episodeId]/edit` | `app/dashboard/episodes/[episodeId]/edit/page.tsx` | 에피소드 원문(rawMd) 편집 (작가 본인 검증 → 로드 → 저장은 기존 reupload API) | `GET /api/episodes/:episodeId/raw`, `PATCH /api/episodes/:episodeId/reupload` |
 
 ### 작가 공간 (멀티테넌트)
@@ -61,10 +63,17 @@
 | `app/library/layout.tsx` | 서재 레이아웃 |
 | `app/login/layout.tsx` | 로그인 레이아웃 |
 | `app/register/layout.tsx` | 회원가입 레이아웃 |
-| `app/dashboard/credits/layout.tsx` | 포인트 충전 레이아웃 |
-| `app/dashboard/membership/layout.tsx` | 멤버십 플랜 레이아웃 |
-| `app/dashboard/profile/layout.tsx` | 프로필 설정 레이아웃 |
+| `app/dashboard/credits/layout.tsx` | 포인트 충전 레이아웃 (metadata 전용 — AuthProvider 는 상위 dashboard/layout 제공, W-12) |
+| `app/dashboard/membership/layout.tsx` | 멤버십 플랜 레이아웃 (metadata 전용 — 상위 dashboard/layout AuthProvider, W-12) |
+| `app/dashboard/profile/layout.tsx` | 프로필 설정 레이아웃 (metadata 전용 — 상위 dashboard/layout AuthProvider, W-12) |
 | `app/dashboard/theme/layout.tsx` | 테마 에디터 레이아웃 |
+
+### 전역 메타 페이지
+
+| 파일 | 설명 |
+|------|------|
+| `app/not-found.tsx` | 플랫폼 공용 404 (F-16) — 없는 페이지/작품/회차/공유토큰 수렴. neutral 캐논, PlatformNav 미포함 |
+| `app/error.tsx` | 플랫폼 공용 에러 바운더리 (W-11) — 렌더/네트워크 예외 수렴. not-found 캐논 미러 + 다시 시도(reset)/홈으로 |
 
 ---
 

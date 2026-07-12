@@ -71,7 +71,7 @@ export class BaseApiClient {
       ...((options?.headers as Record<string, string>) || {}),
     }
 
-    // Azure Container Apps min-replicas=0 cold start가 최장 60초까지 걸릴 수 있음.
+    // GCP Cloud Run min-instances=0 cold start가 최장 60초까지 걸릴 수 있음(2026-05-27 GCP 이관, W-15).
     // 브라우저 기본값을 15초로 늘려 1회 요청은 일반 케이스를 커버하고,
     // 호출자는 options.signal로 더 긴 타임아웃을 명시 지정할 수 있음.
     const timeout = typeof window === 'undefined' ? 5000 : 15000

@@ -18,6 +18,33 @@ import {
 } from '@/features/credits'
 import type { Product, CreditLogEntry } from '@/types/api'
 
+/** F-21: 사용 내역 오프셋 페이지네이션 1페이지 크기 */
+const LOG_PAGE_SIZE = 20
+
+/** F-21: 기간 필터 옵션 — 'all'(무필터, 기존 동작) + 개월수 */
+type LogPeriod = 'all' | 1 | 3 | 6 | 12
+const PERIOD_OPTIONS: { key: LogPeriod; label: string }[] = [
+  { key: 'all', label: '전체' },
+  { key: 1, label: '1개월' },
+  { key: 3, label: '3개월' },
+  { key: 6, label: '6개월' },
+  { key: 12, label: '1년' },
+]
+
+/** 개월수 → from ISO8601 (현재 기준 N개월 전) */
+function periodFrom(months: number): string {
+  const d = new Date()
+  d.setMonth(d.getMonth() - months)
+  return d.toISOString()
+}
+
+/** F-22: 멤버십 등급/상태 표시 라벨 */
+const MEMBERSHIP_TIER_LABEL: Record<'free' | 'pro' | 'premium', string> = { free: '무료', pro: '프로', premium: '프리미엄' }
+const MEMBERSHIP_STATUS_LABEL: Record<'active' | 'expired' | 'cancelled', string> = { active: '이용 중', expired: '만료', cancelled: '해지' }
+
+/** F-22: 멤버십 현황 응답 (server MembershipResponseDto 미러 — api.getMembership 반환) */
+type MembershipView = Awaited<ReturnType<typeof api.getMembership>>
+
 /**
  * 포인트 충전·잔액 화면 (크레딧 개편 I Phase — 디노미네이션 1크레딧=1,000pt).
  *
@@ -35,7 +62,45 @@ export default function CreditsPage() {
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null)
   const [logs, setLogs] = useState<CreditLogEntry[]>([])
   const [balance, setBalance] = useState<PointBalanceView | null>(null)
+  // F-21: 사용 내역 기간 필터 + 오프셋 페이지네이션 + 구독 풀 소멸 예정
+  const [period, setPeriod] = useState<LogPeriod>('all')
+  const [logsOffset, setLogsOffset] = useState(0)
+  const [hasMoreLogs, setHasMoreLogs] = useState(false)
+  const [logsLoading, setLogsLoading] = useState(false)
+  const [expiring, setExpiring] = useState<{ expiringAmount: number; expiresAt: string } | null>(null)
+  const [membership, setMembership] = useState<MembershipView | null>(null)  // F-22
   const purchaseAction = useLoadingAction()  // 결제 버튼 더블클릭 방지
+
+  /**
+   * F-21: 사용 내역 로드. 'all'(무필터)은 기존 동작(서버 기본 최신순 100건, 페이지네이션 없음),
+   * 기간 선택 시 from/to + limit/offset 로 조회하고 length===limit 로 더보기 노출을 추정한다.
+   */
+  const loadLogs = (p: LogPeriod, offset: number, replace: boolean) => {
+    setLogsLoading(true)
+    const params =
+      p === 'all'
+        ? undefined
+        : { from: periodFrom(p), to: new Date().toISOString(), limit: LOG_PAGE_SIZE, offset }
+    api.getCreditLogs(params)
+      .then(rows => {
+        setLogs(prev => (replace ? rows : [...prev, ...rows]))
+        setHasMoreLogs(p !== 'all' && rows.length === LOG_PAGE_SIZE)
+      })
+      .catch(() => {})
+      .finally(() => setLogsLoading(false))
+  }
+
+  const handlePeriod = (p: LogPeriod) => {
+    setPeriod(p)
+    setLogsOffset(0)
+    loadLogs(p, 0, true)
+  }
+
+  const handleMoreLogs = () => {
+    const next = logsOffset + LOG_PAGE_SIZE
+    setLogsOffset(next)
+    loadLogs(period, next, false)
+  }
 
   useEffect(() => {
     if (!loading && !user) router.push('/login')
@@ -71,7 +136,11 @@ export default function CreditsPage() {
       ])
     })
     api.getPointBalance().then(setBalance).catch(() => {})
+    // F-21: 초기 로드는 무필터(기존 동작 그대로 — 회귀 0) + 구독 풀 소멸 예정 조회
     api.getCreditLogs().then(setLogs).catch(() => {})
+    api.getExpiring().then(setExpiring).catch(() => {})
+    // F-22: 멤버십 현황 조회 (현황 표시만 — 구독 가입/해지는 멤버십 페이지 '준비중' 가드 유지)
+    api.getMembership().then(setMembership).catch(() => {})
   }, [])
 
   if (loading || !user) return null
@@ -92,14 +161,48 @@ export default function CreditsPage() {
         {/* 잔액 표시 — 4 출처 + deficit (server 가 출처 회계 응답 시 분해) */}
         <CreditBalanceCard balance={balanceView} />
 
-        {/* 멤버십 안내 링크 */}
-        <Link
-          href="/dashboard/membership"
-          className="block mb-8 rounded-xl border border-neutral-200 bg-[#f5f5f5] px-5 py-4 hover:border-neutral-300 transition"
-        >
-          <p className="text-sm text-black font-medium">멤버십 구독으로 매월 포인트 받기 &rarr;</p>
-          <p className="text-xs text-neutral-400 mt-0.5">프로·프리미엄 플랜은 매월 포인트 풀이 충전됩니다.</p>
-        </Link>
+        {/* F-21: 구독 풀 소멸 예정 (활성 유료 구독만 — free/미구독/잔액0 시 미표시) */}
+        {expiring && expiring.expiringAmount > 0 && (
+          <div className="mb-6 rounded-xl border border-neutral-200 bg-[#f5f5f5] px-5 py-3">
+            <p className="text-sm text-black">
+              구독 풀 <span className="text-[#e53e3e] font-bold tabular-nums">{formatPoints(expiring.expiringAmount)} pt</span> 소멸 예정
+              <span className="text-neutral-400"> · {new Date(expiring.expiresAt).toLocaleDateString('ko-KR')}</span>
+            </p>
+            <p className="text-xs text-neutral-400 mt-0.5">구독 풀은 매월 리셋되며 남은 포인트는 이월되지 않습니다.</p>
+          </div>
+        )}
+
+        {/* 멤버십 현황 (F-22) — 유료 구독이면 등급/월풀/잔여/리셋 현황, 아니면 구독 유도 CTA.
+            현황 표시 전용 — 구독 가입/해지는 멤버십 페이지 '준비중' 가드 유지(미접촉). */}
+        {membership && membership.tier !== 'free' ? (
+          <div className="mb-8 rounded-xl border border-neutral-200 bg-[#f5f5f5] px-5 py-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-black font-medium">
+                {MEMBERSHIP_TIER_LABEL[membership.tier]} 플랜
+                {membership.status !== 'active' && (
+                  <span className="ml-1.5 text-xs text-[#e53e3e]">({MEMBERSHIP_STATUS_LABEL[membership.status]})</span>
+                )}
+              </p>
+              <Link href="/dashboard/membership" className="text-sm text-neutral-500 hover:text-black transition">관리 &rarr;</Link>
+            </div>
+            <div className="mt-3 flex items-baseline gap-1.5">
+              <span className="text-2xl font-bold text-black tabular-nums">{formatPoints(membership.poolBalance)}</span>
+              <span className="text-sm text-neutral-400">/ {formatPoints(membership.monthlyPoolPoints)} pt</span>
+            </div>
+            <p className="text-xs text-neutral-400 mt-1">
+              월 포인트 풀 잔여
+              {membership.poolResetAt && ` · ${new Date(membership.poolResetAt).toLocaleDateString('ko-KR')} 리셋`}
+            </p>
+          </div>
+        ) : (
+          <Link
+            href="/dashboard/membership"
+            className="block mb-8 rounded-xl border border-neutral-200 bg-[#f5f5f5] px-5 py-4 hover:border-neutral-300 transition"
+          >
+            <p className="text-sm text-black font-medium">멤버십 구독으로 매월 포인트 받기 &rarr;</p>
+            <p className="text-xs text-neutral-400 mt-0.5">프로·프리미엄 플랜은 매월 포인트 풀이 충전됩니다.</p>
+          </Link>
+        )}
 
         <h2 className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-4">포인트 충전 패키지</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -167,23 +270,51 @@ export default function CreditsPage() {
           </div>
         </div>
 
-        {/* 포인트 사용 내역 */}
-        {logs.length > 0 && (
+        {/* 포인트 사용 내역 — F-21: 기간 필터(전체/1·3·6/1년) + 오프셋 더보기 */}
+        {(logs.length > 0 || period !== 'all') && (
           <div className="mt-8">
-            <h3 className="text-[11px] uppercase tracking-[0.3em] text-neutral-400 mb-3">사용 내역</h3>
-            <div className="border border-neutral-200 rounded-xl overflow-hidden">
-              {logs.map(log => (
-                <div key={log.id} className="flex items-center justify-between px-4 py-3 border-b border-neutral-100 last:border-0">
-                  <div>
-                    <p className="text-sm text-black">{log.reason}</p>
-                    <p className="text-xs text-neutral-400">{new Date(log.createdAt).toLocaleDateString('ko-KR')}</p>
-                  </div>
-                  <span className={`text-sm font-bold tabular-nums ${log.amount > 0 ? 'text-green-600' : 'text-[#e53e3e]'}`}>
-                    {log.amount > 0 ? '+' : ''}{formatPoints(log.amount)} pt
-                  </span>
-                </div>
-              ))}
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-[11px] uppercase tracking-[0.3em] text-neutral-400">사용 내역</h3>
+              <div className="flex gap-1">
+                {PERIOD_OPTIONS.map(opt => (
+                  <button
+                    key={String(opt.key)}
+                    onClick={() => handlePeriod(opt.key)}
+                    className={`px-2.5 py-1 rounded-full text-xs transition ${
+                      period === opt.key ? 'bg-black text-white' : 'bg-[#f5f5f5] text-neutral-500 hover:text-black'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </div>
+            {logs.length > 0 ? (
+              <div className="border border-neutral-200 rounded-xl overflow-hidden">
+                {logs.map(log => (
+                  <div key={log.id} className="flex items-center justify-between px-4 py-3 border-b border-neutral-100 last:border-0">
+                    <div>
+                      <p className="text-sm text-black">{log.reason}</p>
+                      <p className="text-xs text-neutral-400">{new Date(log.createdAt).toLocaleDateString('ko-KR')}</p>
+                    </div>
+                    <span className={`text-sm font-bold tabular-nums ${log.amount > 0 ? 'text-green-600' : 'text-[#e53e3e]'}`}>
+                      {log.amount > 0 ? '+' : ''}{formatPoints(log.amount)} pt
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-neutral-400 py-6 text-center">해당 기간의 사용 내역이 없습니다.</p>
+            )}
+            {hasMoreLogs && (
+              <button
+                onClick={handleMoreLogs}
+                disabled={logsLoading}
+                className="w-full mt-3 py-2.5 text-sm text-neutral-500 hover:text-black border border-neutral-200 rounded-lg transition disabled:opacity-50"
+              >
+                {logsLoading ? '불러오는 중...' : '더보기'}
+              </button>
+            )}
           </div>
         )}
       </main>

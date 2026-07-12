@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Fragment } from 'react'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import { WorksTab } from './tabs/WorksTab'
@@ -202,8 +202,9 @@ function AuthorsTab() {
           </thead>
           <tbody>
             {authors.map(a => (
-              <>
-                <tr key={a.id} className="border-t border-neutral-800 hover:bg-neutral-900/50">
+              // W-13: keyless fragment → Fragment key (React list key 경고 해소)
+              <Fragment key={a.id}>
+                <tr className="border-t border-neutral-800 hover:bg-neutral-900/50">
                   <td className="px-3 py-2"><span className="font-medium text-white">{a.name}</span> <span className="text-neutral-500 text-xs">@{a.slug}</span></td>
                   <td className="px-3 py-2 text-neutral-400 text-xs">{a.email}</td>
                   <td className="px-3 py-2 text-center text-white">{(a.credits ?? 0).toLocaleString('ko-KR')}</td>
@@ -222,11 +223,11 @@ function AuthorsTab() {
                   </td>
                 </tr>
                 {planEdit === a.id && (
-                  <tr key={`plan-${a.id}`}><td colSpan={6} className="px-3 py-2 bg-neutral-900">
+                  <tr><td colSpan={6} className="px-3 py-2 bg-neutral-900">
                     <PlanChangeForm currentPlan={a.plan} onSubmit={(plan, days) => handlePlanChange(a.id, plan, days)} onCancel={() => setPlanEdit(null)} />
                   </td></tr>
                 )}
-              </>
+              </Fragment>
             ))}
           </tbody>
         </table>
