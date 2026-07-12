@@ -95,7 +95,7 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-2">
                   <span className="text-black text-sm">Google</span>
                 </div>
-                <button className="text-sm text-[#e53e3e] hover:text-[#e53e3e]">연동하기</button>
+                <button disabled className="text-sm text-neutral-400 cursor-not-allowed">준비 중</button>
               </div>
               <div className="flex items-center justify-between p-3 bg-[#f5f5f5] border border-neutral-200 rounded-lg">
                 <div className="flex items-center gap-2">
