@@ -515,13 +515,24 @@ Error 409: 슬러그 중복
 
 ```
 Headers: Authorization: Bearer <token>
-Request:
-{ "title": "수정된 제목", "subtitle": "수정된 부제" }
+Request (모든 필드 optional):
+{
+  "title": "수정된 제목",
+  "subtitle": "수정된 부제",
+  "description": "설명",
+  "context": "프로젝트 메모리 (세계관/캐릭터 — AI 채팅 시 주입, ≤20000자)",   // F-5
+  "instructions": "작품 지침 (문체/톤 — AI 채팅 시 주입, ≤5000자)"          // F-5
+}
 
 Response 200: Work
+Error 400: 유효성 (context>20000자 / instructions>5000자 등)
 Error 403: 본인 작품 아님
 Error 404: 작품 없음
 ```
+
+> F-5 (2026-07-11): `context`/`instructions` 는 채팅 시스템 프롬프트 주입원. 명백한 AI 사과문
+> 패턴(사과 표현 + AI 자기지칭 동시)은 **차단하지 않고** 서버 warn + AuditLog 로 관찰만 한다
+> (`work_context_ai_apology_suspected` — 원문 비로깅, field/length 만 박제).
 
 ### DELETE /api/works/:id
 
@@ -786,19 +797,24 @@ Response 200: [{ "id", "name", "points", "bonusRate", "price", "pricePerPoint" }
 PG (Polar 등) 웹훅 콜백 — 서명 검증 + 멱등성 게이트 + 원자적 크레딧 부여.
 
 **Headers (Polar Standard Webhooks)**:
-- `webhook-id`: PG 발급 unique 이벤트 ID (멱등성 키, 누락 시 거부)
+- `webhook-id`: PG 발급 unique 이벤트 ID (멱등성 키, 누락 시 **400**)
 - `webhook-timestamp`: Unix timestamp
 - `webhook-signature`: HMAC
 
 **Request (raw body)**: PG 원본 이벤트 JSON (Polar SDK가 검증/파싱)
 
-**Response 200 — 처리 결과 reason 박제** (Sprint PAY-P0-1, 2026-05-03 / PAY-P1-1, 2026-05-03):
+**Error 400 — 무효 웹훅 (F-13, 2026-07-11)**: 서명검증 실패 / 파싱 불가 / `webhook-id` 헤더 누락 시
+`BadRequestException`(400). 구 구현은 이 경우도 201(silent ack)을 반환해 Polar 가 "전달 성공"으로
+간주 → 재전송 중단(실패 마스킹). 400 으로 실패를 surface(Polar 재전송 의미론 정합). 처리 로직
+(R1/R2/R1-notify)은 미접촉.
+
+**Response 2xx — 처리 결과 reason 박제** (Sprint PAY-P0-1, 2026-05-03 / PAY-P1-1, 2026-05-03):
 ```
 { "processed": true,  "credits": <N> }                                          // 정상 결제 — 크레딧 부여 (event.status='success')
 { "processed": true,  "credits": 0, "deficitCredits": 0 }                       // 정상 환불 — 환수 완료 (PAY-P1-1, event.status='cancel', Author.credits >= credits)
 { "processed": true,  "credits": 0, "deficitCredits": <N> }                     // deficit 환불 — 잔액 부족 (PAY-P1-1, Author.credits < credits, 0 fix + deficit 박제)
 { "processed": true,  "credits": 0 }                                            // 결제 실패 (event.status='fail', 환수 대상 아님)
-{ "processed": false, "reason": "invalid_or_ignored" }                          // 서명 검증 실패 또는 webhook-id 헤더 누락
+{ "processed": false, "reason": "ignored" }                                     // F-13 — 정상이나 처리 대상 아닌 이벤트(알 수 없는 type/미매핑 구독 등) 무시 (2xx ack, 무효 서명은 400)
 { "processed": false, "reason": "duplicate_event" }                             // 동일 eventId 재전송 — 첫 호출만 처리, 두 번째 즉시 skip
 { "processed": false, "reason": "unknown_trade" }                               // tradeNo 매칭 실패
 { "processed": false, "reason": "already_completed" }                           // 멱등성 — (a) 약식 게이트(이전 webhook 박제 누락 PROD 안전망) 또는 (b) 충전 success 동시성 패자(status CAS count=0, R1-notify 2026-06-28). 둘 다 알림·적립 0건.
