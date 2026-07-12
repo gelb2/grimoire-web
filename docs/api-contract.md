@@ -46,11 +46,12 @@
 
 | Method | Path | 용도 | 인증 |
 |--------|------|------|------|
-| POST | `/api/auth/register` | 이메일 회원가입 (JWT 발급, 3크레딧 보너스) | - |
-| POST | `/api/auth/login` | 로그인 (JWT 발급) | - |
+| POST | `/api/auth/register` | 이메일 회원가입 (JWT httpOnly 쿠키 발급, 3,000pt 가입 보너스) | - |
+| POST | `/api/auth/login` | 로그인 (JWT httpOnly 쿠키 발급 — email 또는 slug 로그인) | - |
 | GET | `/api/auth/profile` | 내 프로필 조회 | JWT |
-| POST | `/api/auth/google` | Google OAuth 로그인 | - |
-| POST | `/api/auth/logout` | 로그아웃 (쿠키 삭제) | JWT |
+| POST | `/api/auth/google` | Google OAuth 로그인 (JWT httpOnly 쿠키 발급) | - |
+| POST | `/api/auth/refresh` | 액세스 토큰 갱신 (refresh 쿠키 rotation, 쿠키 없으면 403) | - (refresh 쿠키), @Throttle 30/분 |
+| POST | `/api/auth/logout` | 로그아웃 (refresh 토큰 폐기 + 쿠키 삭제) | - (쿠키 기반, 액세스 토큰 불요) |
 | POST | `/api/auth/change-password` | 비밀번호 변경 | JWT |
 | POST | `/api/auth/email/verify-request` | 이메일 인증 토큰 발급 + 발송 (EMAIL-POLAR-READY Phase C) | JWT, @Throttle 3/분 |
 | POST | `/api/auth/email/verify-confirm` | 이메일 인증 토큰 검증 (본인 토큰만) | JWT, @Throttle 10/분 |
@@ -92,13 +93,13 @@
 | Method | Path | 용도 | 인증 |
 |--------|------|------|------|
 | GET | `/api/plan` | 내 플랜 정보 조회 | JWT |
-| POST | `/api/admin/authors/:authorId/plan` | 작가 플랜 수동 설정 (관리자) | JWT, Admin |
+| PATCH | `/api/admin/authors/:authorId/plan` | 작가 플랜 수동 설정 (관리자) — Admin 섹션 `PATCH /api/admin/authors/:id/plan` 과 동일 | JWT, Admin |
 
 ### Manuscript
 
 | Method | Path | 용도 | 인증 |
 |--------|------|------|------|
-| POST | `/api/manuscripts/parse` | 원고 파싱 (md/txt/docx/html → Block[]) | - |
+| POST | `/api/manuscripts/parse` | 원고 MD 파싱 (mdText → Block[], DB 저장 없음) | JWT |
 | POST | `/api/manuscripts/upload` | 파일 업로드 파싱 (multipart) | JWT |
 
 ### Work Management
@@ -115,6 +116,7 @@
 | PATCH | `/api/works/:workId/episodes/:episodeId/status` | 에피소드 상태 변경 | JWT |
 | POST | `/api/works/:workId/episodes/:episodeId/share` | 공유 링크 생성 | JWT |
 | PATCH | `/api/episodes/:episodeId/reupload` | 에피소드 재업로드 (파일 교체) | JWT |
+| GET | `/api/episodes/:episodeId/raw` | 작가 본인 에피소드 rawMd 조회 (인라인 본문 편집용, 소유권 검증) | JWT |
 
 ### Author (공개)
 
@@ -295,6 +297,18 @@ HTTP 미노출. NestJS `@Cron('0 0 4 * * *')` 매일 새벽 4시 1회 — PAY-P0
 | PATCH | `/api/admin/settings/:key` | 시스템 설정 변경 | JWT, admin |
 | GET | `/api/admin/access-logs` | 접근 로그 조회 | JWT, admin |
 | GET | `/api/admin/audit-logs` | 감사 로그 조회 | JWT, admin |
+| GET | `/api/admin/stats/timeseries` | 시계열 통계 (`?metric=&days=30`) | JWT, admin |
+| GET | `/api/admin/announcements` | 공지사항 목록 (`?page=`) | JWT, admin |
+| POST | `/api/admin/announcements` | 공지사항 생성 (`{title, content, isPinned?, target?}`) | JWT, admin |
+| DELETE | `/api/admin/announcements/:id` | 공지사항 삭제 | JWT, admin |
+| GET | `/api/admin/featured` | 추천 작품 목록 (`?section=`) | JWT, admin |
+| POST | `/api/admin/featured` | 추천 작품 등록 (`{workId, section?, position?}`) | JWT, admin |
+| DELETE | `/api/admin/featured/:id` | 추천 작품 해제 | JWT, admin |
+| GET | `/api/admin/revenue` | 수익 요약 대시보드 | JWT, admin |
+| GET | `/api/admin/themes` | 시스템 테마 프리셋 목록 | JWT, admin |
+| POST | `/api/admin/themes` | 시스템 테마 프리셋 생성 (`{name, preset, overrides}`) | JWT, admin |
+| PATCH | `/api/admin/themes/:themeId` | 시스템 테마 프리셋 수정 (`{name?, overrides?}`) | JWT, admin |
+| DELETE | `/api/admin/themes/:themeId` | 시스템 테마 프리셋 삭제 | JWT, admin |
 | GET | `/api/admin/circuit-breaker/state` | Circuit Breaker 상태 조회 (PAY-S3, 2026-05-23) — 2 호출점(`polar:checkouts:create`/`polar:checkouts:list`) state + 메트릭 + policy 4 env값. `?key=` 미지정 시 전체, 지정 시 단일. @Throttle 분당 60. 응답에 내부 ID 노출 0 | JWT, admin |
 | POST | `/api/admin/circuit-breaker/reset` | Circuit Breaker 수동 복구 (PAY-S3) — body `{key, reason}` (reason 필수, key 화이트리스트 검증). AuditLog `circuit_breaker.manual_reset` 박제(operator_id + reason + beforeState/afterState). @Throttle 분당 5 | JWT, admin |
 | POST | `/api/admin/circuit-breaker/trip` | Circuit Breaker 수동 차단 (PAY-S3) — body `{key, reason}`. 결제 즉시 503 변환. AuditLog `circuit_breaker.manual_trip` 박제. @Throttle 분당 5. ⚠️ 파괴적 액션 (사고 대응·연습 전용) | JWT, admin |
@@ -338,9 +352,10 @@ Request:
 
 Response 201:
 {
-  "user": { "id": "uuid", "slug": "author-slug", "name": "작가명", "email": "...", "credits": 3000 },
-  "token": "jwt-token"
+  "user": { "id": "uuid", "slug": "author-slug", "name": "작가명", "email": "...", "credits": 3000 }
 }
+Set-Cookie: grimoire_token (HttpOnly) + grimoire_refresh (HttpOnly)
+  // JWT 는 응답 body 가 아닌 httpOnly 쿠키로 발급 (SECURITY — localStorage 저장 금지 정책)
 
 Error 400: 유효성 검증 실패
 Error 409: 이메일/슬러그 중복
@@ -359,12 +374,15 @@ Request:
 
 Response 200:
 {
-  "user": { "id": "uuid", "slug": "author-slug", "name": "작가명", "email": "...", "credits": 5000 },
-  "token": "jwt-token"
+  "user": { "id": "uuid", "slug": "author-slug", "name": "작가명", "email": "...", "credits": 5000 }
 }
+Set-Cookie: grimoire_token (HttpOnly) + grimoire_refresh (HttpOnly)
 
 Error 401: 이메일/비밀번호 불일치
+Error 403: 계정 정지 (활성 제재 존재)
 ```
+
+> 로그인 식별자는 `email` 또는 `slug` 중 하나 (`{ email?, slug?, password }`). JWT 는 body 가 아닌 httpOnly 쿠키(`grimoire_token` 액세스 + `grimoire_refresh` 리프레시)로 발급된다.
 
 ### GET /api/auth/profile
 
@@ -385,9 +403,24 @@ Request:
 
 Response 200:
 {
-  "user": { "id": "uuid", "slug": "...", "name": "...", "email": "...", "credits": 5000 },
-  "token": "jwt-token"
+  "user": { "id": "uuid", "slug": "...", "name": "...", "email": "...", "credits": 5000 }
 }
+Set-Cookie: grimoire_token (HttpOnly) + grimoire_refresh (HttpOnly)
+```
+
+### POST /api/auth/refresh
+
+refresh 쿠키(`grimoire_refresh`)로 액세스 토큰을 재발급하고 refresh 토큰을 rotation 한다.
+JwtAuthGuard 없음 — 만료된 액세스 토큰 상태에서 갱신하는 것이 목적이라 refresh 쿠키만 신뢰한다.
+
+```
+Request: (body 없음 — refresh 토큰은 httpOnly 쿠키에서 읽음)
+
+Response 200:
+{ "user": { "id", "slug", "name", "email", "credits" } }
+Set-Cookie: grimoire_token (HttpOnly, 재발급) + grimoire_refresh (HttpOnly, rotation)
+
+Error 403: refresh 쿠키 없음 ("리프레시 토큰이 없습니다") / 무효·만료·폐기된 토큰
 ```
 
 ### POST /api/themes/generate
