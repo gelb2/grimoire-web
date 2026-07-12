@@ -896,9 +896,21 @@ class ApiClient extends BaseApiClient {
     })
   }
 
-  /** 멤버십 등급/풀 조회 (CC-5) — env 미설정 시에도 정상 응답 (DB 조회만). */
+  /**
+   * 멤버십 등급/풀 조회 (F-22 / CC-5) — server MembershipResponseDto 정합.
+   *
+   * env 미설정 시에도 정상 응답(DB 조회만). free 는 monthlyPoolPoints=0 / poolResetAt=null.
+   * (구 `{ monthlyPool, used }` 타입은 server DTO와 불일치 stale 였음 — F-22 에서 정합화.)
+   */
   async getMembership() {
-    return this.fetch<{ tier: 'free' | 'pro' | 'premium'; monthlyPool: number; used: number; expiresAt?: string }>('/membership')
+    return this.fetch<{
+      tier: 'free' | 'pro' | 'premium'
+      monthlyPoolPoints: number
+      poolBalance: number
+      poolResetAt: string | null
+      status: 'active' | 'expired' | 'cancelled'
+      expiresAt: string | null
+    }>('/membership')
   }
 }
 
