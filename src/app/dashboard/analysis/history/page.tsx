@@ -126,7 +126,7 @@ export default function AnalysisHistoryPage() {
                       </span>
                     ))}
                     <span className="text-[11px] text-neutral-400 ml-auto">
-                      {item.creditsCharged} 크레딧
+                      {item.creditsCharged.toLocaleString('ko-KR')} pt
                     </span>
                   </div>
                 </button>
@@ -158,7 +158,7 @@ export default function AnalysisHistoryPage() {
                 </h2>
                 {detail && (
                   <p className="text-[11px] text-neutral-400 mt-1">
-                    {formatDate(detail.createdAt)} · {detail.creditsCharged} 크레딧 차감
+                    {formatDate(detail.createdAt)} · {detail.creditsCharged.toLocaleString('ko-KR')} pt 차감
                   </p>
                 )}
               </div>

@@ -198,7 +198,7 @@ export default function ExplorePage() {
                     )}
                   </div>
                   <span className="text-xs text-neutral-400">
-                    {author.totalGifted} 크레딧
+                    {author.totalGifted.toLocaleString('ko-KR')} pt
                   </span>
                 </Link>
               ))}

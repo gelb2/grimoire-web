@@ -47,7 +47,7 @@ export function PaymentsTab() {
                 <th className="px-4 py-2 text-left">작가 ID</th>
                 <th className="px-4 py-2 text-left">상품</th>
                 <th className="px-4 py-2 text-center">금액</th>
-                <th className="px-4 py-2 text-center">크레딧</th>
+                <th className="px-4 py-2 text-center">포인트</th>
                 <th className="px-4 py-2 text-center">상태</th>
                 <th className="px-4 py-2 text-left">생성일</th>
                 <th className="px-4 py-2 text-left">완료일</th>
@@ -59,7 +59,7 @@ export function PaymentsTab() {
                   <td className="px-4 py-2 text-neutral-400 text-xs font-mono">{p.authorId?.slice(0, 8)}</td>
                   <td className="px-4 py-2 text-white">{p.productId}</td>
                   <td className="px-4 py-2 text-center text-white">{p.amount?.toLocaleString()}</td>
-                  <td className="px-4 py-2 text-center">{p.credits}</td>
+                  <td className="px-4 py-2 text-center">{p.credits?.toLocaleString('ko-KR')}</td>
                   <td className="px-4 py-2 text-center"><span className={`px-2 py-0.5 rounded text-xs ${statusColor(p.status)}`}>{p.status}</span></td>
                   <td className="px-4 py-2 text-neutral-500 text-xs">{new Date(p.createdAt).toLocaleDateString('ko-KR')}</td>
                   <td className="px-4 py-2 text-neutral-500 text-xs">{p.completedAt ? new Date(p.completedAt).toLocaleDateString('ko-KR') : '-'}</td>
