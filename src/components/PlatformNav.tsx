@@ -8,6 +8,7 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/features/auth'
+import { abbreviatePoints } from '@/features/credits'
 
 interface PlatformNavProps {
   variant?: 'platform' | 'author-space'
@@ -106,9 +107,9 @@ export function PlatformNav({ variant = 'platform' }: PlatformNavProps) {
             <span className={s.loading}>...</span>
           ) : user ? (
             <>
-              {/* 크레딧 (모바일에서는 드롭다운으로 이동) */}
+              {/* 포인트 잔액 (모바일에서는 드롭다운으로 이동) — 디노미 후 정본 단위 pt */}
               <Link href="/dashboard/credits" className={`hidden md:inline ${s.credits}`}>
-                {user.credits} 크레딧
+                {abbreviatePoints(user.credits ?? 0)} pt
               </Link>
 
               {/* 유저 드롭다운 */}
@@ -131,7 +132,7 @@ export function PlatformNav({ variant = 'platform' }: PlatformNavProps) {
                 {dropdownOpen && (
                   <div className={s.dropdown}>
                     {/* 모바일에서만 보이는 메뉴 */}
-                    <Link href="/dashboard/credits" onClick={() => setDropdownOpen(false)} className={`md:hidden ${s.dropdownItem}`}>{user.credits} 크레딧</Link>
+                    <Link href="/dashboard/credits" onClick={() => setDropdownOpen(false)} className={`md:hidden ${s.dropdownItem}`}>{abbreviatePoints(user.credits ?? 0)} pt</Link>
                     <Link href="/library" onClick={() => setDropdownOpen(false)} className={`md:hidden ${s.dropdownItem}`}>서재</Link>
                     <Link href="/dashboard" onClick={() => setDropdownOpen(false)} className={`md:hidden ${s.dropdownItem}`}>대시보드</Link>
                     <div className={`md:hidden ${s.dropdownDivider}`} />

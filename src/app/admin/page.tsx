@@ -22,7 +22,7 @@ type Tab = 'stats' | 'authors' | 'users' | 'works' | 'sanctions' | 'reports' | '
 const TAB_LABELS: Record<Tab, string> = {
   stats: '통계', authors: '사용자', users: '탈퇴/익명화', works: '콘텐츠', sanctions: '제재',
   reports: '신고', comments: '댓글', payments: '결제', revenue: '수익',
-  credits: '크레딧',
+  credits: '포인트',
   announcements: '공지', featured: '추천', themes: '테마',
   access: '접근 로그', settings: '설정', audit: '감사 로그',
 }
@@ -100,7 +100,7 @@ function StatsTab() {
     { label: '작가 수', value: stats.totalAuthors },
     { label: '작품 수', value: stats.totalWorks },
     { label: '에피소드 수', value: stats.totalEpisodes },
-    { label: '크레딧 소비', value: stats.totalCreditsConsumed },
+    { label: '포인트 소비', value: stats.totalCreditsConsumed },
     { label: '댓글 수', value: stats.totalComments },
     { label: '결제 완료', value: stats.totalPaymentsCompleted },
   ]
@@ -194,7 +194,7 @@ function AuthorsTab() {
             <tr>
               <th className="px-3 py-2 text-left">작가</th>
               <th className="px-3 py-2 text-left">이메일</th>
-              <th className="px-3 py-2 text-center">크레딧</th>
+              <th className="px-3 py-2 text-center">포인트</th>
               <th className="px-3 py-2 text-center">플랜</th>
               <th className="px-3 py-2 text-center">역할</th>
               <th className="px-3 py-2 text-center">액션</th>
@@ -206,7 +206,7 @@ function AuthorsTab() {
                 <tr key={a.id} className="border-t border-neutral-800 hover:bg-neutral-900/50">
                   <td className="px-3 py-2"><span className="font-medium text-white">{a.name}</span> <span className="text-neutral-500 text-xs">@{a.slug}</span></td>
                   <td className="px-3 py-2 text-neutral-400 text-xs">{a.email}</td>
-                  <td className="px-3 py-2 text-center text-white">{a.credits}</td>
+                  <td className="px-3 py-2 text-center text-white">{(a.credits ?? 0).toLocaleString('ko-KR')}</td>
                   <td className="px-3 py-2 text-center">
                     <button onClick={() => setPlanEdit(planEdit === a.id ? null : a.id)}
                       className={`px-2 py-0.5 rounded text-xs ${a.plan === 'premium' ? 'bg-yellow-900/50 text-yellow-400' : a.plan === 'pro' ? 'bg-blue-900/50 text-blue-400' : 'bg-neutral-800 text-neutral-400'}`}>
