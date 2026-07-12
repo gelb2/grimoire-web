@@ -4,12 +4,13 @@
 // creditsToPoints(log.amount)로 pt를 1,000배 과표기했다. 본 spec은 둘 다 잠근다.
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { render, screen, cleanup, waitFor } from "@testing-library/react"
+import { render, screen, cleanup, waitFor, fireEvent } from "@testing-library/react"
 
 const h = vi.hoisted(() => ({
   getProducts: vi.fn(),
   getPointBalance: vi.fn(),
   getCreditLogs: vi.fn(),
+  getExpiring: vi.fn(),
   initiatePayment: vi.fn(),
   push: vi.fn(),
 }))
@@ -19,6 +20,7 @@ vi.mock("@/lib/api", () => ({
     getProducts: h.getProducts,
     getPointBalance: h.getPointBalance,
     getCreditLogs: h.getCreditLogs,
+    getExpiring: h.getExpiring,
     initiatePayment: h.initiatePayment,
   },
 }))
@@ -54,6 +56,7 @@ describe("CreditsPage — server 실제 shape 소비 (F-1)", () => {
     h.getProducts.mockResolvedValue(SERVER_PRODUCTS)
     h.getPointBalance.mockResolvedValue({ available: 47560 })
     h.getCreditLogs.mockResolvedValue(SERVER_LOGS)
+    h.getExpiring.mockResolvedValue(null)
   })
   afterEach(() => {
     cleanup()
@@ -95,5 +98,54 @@ describe("CreditsPage — server 실제 shape 소비 (F-1)", () => {
     render(<CreditsPage />)
     await waitFor(() => expect(h.getCreditLogs).toHaveBeenCalled())
     expect(screen.queryByText(/47,560,000/)).toBeNull()
+  })
+})
+
+describe("CreditsPage — F-21 기간 필터 + 만료 예정", () => {
+  beforeEach(() => {
+    h.getProducts.mockResolvedValue(SERVER_PRODUCTS)
+    h.getPointBalance.mockResolvedValue({ available: 47560 })
+    h.getCreditLogs.mockResolvedValue(SERVER_LOGS)
+    h.getExpiring.mockResolvedValue(null)
+  })
+  afterEach(() => {
+    cleanup()
+    vi.clearAllMocks()
+  })
+
+  it("초기 로드는 무파라미터로 getCreditLogs 를 호출한다 (기존 동작 회귀 0)", async () => {
+    render(<CreditsPage />)
+    await waitFor(() => expect(h.getCreditLogs).toHaveBeenCalled())
+    // 첫 호출은 인자 없음 — server 기본(최신순 100건) 하위호환
+    expect(h.getCreditLogs.mock.calls[0]).toEqual([])
+  })
+
+  it("기간 필터 클릭 시 from/to/limit/offset 로 재조회한다", async () => {
+    render(<CreditsPage />)
+    await screen.findByText("충전 완료") // 초기 로드 완료 대기
+    fireEvent.click(screen.getByText("1개월"))
+    await waitFor(() => {
+      expect(h.getCreditLogs).toHaveBeenCalledWith(
+        expect.objectContaining({
+          limit: 20,
+          offset: 0,
+          from: expect.any(String),
+          to: expect.any(String),
+        }),
+      )
+    })
+  })
+
+  it("구독 풀 소멸 예정을 pt + 날짜로 표시한다 (활성 유료 구독)", async () => {
+    h.getExpiring.mockResolvedValue({ expiringAmount: 5000, expiresAt: "2026-08-01T00:00:00.000Z" })
+    render(<CreditsPage />)
+    expect(await screen.findByText("5,000 pt")).toBeInTheDocument()
+    expect(screen.getByText(/소멸 예정/)).toBeInTheDocument()
+  })
+
+  it("만료 예정 없음(null)이면 소멸 예정 배너를 렌더하지 않는다", async () => {
+    render(<CreditsPage />)
+    await screen.findByText("충전 완료")
+    expect(screen.queryByText(/소멸 예정/)).toBeNull()
   })
 })

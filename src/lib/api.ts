@@ -530,9 +530,31 @@ class ApiClient extends BaseApiClient {
     return normalizePointBalance(raw)
   }
 
-  // 크레딧 사용 로그 (신 4 출처 원장 — reason/amount(pt, spend 음수)/source/type/balanceAfter)
-  async getCreditLogs() {
-    return this.fetch<CreditLogEntry[]>('/credits/logs')
+  /**
+   * 크레딧 사용 로그 (신 4 출처 원장 — reason/amount(pt, spend 음수)/source/type/balanceAfter).
+   *
+   * F-21: 기간(from/to ISO8601) + 오프셋 페이지네이션(limit/offset) 전부 optional.
+   * 무파라미터 호출 시 server 기본(최신순 100건) — 기존 동작 하위호환(회귀 0).
+   * hasMore 는 응답 length===limit 로 클라에서 추정(server 계약 = 배열 유지).
+   */
+  async getCreditLogs(params?: { from?: string; to?: string; limit?: number; offset?: number }) {
+    const qs = new URLSearchParams()
+    if (params?.from) qs.set('from', params.from)
+    if (params?.to) qs.set('to', params.to)
+    if (params?.limit != null) qs.set('limit', String(params.limit))
+    if (params?.offset != null) qs.set('offset', String(params.offset))
+    const query = qs.toString()
+    return this.fetch<CreditLogEntry[]>(`/credits/logs${query ? `?${query}` : ''}`)
+  }
+
+  /**
+   * 구독 풀 만료 예정 요약 (F-21 — brightMall #1).
+   *
+   * 활성 유료 구독의 다음 리셋일에 소멸 예정인 구독 풀 pt(현재 구독 출처 잔액).
+   * free/미구독/잔액0 시 null. 구독 풀은 이월 금지(매월 리셋)라 현재 구독 잔액 전액이 poolResetAt 에 소멸.
+   */
+  async getExpiring() {
+    return this.fetch<{ expiringAmount: number; expiresAt: string } | null>('/credits/expiring')
   }
 
   // AI 분석
