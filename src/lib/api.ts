@@ -84,6 +84,18 @@ class ApiClient extends BaseApiClient {
     return this.fetch<Theme>(`/themes/${authorSlug}`)
   }
 
+  /**
+   * 작품별 테마 resolve (F-18) — 작품에 배정(슬롯)된 테마가 있으면 그 테마를,
+   * 없으면 작가 기본 테마를 반환. server GET /themes/resolve/:authorSlug?work=
+   * (get-theme.usecase.resolve). bakedCssUrl 은 절대 URL. 응답은 {...Theme, bakedCssUrl}
+   * (overrides 에 AuthorTheme 포함). work 미지정/미배정 시 작가 기본과 동일(회귀 0) —
+   * 작품 테마 없는 공간(사슴악마 등)은 렌더 불변. 서버 컴포넌트 호출 시 백엔드 직접 경유.
+   */
+  async resolveTheme<T = Theme>(authorSlug: string, workSlug?: string) {
+    const qs = workSlug ? `?work=${encodeURIComponent(workSlug)}` : ''
+    return this.fetch<T>(`/themes/resolve/${authorSlug}${qs}`)
+  }
+
   async getThemeById(themeId: string) {
     return this.fetch<any>(`/themes/detail/${themeId}`)
   }
