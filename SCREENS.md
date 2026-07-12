@@ -39,7 +39,7 @@
 | `/dashboard/chat` | `app/dashboard/chat/page.tsx` | AI 채팅 (작품 컨텍스트 기반 대화, 세션 사이드바, 스트리밍 응답 + 4구간 사후 차감 배지 `ChatChargeBadge`). 정본: `.claude/shared-contracts.md` §30 CHAT_CHARGE_TIERS | `GET /api/works/...`, `POST /api/chat/sessions`, `GET /api/chat/sessions`, `GET /api/chat/sessions/:id/messages`, `POST /api/chat/sessions/:id/messages` |
 | `/dashboard/analysis` | `app/dashboard/analysis/page.tsx` | AI 작품 분석 실행 (작품 → 에피소드 선택 → 분석 요청 + 상태 폴링). 정본: `docs/ai-analysis-spec.md` | `GET /api/works/...`, `POST /api/analysis/episodes/:id`, `GET /api/analysis/status/...` |
 | `/dashboard/analysis/history` | `app/dashboard/analysis/history/page.tsx` | AI 분석 리포트 이력 (리스트 + 항목 클릭 시 모달 상세). DB 저장된 `AnalysisReport` 표시 | `GET /api/analysis/reports`, `GET /api/analysis/reports/:id` |
-| `/dashboard/episodes` | `app/dashboard/episodes/page.tsx` | 에피소드 관리 (작품별 에피소드 목록 + 재업로드/삭제) | `GET /api/works/...`, `POST /api/episodes/:id/reupload`, `DELETE /api/episodes/:id` |
+| `/dashboard/episodes` | `app/dashboard/episodes/page.tsx` | 에피소드 관리 (작품별 에피소드 목록 + **순서 변경**(F-20w — 위/아래 이동, 전체 순서 배열 전송, 낙관적 반영·실패 롤백) + 재업로드/삭제) | `GET /api/works/...`, `PATCH /api/works/:id/episodes/reorder`, `POST /api/episodes/:id/reupload`, `DELETE /api/episodes/:id` |
 | `/dashboard/episodes/[episodeId]/edit` | `app/dashboard/episodes/[episodeId]/edit/page.tsx` | 에피소드 원문(rawMd) 편집 (작가 본인 검증 → 로드 → 저장은 기존 reupload API) | `GET /api/episodes/:episodeId/raw`, `PATCH /api/episodes/:episodeId/reupload` |
 
 ### 작가 공간 (멀티테넌트)

@@ -355,6 +355,20 @@ class ApiClient extends BaseApiClient {
     })
   }
 
+  /**
+   * 에피소드 순서 변경 (F-20w) — server `PATCH /works/:id/episodes/reorder` (JWT + 소유권, 분당 10회).
+   *
+   * `episodeIds` 는 새 순서대로 나열한 작품 **전체** 에피소드 id (부분 재정렬 금지 — server 가
+   * 집합 일치[개수·중복·소속] 검증). 대시보드 에피소드 목록은 소유자 뷰라 전체 집합과 일치한다.
+   * 성공 시 재정렬된 에피소드 배열 반환.
+   */
+  async reorderEpisodes(workId: string, episodeIds: string[]) {
+    return this.fetch<Array<{ id: string; slug: string; title: string; orderNum: number; type?: string; status?: string }>>(
+      `/works/${workId}/episodes/reorder`,
+      { method: 'PATCH', body: JSON.stringify({ episodeIds }) },
+    )
+  }
+
   async createShareLink(workId: string, episodeId: string, expireIn: '12h' | '24h' | '48h' | 'never') {
     return this.fetch<{ sharedUrl: string; expireAt: string | null }>(`/works/${workId}/episodes/${episodeId}/share`, {
       method: 'POST',
