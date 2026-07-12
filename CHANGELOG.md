@@ -2,6 +2,12 @@
 
 ## [Unreleased] - 2026-06-27
 
+### 전수조사 Sprint 4 — web 기능 4건 + 정리 (feat/audit-s4-web)
+
+server endpoint 는 전건 기존재(감사 확인) — web UI 배선 + stale 정리. 각 항목 1커밋.
+
+- **F-19 비밀번호 변경 UI** (`/dashboard/profile`) — 현재+새+확인 3필드 + 클라 사전검증(공백/6자/확인 일치/동일 여부) 후 `POST /api/auth/change-password`(JwtAuthGuard) 위임. 현재 비밀번호 불일치 등 server 사유 그대로 노출. `api.changePassword` 신설. 기존 프로필 입력 토큰 스타일 재사용(새 시각 정본 0).
+
 ### Docs — 문서 감사 정정 (코드 무변경, 문서를 코드 실측에 정합) (docs/audit-doc-sync)
 
 문서 전수감사 후속 — grimoire-web 문서를 코드 실측(`src/app/theme.css`, `find src/app -name page.tsx`)에 맞춰 정정. **코드(theme.css/globals.css) 절대 무변경 — 문서/마크다운만 수정. 시각 렌더링 변경 0.**

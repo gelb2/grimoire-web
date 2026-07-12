@@ -19,6 +19,14 @@ export default function ProfilePage() {
   const [deleteOpen, setDeleteOpen] = useState(false)
   const saveAction = useLoadingAction()
 
+  // F-19 — 비밀번호 변경 (로그인 상태)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [pwMessage, setPwMessage] = useState('')
+  const [pwMessageType, setPwMessageType] = useState<'success' | 'error'>('success')
+  const pwAction = useLoadingAction()
+
   useEffect(() => {
     if (!loading && !user) router.push('/login')
   }, [user, loading, router])
@@ -43,6 +51,44 @@ export default function ProfilePage() {
       } catch (err: unknown) {
         setMessageType('error')
         setMessage(err instanceof Error ? err.message : '저장에 실패했습니다')
+      }
+    })
+  }
+
+  // F-19 — 비밀번호 변경 요청. 클라 사전 검증(공백/6자/확인 일치) 후 server 검증(현재 비밀번호 일치)에 위임.
+  const handleChangePassword = () => {
+    setPwMessage('')
+    if (!currentPassword || !newPassword) {
+      setPwMessageType('error')
+      setPwMessage('현재 비밀번호와 새 비밀번호를 모두 입력해주세요')
+      return
+    }
+    if (newPassword.length < 6) {
+      setPwMessageType('error')
+      setPwMessage('새 비밀번호는 6자 이상이어야 합니다')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPwMessageType('error')
+      setPwMessage('새 비밀번호가 서로 일치하지 않습니다')
+      return
+    }
+    if (newPassword === currentPassword) {
+      setPwMessageType('error')
+      setPwMessage('새 비밀번호가 현재 비밀번호와 동일합니다')
+      return
+    }
+    pwAction.execute(async () => {
+      try {
+        await api.changePassword(currentPassword, newPassword)
+        setPwMessageType('success')
+        setPwMessage('비밀번호가 변경되었습니다')
+        setCurrentPassword('')
+        setNewPassword('')
+        setConfirmPassword('')
+      } catch (err: unknown) {
+        setPwMessageType('error')
+        setPwMessage(err instanceof Error ? err.message : '비밀번호 변경에 실패했습니다')
       }
     })
   }
@@ -110,6 +156,54 @@ export default function ProfilePage() {
             {saveAction.pending ? '저장 중...' : '저장'}
           </button>
         </div>
+
+        {/* F-19 — 비밀번호 변경 (로그인 상태) */}
+        <section
+          aria-labelledby="password-change-section-title"
+          className="mt-16 pt-8 border-t border-neutral-200"
+        >
+          <h2 id="password-change-section-title" className="text-sm font-bold text-black uppercase tracking-[0.2em] mb-4">
+            비밀번호 변경
+          </h2>
+
+          {pwMessage && (
+            <div className={`border-l-2 px-4 py-3 text-sm mb-4 ${pwMessageType === 'error' ? 'border-[#e53e3e] text-[#e53e3e]' : 'border-black text-black'}`}>{pwMessage}</div>
+          )}
+
+          <div className="space-y-4">
+            <input
+              type="password"
+              autoComplete="current-password"
+              value={currentPassword}
+              onChange={e => setCurrentPassword(e.target.value)}
+              placeholder="현재 비밀번호"
+              className="w-full px-4 py-3 bg-[#f5f5f5] border border-neutral-300 rounded-lg text-black focus:outline-none focus:border-black transition"
+            />
+            <input
+              type="password"
+              autoComplete="new-password"
+              value={newPassword}
+              onChange={e => setNewPassword(e.target.value)}
+              placeholder="새 비밀번호 (6자 이상)"
+              className="w-full px-4 py-3 bg-[#f5f5f5] border border-neutral-300 rounded-lg text-black focus:outline-none focus:border-black transition"
+            />
+            <input
+              type="password"
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={e => setConfirmPassword(e.target.value)}
+              placeholder="새 비밀번호 확인"
+              className="w-full px-4 py-3 bg-[#f5f5f5] border border-neutral-300 rounded-lg text-black focus:outline-none focus:border-black transition"
+            />
+            <button
+              onClick={handleChangePassword}
+              disabled={pwAction.pending}
+              className="px-4 py-2 border border-black text-black text-sm font-medium rounded-lg hover:bg-black hover:text-white transition disabled:opacity-40"
+            >
+              {pwAction.pending ? '변경 중...' : '비밀번호 변경'}
+            </button>
+          </div>
+        </section>
 
         {/* USER-SOFT-DELETE sprint §15-1 — 본인 계정 탈퇴 영역 */}
         <section

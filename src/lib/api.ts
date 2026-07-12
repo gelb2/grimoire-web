@@ -61,6 +61,18 @@ class ApiClient extends BaseApiClient {
   }
 
   /**
+   * 비밀번호 변경 (F-19, 로그인 상태) — server `POST /auth/change-password` (JwtAuthGuard, 시간당 5회).
+   * body `{ currentPassword, newPassword }`. server 가 현재 비밀번호 검증 후 갱신(신 6자 이상).
+   * 실패 시 ApiError(message) — "현재 비밀번호가 일치하지 않습니다" 등 사유를 그대로 노출.
+   */
+  async changePassword(currentPassword: string, newPassword: string) {
+    return this.fetch<{ success: boolean }>('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    })
+  }
+
+  /**
    * 본인 계정 탈퇴 (USER-SOFT-DELETE sprint §5-4 정합).
    *
    * - JWT 인증 영역 (HttpOnly Cookie 자동 전송, BFF 프록시 경유)
