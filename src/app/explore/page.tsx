@@ -30,8 +30,8 @@ export default function ExplorePage() {
 
   const [initialLoading, setInitialLoading] = useState(!loaded)
 
-  // cold start(min-replicas=0) 대응: rawFetch 타임아웃 15초 × 재시도 4회 × 2.5초 간격 = 최대 ~70초 커버.
-  // Azure Container Apps가 간헐적으로 30~60초 걸려 깨어나는 경우까지 감내.
+  // cold start(min-instances=0) 대응: rawFetch 타임아웃 15초 × 재시도 4회 × 2.5초 간격 = 최대 ~70초 커버.
+  // GCP Cloud Run 이 간헐적으로 30~60초 걸려 깨어나는 경우까지 감내(2026-05-27 GCP 이관, W-15).
   const fetchWithRetry = useCallback(async <T,>(fn: () => Promise<T>, retries = 4, delayMs = 2500): Promise<T | null> => {
     for (let i = 0; i < retries; i++) {
       try { return await fn() } catch {

@@ -280,9 +280,7 @@ class ApiClient extends BaseApiClient {
     return this.fetch<Product[]>('/payments/products')
   }
 
-  async getCredits() {
-    return this.fetch<{ credits: number }>('/payments/credits')
-  }
+  // C-14: getCredits(`/payments/credits`) 제거 — 호출부 0, getPointBalance(`/credits/balance`)로 대체됨(stale)
 
   /**
    * 결제 시작 — Polar Checkout URL 반환.

@@ -63,10 +63,17 @@
 | `app/library/layout.tsx` | 서재 레이아웃 |
 | `app/login/layout.tsx` | 로그인 레이아웃 |
 | `app/register/layout.tsx` | 회원가입 레이아웃 |
-| `app/dashboard/credits/layout.tsx` | 포인트 충전 레이아웃 |
-| `app/dashboard/membership/layout.tsx` | 멤버십 플랜 레이아웃 |
-| `app/dashboard/profile/layout.tsx` | 프로필 설정 레이아웃 |
+| `app/dashboard/credits/layout.tsx` | 포인트 충전 레이아웃 (metadata 전용 — AuthProvider 는 상위 dashboard/layout 제공, W-12) |
+| `app/dashboard/membership/layout.tsx` | 멤버십 플랜 레이아웃 (metadata 전용 — 상위 dashboard/layout AuthProvider, W-12) |
+| `app/dashboard/profile/layout.tsx` | 프로필 설정 레이아웃 (metadata 전용 — 상위 dashboard/layout AuthProvider, W-12) |
 | `app/dashboard/theme/layout.tsx` | 테마 에디터 레이아웃 |
+
+### 전역 메타 페이지
+
+| 파일 | 설명 |
+|------|------|
+| `app/not-found.tsx` | 플랫폼 공용 404 (F-16) — 없는 페이지/작품/회차/공유토큰 수렴. neutral 캐논, PlatformNav 미포함 |
+| `app/error.tsx` | 플랫폼 공용 에러 바운더리 (W-11) — 렌더/네트워크 예외 수렴. not-found 캐논 미러 + 다시 시도(reset)/홈으로 |
 
 ---
 
