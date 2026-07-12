@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { api } from '@/lib/api'
 import { PlatformNav } from '@/components/PlatformNav'
 import { Alert } from '@/components/Alert'
+import { ANALYSIS_POINT_COST, formatPoints } from '@/features/credits'
 import type { IndexStatus } from '@/types/api'
 
 interface Work { id: string; slug: string; title: string }
@@ -255,14 +256,14 @@ export default function AnalysisPage() {
         </div>
 
         <p className="text-xs text-neutral-500 mb-2">
-          분석 1회당 <span className="text-[#e53e3e] font-semibold">4 크레딧</span>이 차감됩니다. 서버가 분석을 실패로 확정한 경우 자동 환불되며, 진행 중 중단이면 잔액을 크레딧 페이지에서 확인해주세요.
+          분석 1회당 <span className="text-[#e53e3e] font-semibold">{formatPoints(ANALYSIS_POINT_COST)} pt</span>가 차감됩니다. 서버가 분석을 실패로 확정한 경우 자동 환불되며, 진행 중 중단이면 잔액을 크레딧 페이지에서 확인해주세요.
         </p>
         <button
           onClick={handleStart}
           disabled={submitting || !selectedEpisodeId}
           className="w-full py-3 bg-black hover:bg-neutral-800 disabled:bg-neutral-300 text-white font-medium rounded-lg transition mb-8"
         >
-          {submitting ? '분석 요청 중...' : '분석 시작 (4 크레딧)'}
+          {submitting ? '분석 요청 중...' : `분석 시작 (${formatPoints(ANALYSIS_POINT_COST)} pt)`}
         </button>
       </main>
 
@@ -277,7 +278,7 @@ export default function AnalysisPage() {
               <span className="font-semibold text-black">{selectedEpisode ? formatEpisodeOption(selectedEpisode) : '선택한 회차'}</span> 를 같은 작품의 다른 회차들과 비교합니다.
             </p>
             <p>분석은 <span className="font-semibold text-black">최소 1~2분</span>, 경우에 따라 더 소요될 수 있어요. 시작 후에는 대시보드로 돌아가 <span className="font-semibold text-black">다른 작업을 이어가셔도 됩니다</span>. 완료되면 결과가 <span className="font-semibold text-black">분석 기록</span>에 저장돼요.</p>
-            <p className="text-[#e53e3e] font-semibold">지금 4 크레딧이 차감됩니다. (실패 시 자동 환불)</p>
+            <p className="text-[#e53e3e] font-semibold">지금 {formatPoints(ANALYSIS_POINT_COST)} pt가 차감됩니다. (실패 시 자동 환불)</p>
           </div>
         }
         cancelLabel="취소"

@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { api } from "@/lib/api"
+import { ApiError } from "@/lib/api/client"
+import { ErrorPopup } from "@/components/ErrorPopup"
 import { EpisodeViewer } from "@/features/reader/ui/EpisodeViewer"
 import { EpisodeFooter } from "@/features/reader/ui/EpisodeFooter"
 // WorkNav 제거 — SeriesNav가 [author]/layout.tsx에서 항상 렌더링됨
@@ -12,22 +14,16 @@ interface Props {
   params: Promise<{ author: string; slug: string; episode: string }>
 }
 
-// 테마 레이아웃만 빠르게 확인 — series 여부 판별용
-async function getThemeLayout(authorSlug: string): Promise<string> {
+// 작품별 테마 레이아웃 resolve — series 여부 판별용 (F-18).
+// work 컨텍스트가 있으므로 작품에 배정(슬롯)된 테마가 있으면 그 테마의 episodeListLayout,
+// 없으면 작가 기본 테마(회귀 0). 작품 테마 없는 공간(사슴악마 등)은 기존과 동일하게 렌더.
+async function getThemeLayout(authorSlug: string, workSlug: string): Promise<string> {
   try {
-    // 서버 컴포넌트: 백엔드 직접 호출 (BFF 프록시 루프백 방지)
-    const apiUrl = process.env.API_URL || 'http://localhost:3000/api'
-    const res = await fetch(`${apiUrl}/themes/${authorSlug}`, {
-      next: { revalidate: 60 },
-      signal: AbortSignal.timeout(3000),
-    })
-    if (res.ok) {
-      const data = await res.json()
-      // data.theme (새 API) 우선, data.overrides (하위 호환) 폴백
-      return data.theme?.episodeListLayout ?? data.overrides?.episodeListLayout ?? data.overrides?.layout ?? 'grid'
-    }
+    // 서버 컴포넌트: api.resolveTheme 가 백엔드 직접 호출 (BFF 프록시 루프백 방지).
+    const theme = await api.resolveTheme<{ overrides?: { episodeListLayout?: string; layout?: string } }>(authorSlug, workSlug)
+    return theme?.overrides?.episodeListLayout ?? theme?.overrides?.layout ?? 'grid'
   } catch {
-    // 테마 로드 실패 — 기본 grid
+    // 테마 resolve 실패 — 기본 grid
   }
   return 'grid'
 }
@@ -69,7 +65,7 @@ export default async function EpisodePage({ params }: Props) {
     const [episodeData, authorRes, themeLayout, workData] = await Promise.all([
       api.getEpisode<any>(author, slug, episode),
       api.getAuthorSpace<any>(author).catch(() => null),
-      getThemeLayout(author),
+      getThemeLayout(author, slug),
       api.getWork<any>(author, slug).catch(() => null),
     ])
 
@@ -128,7 +124,14 @@ export default async function EpisodePage({ params }: Props) {
         />
       </>
     )
-  } catch {
-    notFound()
+  } catch (err) {
+    // F-16: 진짜 404(회차/작품 부재)만 notFound 로 수렴. 네트워크/타임아웃/5xx 일시 오류는
+    // 404 로 오분류하지 않고 오류 UI(재시도 유도)로 표시 — 부재와 장애를 구분한다.
+    if (err instanceof ApiError && err.status === 404) {
+      notFound()
+    }
+    return (
+      <ErrorPopup message="회차를 불러오지 못했어요. 네트워크 문제이거나 일시적인 서버 오류일 수 있어요. 잠시 후 다시 시도해주세요." />
+    )
   }
 }

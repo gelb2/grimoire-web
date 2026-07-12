@@ -3,7 +3,7 @@
  * Sprint: sprint-pay-p0-3-admin-credit-grant-ui (PAY-P0-3)
  * 계약: reports/sprint-pay-p0-3-admin-credit-grant-ui-progress.md AC-1~AC-6
  *
- * 운영자 수동 크레딧 지급/차감 UI.
+ * 운영자 수동 포인트 지급/차감 UI.
  * - 사용자 검색(slug/email/ID) → 카드 결과 → 선택 → 잔액 표시
  * - 금액(음수 = 차감 / 양수 = 지급) + 사유 필수 입력
  * - 지급/차감 분리 버튼 (mode-by-button — VCK AA-4 [MUST])
@@ -72,7 +72,7 @@ export function CreditsTab() {
     const after = mode === 'grant' ? user.credits + absAmount : user.credits - absAmount
     const verb = mode === 'grant' ? '지급' : '차감'
     const ok = window.confirm(
-      `"${user.name}" (@${user.slug}) 사용자에게 ${absAmount.toLocaleString()} 크레딧 ${verb}하시겠습니까?\n` +
+      `"${user.name}" (@${user.slug}) 사용자에게 ${absAmount.toLocaleString()} 포인트 ${verb}하시겠습니까?\n` +
       `사유: ${reason.trim()}\n\n` +
       `현재 잔액: ${user.credits.toLocaleString()} → 변경 후: ${after.toLocaleString()}`
     )
@@ -86,7 +86,7 @@ export function CreditsTab() {
       const newBalance = (r as { credits: number }).credits
       setUser({ ...user, credits: newBalance })
       toast.success(
-        `${user.name}에게 ${absAmount.toLocaleString()} 크레딧 ${verb} 완료. 잔액: ${newBalance.toLocaleString()}`
+        `${user.name}에게 ${absAmount.toLocaleString()} 포인트 ${verb} 완료. 잔액: ${newBalance.toLocaleString()}`
       )
       setAmount('')
       setReason('')
@@ -128,7 +128,7 @@ export function CreditsTab() {
                   <span className="text-neutral-500 text-xs">@{a.slug}</span>
                   <p className="text-neutral-400 text-xs mt-1">{a.email}</p>
                   <p className="text-white text-sm mt-2">
-                    현재 잔액: <span className="font-bold">{(a.credits ?? 0).toLocaleString()}</span> 크레딧
+                    현재 잔액: <span className="font-bold">{(a.credits ?? 0).toLocaleString()}</span> 포인트
                   </p>
                 </div>
                 <button
@@ -153,7 +153,7 @@ export function CreditsTab() {
               <span className="text-neutral-500 text-xs">@{user.slug}</span>
               <p className="text-neutral-400 text-xs mt-1">{user.email}</p>
               <p className="text-white text-sm mt-2">
-                현재 잔액: <span className="font-bold">{(user.credits ?? 0).toLocaleString()}</span> 크레딧
+                현재 잔액: <span className="font-bold">{(user.credits ?? 0).toLocaleString()}</span> 포인트
               </p>
             </div>
             <button
@@ -173,7 +173,7 @@ export function CreditsTab() {
             type="number"
             value={amount}
             onChange={e => setAmount(e.target.value)}
-            placeholder="크레딧 수량 (음수 = 차감, 양수 = 지급)"
+            placeholder="포인트 수량 (음수 = 차감, 양수 = 지급)"
             className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded text-sm text-white placeholder-neutral-500"
           />
           <input
