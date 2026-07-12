@@ -13,8 +13,10 @@
 | 경로 | 파일 | 설명 | 인증 | API |
 |------|------|------|------|-----|
 | `/` | `app/page.tsx` | 루트 — `/explore`로 리다이렉트 | - | - |
-| `/login` | `app/login/page.tsx` | 로그인 — 입력칸 1개 (이메일 또는 슬러그) + 정규식 자동 판별 (EMAIL-P0-3 Phase 2, sprint-email-p0-3-slug-login) | - | `POST /api/auth/login` (`{ email? }` 또는 `{ slug? }` XOR + password) |
+| `/login` | `app/login/page.tsx` | 로그인 — 입력칸 1개 (이메일 또는 슬러그) + 정규식 자동 판별 (EMAIL-P0-3 Phase 2, sprint-email-p0-3-slug-login) + "비밀번호를 잊으셨나요?" → `/reset-password` 링크(F-19) | - | `POST /api/auth/login` (`{ email? }` 또는 `{ slug? }` XOR + password) |
 | `/register` | `app/register/page.tsx` | 회원가입 (3 크레딧 보너스) | - | `POST /api/auth/register` |
+| `/reset-password` | `app/reset-password/page.tsx` | 비밀번호 초기화 요청 (F-19, 비로그인 — 이메일 입력 → enumeration 차단 동일 안내. 이메일 발송은 server EMAIL_PROVIDER 종속, 기본 NullAdapter 미개통 시 메일 미도착 안내 + 프로필 비번변경 유도) | - | `POST /api/auth/password/reset-request` |
+| `/reset-password/confirm` | `app/reset-password/confirm/page.tsx` | 비밀번호 초기화 토큰 확인 (F-19 — `?token=` 검증. 신 비밀번호 설정은 발송 개통과 함께 활성, 현재는 프로필 비번변경 유도) | - (토큰) | `POST /api/auth/password/reset-confirm` |
 | `/explore` | `app/explore/page.tsx` | 작품 탐색 (검색, 인기, 최신) | - | `GET /api/discover/*` |
 | `/library` | `app/library/page.tsx` | 독자 서재 (북마크, 구독) | JWT | `GET /api/reader/bookmarks`, `GET /api/social/subscriptions` |
 | `/admin/login` | `app/admin/login/page.tsx` | 관리자 로그인 (email + password 폼 → `api.adminLogin` → `/admin` replace) | - | `POST /api/auth/admin/login` |

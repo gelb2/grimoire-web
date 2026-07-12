@@ -7,6 +7,7 @@
 server endpoint 는 전건 기존재(감사 확인) — web UI 배선 + stale 정리. 각 항목 1커밋.
 
 - **F-19 비밀번호 변경 UI** (`/dashboard/profile`) — 현재+새+확인 3필드 + 클라 사전검증(공백/6자/확인 일치/동일 여부) 후 `POST /api/auth/change-password`(JwtAuthGuard) 위임. 현재 비밀번호 불일치 등 server 사유 그대로 노출. `api.changePassword` 신설. 기존 프로필 입력 토큰 스타일 재사용(새 시각 정본 0).
+- **F-19 비밀번호 리셋 페이지** (`/reset-password`, `/reset-password/confirm`) — 비로그인 요청/확인. 요청은 enumeration 차단(성공/실패 동일 안내), **이메일 미개통(NullAdapter) 종속 명시**(메일 미도착 안내 + 프로필 비번변경 유도). 확인은 `?token=` 검증(server 현 단계 토큰 검증만 — 신 비번 설정은 발송 개통과 함께). login 에 "비밀번호를 잊으셨나요?" 링크. `api.passwordResetRequest`/`passwordResetConfirm` 신설. login 페이지 패턴 재사용(새 시각 정본 0).
 
 ### Docs — 문서 감사 정정 (코드 무변경, 문서를 코드 실측에 정합) (docs/audit-doc-sync)
 

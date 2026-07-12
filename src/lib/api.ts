@@ -73,6 +73,33 @@ class ApiClient extends BaseApiClient {
   }
 
   /**
+   * 비밀번호 초기화 요청 (F-19, 비로그인) — server `POST /auth/password/reset-request` (분당 3회).
+   *
+   * enumeration 차단 — 가입 여부와 무관하게 동일 응답 `{ issued }`. 이메일 발송은 server
+   * EMAIL_PROVIDER 종속: 기본 NullAdapter(미개통) 시 토큰만 DB 박제되고 외부 발송 0
+   * (메일이 도착하지 않음). 이메일 개통 시 즉시 실제 발송으로 전환. server 미주입 시 403.
+   */
+  async passwordResetRequest(email: string) {
+    return this.fetch<{ issued: boolean }>('/auth/password/reset-request', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    })
+  }
+
+  /**
+   * 비밀번호 초기화 토큰 검증 (F-19, 비로그인) — server `POST /auth/password/reset-confirm`.
+   *
+   * 현 단계 server 는 토큰 **검증만** 수행하고 신 비밀번호 설정은 별 sprint(발송 개통과 함께).
+   * 응답 `{ verified, email }`. 토큰은 20자 이상.
+   */
+  async passwordResetConfirm(token: string) {
+    return this.fetch<{ verified: boolean; email: string }>('/auth/password/reset-confirm', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    })
+  }
+
+  /**
    * 본인 계정 탈퇴 (USER-SOFT-DELETE sprint §5-4 정합).
    *
    * - JWT 인증 영역 (HttpOnly Cookie 자동 전송, BFF 프록시 경유)
