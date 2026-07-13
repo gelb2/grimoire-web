@@ -60,6 +60,14 @@ describe("EpisodeFooter 응원 전송값 (F-4)", () => {
     expect(screen.getByText("5,000pt")).toBeInTheDocument()
   })
 
+  // F-15 — 선물 팝업 헤더는 정본 용어("포인트")를 쓰고 구 "크레딧" 은 남기지 않는다 (glossary 정합)
+  it("선물 팝업 헤더는 '포인트 선물' 이며 구 '크레딧' 문구가 없다", async () => {
+    render(<EpisodeFooter episodeId="ep1" authorSlug="deerdevil" workSlug="w1" />)
+    fireEvent.click(await screen.findByText("응원 보내기"))
+    expect(screen.getByText("포인트 선물")).toBeInTheDocument()
+    expect(screen.queryByText("크레딧 선물")).not.toBeInTheDocument()
+  })
+
   it("응원 클릭 시 pt 값(1000)을 전송한다 (구 정수 1 아님)", async () => {
     render(<EpisodeFooter episodeId="ep1" authorSlug="deerdevil" workSlug="w1" />)
     fireEvent.click(await screen.findByText("응원 보내기"))

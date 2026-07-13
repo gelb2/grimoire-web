@@ -14,20 +14,6 @@ interface Props {
   params: Promise<{ author: string; slug: string; episode: string }>
 }
 
-// 작품별 테마 레이아웃 resolve — series 여부 판별용 (F-18).
-// work 컨텍스트가 있으므로 작품에 배정(슬롯)된 테마가 있으면 그 테마의 episodeListLayout,
-// 없으면 작가 기본 테마(회귀 0). 작품 테마 없는 공간(사슴악마 등)은 기존과 동일하게 렌더.
-async function getThemeLayout(authorSlug: string, workSlug: string): Promise<string> {
-  try {
-    // 서버 컴포넌트: api.resolveTheme 가 백엔드 직접 호출 (BFF 프록시 루프백 방지).
-    const theme = await api.resolveTheme<{ overrides?: { episodeListLayout?: string; layout?: string } }>(authorSlug, workSlug)
-    return theme?.overrides?.episodeListLayout ?? theme?.overrides?.layout ?? 'grid'
-  } catch {
-    // 테마 resolve 실패 — 기본 grid
-  }
-  return 'grid'
-}
-
 // 에피소드 메타데이터
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { author, slug, episode } = await params
@@ -61,11 +47,10 @@ export default async function EpisodePage({ params }: Props) {
   const { author, slug, episode } = await params
 
   try {
-    // 에피소드 + 작가 정보 + 테마 레이아웃 + 작품(에피소드 목록) 동시 로드
-    const [episodeData, authorRes, themeLayout, workData] = await Promise.all([
+    // 에피소드 + 작가 정보 + 작품(에피소드 목록) 동시 로드
+    const [episodeData, authorRes, workData] = await Promise.all([
       api.getEpisode<any>(author, slug, episode),
       api.getAuthorSpace<any>(author).catch(() => null),
-      getThemeLayout(author, slug),
       api.getWork<any>(author, slug).catch(() => null),
     ])
 
@@ -97,19 +82,6 @@ export default async function EpisodePage({ params }: Props) {
     const authorName = episodeData.authorName || authorRes?.author?.name || (authorRes as Record<string, unknown>)?.name as string || author
     // 작품 제목: 에피소드 응답에 포함된 workTitle 또는 slug 폴백
     const workTitle = episodeData.workTitle ?? slug
-
-    const isSeriesLayout = themeLayout === 'series'
-
-    // 작품의 에피소드 목록 추출 (WorkNav pill 표시용)
-    const workEpisodes: { slug: string; orderNum: number; title: string; type?: string }[] =
-      (workData?.episodes ?? workData?.work?.episodes ?? [])
-        .map((ep: { slug: string; orderNum?: number; order_num?: number; title: string; type?: string }) => ({
-          slug: ep.slug,
-          orderNum: ep.orderNum ?? ep.order_num ?? 0,
-          title: ep.title,
-          type: ep.type,
-        }))
-        .sort((a: { orderNum: number }, b: { orderNum: number }) => a.orderNum - b.orderNum)
 
     return (
       <>
