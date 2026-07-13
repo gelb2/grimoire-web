@@ -222,7 +222,7 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
       // 본인 크레딧 차감분 네비바 동기화
       refreshUser().catch(() => {})
     } catch {
-      setGiftMessage('선물 실패 — 로그인 또는 크레딧을 확인하세요')
+      setGiftMessage('선물 실패 — 로그인 또는 포인트를 확인하세요')
       setTimeout(() => setGiftMessage(null), 3000)
     } finally {
       setGiftSending(false)
@@ -269,7 +269,7 @@ export function EpisodeFooter({ episodeId, authorSlug, workSlug, prevEpisodeSlug
             </button>
             {showGiftPopup && (
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-3 rounded-xl border border-g-border bg-g-bg2 shadow-lg z-10">
-                <p className="text-xs text-g-text-muted mb-2 text-center whitespace-nowrap">크레딧 선물</p>
+                <p className="text-xs text-g-text-muted mb-2 text-center whitespace-nowrap">포인트 선물</p>
                 <div className="flex gap-2">
                   {GIFT_POINT_OPTIONS.map(amount => (
                     <button

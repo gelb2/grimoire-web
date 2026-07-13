@@ -191,7 +191,7 @@ export default function AuthorProfilePage() {
                 </button>
                 {showGift && (
                   <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-g-bg2 border border-g-border rounded-xl p-3 shadow-lg z-10 min-w-[160px]">
-                    <p className="text-xs text-g-text-muted text-center mb-2">크레딧 선물</p>
+                    <p className="text-xs text-g-text-muted text-center mb-2">포인트 선물</p>
                     <div className="flex gap-2 justify-center">
                       {GIFT_POINT_OPTIONS.map(amount => (
                         <button key={amount} onClick={async () => {
