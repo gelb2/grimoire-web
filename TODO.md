@@ -26,6 +26,7 @@
 
 ## 중기
 
+- [ ] **F-18 작품별 테마 색상 적용** (defer, 아키텍처 변경 — 전용 스프린트) — resolveTheme 배선은 완료됐으나 색상 미적용. 근본 원인: ThemeProvider 인라인 `--g-*` 변수가 work baked `:root` CSS 를 상속 우선으로 덮어씀 + 렌더 스코프가 `[author]` 레이아웃(work 컨텍스트 부재). 리더 페이지 레벨 국소 주입은 무효/부분적용. 올바른 픽스 = 신설 `[author]/[slug]/layout.tsx` work 테마 재-provide(案 A) + **VCK 사슴악마 불변 검수 선행**. 상세 스펙·위험·코드증거: `reports/F18_THEME_COLOR_BACKLOG.md`. 정책: [[feedback_theme_no_touch]].
 - [ ] 커스텀 테마 에디터 고도화 (Color Picker 개별 필드 개선)
 - [ ] 플랫폼 페이지 디자인 리뉴얼 — 보류 (섣불리 건드리지 말 것, feedback_readymag_rollback 참조)
 - [ ] A24식 Artifacts UI
