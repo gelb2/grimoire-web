@@ -2,6 +2,10 @@
 
 ## [Unreleased] - 2026-06-27
 
+### 비차단 follow-up — web 위생/백로그 (fix/followup-web)
+
+- **FW-1 CSP connect-src stale 정리 + 환경 분기** — prod CSP `connect-src` 에 stale `dev-api.grimoire-book.com` + `inhouse-api.grimoire-book.com` 가 정본 `api.grimoire-book.com` 와 함께 허용돼 있던 위생 결함 정리. CSP 는 `next.config.ts headers()` 에서 빌드타임 baked(단일 정본, middleware 부재). 신설 `src/lib/csp.ts` `buildCsp(appEnv)` 로 `connect-src` API origin 을 환경별 분기: **production → api.grimoire-book.com 만 / development → dev-api.grimoire-book.com / local → localhost:3000**. `inhouse-*` 는 2환경화(2026-04-19)로 폐기 → **전 환경 제거**. `appEnv` = 빌드타임 `NEXT_PUBLIC_APP_ENV`(`deploy-common.sh env_to_app_env_buildarg` dev→development/prod→production; 미지정 시 안전 기본값 production). 검증: `NEXT_PUBLIC_APP_ENV=production npm run build` → routes-manifest `connect-src 'self' https://api.grimoire-book.com …`(dev-api·inhouse 0), `=development` → `dev-api …`(inhouse 0). 회귀 가드 `src/lib/csp.test.ts`(6 it). BFF(/api)는 'self' 커버 — 클라 직접 API 호출 변경 0.
+
 ### 전수조사 Sprint 4 — web 기능 4건 + 정리 (feat/audit-s4-web)
 
 server endpoint 는 전건 기존재(감사 확인) — web UI 배선 + stale 정리. 각 항목 1커밋.
