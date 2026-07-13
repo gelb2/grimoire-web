@@ -2,6 +2,12 @@
 
 ## [Unreleased] - 2026-06-27
 
+### 비차단 follow-up — web 위생/백로그 (fix/followup-web)
+
+- **FW-1 CSP connect-src stale 정리 + 환경 분기** — prod CSP `connect-src` 에 stale `dev-api.grimoire-book.com` + `inhouse-api.grimoire-book.com` 가 정본 `api.grimoire-book.com` 와 함께 허용돼 있던 위생 결함 정리. CSP 는 `next.config.ts headers()` 에서 빌드타임 baked(단일 정본, middleware 부재). 신설 `src/lib/csp.ts` `buildCsp(appEnv)` 로 `connect-src` API origin 을 환경별 분기: **production → api.grimoire-book.com 만 / development → dev-api.grimoire-book.com / local → localhost:3000**. `inhouse-*` 는 2환경화(2026-04-19)로 폐기 → **전 환경 제거**. `appEnv` = 빌드타임 `NEXT_PUBLIC_APP_ENV`(`deploy-common.sh env_to_app_env_buildarg` dev→development/prod→production; 미지정 시 안전 기본값 production). 검증: `NEXT_PUBLIC_APP_ENV=production npm run build` → routes-manifest `connect-src 'self' https://api.grimoire-book.com …`(dev-api·inhouse 0), `=development` → `dev-api …`(inhouse 0). 회귀 가드 `src/lib/csp.test.ts`(6 it). BFF(/api)는 'self' 커버 — 클라 직접 API 호출 변경 0.
+
+- **FW-2 F-18 작품별 테마 색상 — (b) 아키텍처 변경 필요 → DEFER (백로그 스펙)** — 실측 후 판단: 리더 페이지 레벨의 국소 CSS 주입(a)은 **무효**. 근거: server `theme-baker.ts:145` 가 baked CSS 를 `:root { --g-* }` 로 굽지만 `ThemeProvider.tsx:40-77` 이 동일 `--g-*` 를 **div 인라인 스타일**로 재설정 → CSS 커스텀 프로퍼티 **상속 우선(가장 가까운 조상 승)** 으로 author 인라인 변수가 work `:root` baked CSS 를 항상 덮음(`!important` 도 무효). 게다가 렌더 스코프가 `[author]/layout.tsx`(params=`{author}` 뿐, work 컨텍스트 부재)라 색상·`html/body`·`meta`·`useTheme()` 컨텍스트·SeriesNav 6표면이 author 스코프에 묶여 부분적용=사슴악마 회귀 위험. 올바른 픽스=신설 `[author]/[slug]/layout.tsx` work 테마 재-provide(案 A, VCK 사슴악마 불변 검수 선행). **코드 변경 0(테마 에디터·theme.css·프리셋·ThemeProvider·layout 무접촉)** — 백로그 스펙 `reports/F18_THEME_COLOR_BACKLOG.md` + TODO 등재. 정책 [[feedback_theme_no_touch]] 상 defer 가 정답.
+
 ### 전수조사 Sprint 4 — web 기능 4건 + 정리 (feat/audit-s4-web)
 
 server endpoint 는 전건 기존재(감사 확인) — web UI 배선 + stale 정리. 각 항목 1커밋.

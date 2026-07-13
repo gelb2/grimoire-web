@@ -1,5 +1,6 @@
 // [2026-04-08 Remote Test] 이 주석은 클로드 리모트 기능 세팅 및 아이패드 업무지시 가능성 확인 목적으로 작성됨. 업무와 무관한 테스트.
 import type { NextConfig } from "next"
+import { buildCsp } from "./src/lib/csp"
 
 const nextConfig: NextConfig = {
   // Docker standalone 빌드를 위한 설정
@@ -32,18 +33,10 @@ const nextConfig: NextConfig = {
           {
             // CSP — Next.js App Router는 인라인 스크립트 사용하므로 'unsafe-inline' 필요
             // 향후 nonce 기반으로 전환 시 middleware.ts에서 nonce 생성 + 헤더 동적 설정
+            // connect-src API origin 은 환경별 분기 (buildCsp) — prod=api / dev=dev-api /
+            // local=localhost. inhouse-* 는 2환경화(2026-04-19)로 폐기 → 전 환경 제거 (FW-1).
             key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://www.gstatic.com https://accounts.google.com https://static.cloudflareinsights.com",
-              "style-src 'self' 'unsafe-inline' https://accounts.google.com",
-              "img-src 'self' data: blob: https:",
-              "font-src 'self' data:",
-              "connect-src 'self' https://api.grimoire-book.com https://dev-api.grimoire-book.com https://inhouse-api.grimoire-book.com https://polar.sh https://www.google.com https://accounts.google.com",
-              "frame-src https://www.google.com https://accounts.google.com https://polar.sh",
-              "base-uri 'self'",
-              "form-action 'self'",
-            ].join('; '),
+            value: buildCsp(process.env.NEXT_PUBLIC_APP_ENV),
           },
         ],
       },
