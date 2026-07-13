@@ -1,5 +1,37 @@
 # CHANGELOG.md — 변경 이력
 
+## [Unreleased] - 2026-06-27
+
+### 전수조사 Sprint 4 — web 기능 4건 + 정리 (feat/audit-s4-web)
+
+server endpoint 는 전건 기존재(감사 확인) — web UI 배선 + stale 정리. 각 항목 1커밋.
+
+- **F-19 비밀번호 변경 UI** (`/dashboard/profile`) — 현재+새+확인 3필드 + 클라 사전검증(공백/6자/확인 일치/동일 여부) 후 `POST /api/auth/change-password`(JwtAuthGuard) 위임. 현재 비밀번호 불일치 등 server 사유 그대로 노출. `api.changePassword` 신설. 기존 프로필 입력 토큰 스타일 재사용(새 시각 정본 0).
+- **F-19 비밀번호 리셋 페이지** (`/reset-password`, `/reset-password/confirm`) — 비로그인 요청/확인. 요청은 enumeration 차단(성공/실패 동일 안내), **이메일 미개통(NullAdapter) 종속 명시**(메일 미도착 안내 + 프로필 비번변경 유도). 확인은 `?token=` 검증(server 현 단계 토큰 검증만 — 신 비번 설정은 발송 개통과 함께). login 에 "비밀번호를 잊으셨나요?" 링크. `api.passwordResetRequest`/`passwordResetConfirm` 신설. login 페이지 패턴 재사용(새 시각 정본 0).
+- **F-20w 에피소드 순서 변경 UI** (`/dashboard/episodes`) — 회차별 위/아래(▲▼) 이동 버튼. 인접 스왑 후 작품 **전체** 에피소드 id 를 새 순서로 `PATCH /api/works/:id/episodes/reorder` 전송(server 집합 일치 검증). 낙관적 반영 + 실패 시 롤백·토스트. 드래그 지양(최소침습). `api.reorderEpisodes` 신설.
+
+### Docs — 문서 감사 정정 (코드 무변경, 문서를 코드 실측에 정합) (docs/audit-doc-sync)
+
+문서 전수감사 후속 — grimoire-web 문서를 코드 실측(`src/app/theme.css`, `find src/app -name page.tsx`)에 맞춰 정정. **코드(theme.css/globals.css) 절대 무변경 — 문서/마크다운만 수정. 시각 렌더링 변경 0.**
+
+- **`SCREENS.md` 라우트 누락 10건 추가** — 실제 `page.tsx` 26개 中 라우트 테이블 누락분: `/admin/login`·`/shared/[token]`·`/privacy`·`/terms`(플랫폼) + `/dashboard/chat`·`/dashboard/analysis`·`/dashboard/analysis/history`·`/dashboard/episodes`·`/dashboard/episodes/[episodeId]/edit`(대시보드) + `/[author]/profile`(작가 공간). 각 행에 파일/설명/인증/API 실측 기재. → 26 라우트 전건 문서화(누락 0).
+- **`docs/DEPLOY.md` 이중정본 해소** — L5 "정본: 이 문서" ↔ STALE 경고(정본=server) 자가모순 + 2026-05-27 GCP 마이그레이션 후 stale 중복 두 사유로, 전체 Azure 기반 절차본을 제거하고 **정본 포인터 stub**으로 일원화(정본 = `grimoire-server/docs/DEPLOY.md`). server DEPLOY.md 무변경.
+- **`docs/design-tokens.md` theme.css 코드싱크** — `@layer utilities` fallback 발산 정정: `tracking-wide-g` 변수/값(`--g-tracking-wide` 0.08em → 실측 `--g-label-letter-spacing` 0.25em), `tracking-normal-g`(0.04em → 0.1em), `tracking-tight-g`(0.02em → 0.05em), `pill-radius` 변수/값(`--g-pill-radius` 9999px → 실측 `--g-tab-pill-radius` 20px).
+- **`DESIGN.md` 코드싱크 + 유령토큰 제거** — fs-label/fs-caption 크기 오기(10px/11px → theme.css 실측 `0.8125rem`/`0.75rem`) 정정. 코드 0건 유령토큰(`max-w-g-landing`/`max-w-g-reader`/`max-w-g-reader-narrow`) 표·prose 제거 → 실제 표준 Tailwind 컨테이너 클래스(`max-w-6xl`/`max-w-4xl`/`max-w-prose`/`max-w-2xl` 등) 실측 서술. landing 800px(표)/900px(prose) 자기모순 동반 해소.
+- **`CLAUDE.md §7` 참조 경로 오기 정정** — `docs/DESIGN_REFERENCE_READYMAG.md` → 실제 `research/DESIGN_REFERENCE_READYMAG.md`.
+- 시각 정본(사슴악마) 변경 0 — design-tokens/DESIGN 수정은 theme.css 실측치 반영만(런타임 주입 deerdevil baseline hex 미접근). 코드 git status 무변경 확인.
+
+### Added — PAY-S6 결제 인프라 운영 경보 배지 (admin) (feature/pay-s6-payment-infra-alert)
+
+Circuit Breaker OPEN / 결제 `permanent_failed` / reconciliation mismatch가 현재 AuditLog 에만 박제돼 운영자가 실시간으로 못 보던 갭을 최소안으로 해소. PAY-S3 `CircuitBreakerPanel`(SettingsTab "결제 인프라" 섹션) 상단에 경보 인디케이터를 결합. 외부 SaaS(Sentry)는 boundary라 제외 — 가용 admin 데이터 재활용. **server 변경 0건**.
+
+- **신설 `PaymentInfraAlertBadge`** (`src/app/admin/tabs/components/PaymentInfraAlertBadge.tsx`) — 3 신호 가시화: ① Circuit OPEN (`adminGetCircuitBreakerState()` 2 호출점 中 하나라도 state='open') ② permanent_failed 누적 (`adminGetAuditLogs({ action: 'webhook_permanent_failed' })`.total — server `webhook-retry.job` DLQ 박제) ③ reconciliation mismatch 누적 (`adminGetAuditLogs({ action: 'reconciliation_refund_mismatch' })`.total — server `payment-reconciliation.job` S2 박제). 30초 폴링. 모두 정상이면 작은 "정상" 배지(과한 시각 변경 금지), 이상 시 빨강 경보 배너 + 세부 배지.
+- **`SettingsTab` "결제 인프라" 섹션** — `CircuitBreakerPanel` 위에 `PaymentInfraAlertBadge` 1줄 결합 (+3 라인). 기존 admin 구조 유지.
+- **기존 admin endpoint 소비 — server 추가 0건.** `adminGetCircuitBreakerState`(PAY-S3) + `adminGetAuditLogs`(action 필터, Prisma 정확매칭) 재활용. BFF 프록시 경유 (`/api/admin/*`). 단일 객체 응답(states 없음) catchall 방어.
+- **한계 (server 위임)** — permanent_failed / reconciliation mismatch는 AuditLog '누적' total만 노출 (시간범위/미해결 필터 endpoint 부재 → "누적" 라벨 명시). 운영 경보 정밀화는 server 영역.
+- **시각** — 플랫폼 admin neutral-* 스코프 (사슴악마 직접 대상 아님). 경보 배너 `bg-red-900/30 border-red-800`(CircuitBreakerPanel error 패턴), OPEN/정상 배지 `bg-red-900/50`·`bg-green-900/50`(AccessLogsTab `ACTION_COLORS` 패턴), 카운트 강조 `bg-yellow-900/50`. **새 시각 정본 신설 0건** — AccessLogsTab + CircuitBreakerPanel 패턴 차용. admin neutral 스코프라 DESIGN.md(작가공간 시각 정본) 미반영이 적절.
+- 검증: vitest — 신규 `PaymentInfraAlertBadge.test.tsx` (7 it: 정상/Circuit OPEN/permanent_failed count/mismatch count/audit action 정확매칭 인자/단일객체 catchall/API 실패 fallback). tsc --noEmit 0 errors / eslint 0 / Next.js build PASS. VCK PASS (neutral 스코프, 기존 패턴 차용, 새 정본 0).
+
 ## [Unreleased] - 2026-05-22
 
 ### Added — CC-5 web 구독 페이지 노출 (준비중 모드) (sprint-cc5-web-subscription)

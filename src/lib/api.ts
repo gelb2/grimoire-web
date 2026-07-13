@@ -1,5 +1,5 @@
 import type {
-  AuthResponse, AuthUser, Theme, GiftedAuthor, WorkStats, Product,
+  AuthResponse, AuthUser, Theme, GiftedAuthor, WorkStats, Product, CreditLogEntry,
   AnalysisResult, IndexStatus, AnalysisReport, AnalysisReportSummary,
 } from "@/types/api"
 import { BaseApiClient, getApiBaseUrl } from "./api/client"
@@ -61,6 +61,45 @@ class ApiClient extends BaseApiClient {
   }
 
   /**
+   * 비밀번호 변경 (F-19, 로그인 상태) — server `POST /auth/change-password` (JwtAuthGuard, 시간당 5회).
+   * body `{ currentPassword, newPassword }`. server 가 현재 비밀번호 검증 후 갱신(신 6자 이상).
+   * 실패 시 ApiError(message) — "현재 비밀번호가 일치하지 않습니다" 등 사유를 그대로 노출.
+   */
+  async changePassword(currentPassword: string, newPassword: string) {
+    return this.fetch<{ success: boolean }>('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    })
+  }
+
+  /**
+   * 비밀번호 초기화 요청 (F-19, 비로그인) — server `POST /auth/password/reset-request` (분당 3회).
+   *
+   * enumeration 차단 — 가입 여부와 무관하게 동일 응답 `{ issued }`. 이메일 발송은 server
+   * EMAIL_PROVIDER 종속: 기본 NullAdapter(미개통) 시 토큰만 DB 박제되고 외부 발송 0
+   * (메일이 도착하지 않음). 이메일 개통 시 즉시 실제 발송으로 전환. server 미주입 시 403.
+   */
+  async passwordResetRequest(email: string) {
+    return this.fetch<{ issued: boolean }>('/auth/password/reset-request', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    })
+  }
+
+  /**
+   * 비밀번호 초기화 토큰 검증 (F-19, 비로그인) — server `POST /auth/password/reset-confirm`.
+   *
+   * 현 단계 server 는 토큰 **검증만** 수행하고 신 비밀번호 설정은 별 sprint(발송 개통과 함께).
+   * 응답 `{ verified, email }`. 토큰은 20자 이상.
+   */
+  async passwordResetConfirm(token: string) {
+    return this.fetch<{ verified: boolean; email: string }>('/auth/password/reset-confirm', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    })
+  }
+
+  /**
    * 본인 계정 탈퇴 (USER-SOFT-DELETE sprint §5-4 정합).
    *
    * - JWT 인증 영역 (HttpOnly Cookie 자동 전송, BFF 프록시 경유)
@@ -69,10 +108,11 @@ class ApiClient extends BaseApiClient {
    * - 작품/episode 영역은 별도 archive 0건 (PAY-P3-E `works.authorId onDelete=Restrict` 정합 강제)
    * - audit log 박제 (action=`self_account_delete`)
    *
-   * @returns `{ deletedAt: string }` — soft delete 박제 시각 (ISO 8601)
+   * @returns `{ deleted: boolean; message: string }` — server AuthorController @Delete('me') 응답
    */
   async deleteMyAccount(reason?: string) {
-    return this.fetch<{ deletedAt: string }>('/auth/me', {
+    // server 실제 라우트 = AuthorController @Delete('me') → /authors/me (구 /auth/me 404)
+    return this.fetch<{ deleted: boolean; message: string }>('/authors/me', {
       method: 'DELETE',
       body: JSON.stringify({ reason: reason ?? null }),
     })
@@ -81,6 +121,18 @@ class ApiClient extends BaseApiClient {
   // 테마
   async getTheme(authorSlug: string) {
     return this.fetch<Theme>(`/themes/${authorSlug}`)
+  }
+
+  /**
+   * 작품별 테마 resolve (F-18) — 작품에 배정(슬롯)된 테마가 있으면 그 테마를,
+   * 없으면 작가 기본 테마를 반환. server GET /themes/resolve/:authorSlug?work=
+   * (get-theme.usecase.resolve). bakedCssUrl 은 절대 URL. 응답은 {...Theme, bakedCssUrl}
+   * (overrides 에 AuthorTheme 포함). work 미지정/미배정 시 작가 기본과 동일(회귀 0) —
+   * 작품 테마 없는 공간(사슴악마 등)은 렌더 불변. 서버 컴포넌트 호출 시 백엔드 직접 경유.
+   */
+  async resolveTheme<T = Theme>(authorSlug: string, workSlug?: string) {
+    const qs = workSlug ? `?work=${encodeURIComponent(workSlug)}` : ''
+    return this.fetch<T>(`/themes/resolve/${authorSlug}${qs}`)
   }
 
   async getThemeById(themeId: string) {
@@ -228,9 +280,7 @@ class ApiClient extends BaseApiClient {
     return this.fetch<Product[]>('/payments/products')
   }
 
-  async getCredits() {
-    return this.fetch<{ credits: number }>('/payments/credits')
-  }
+  // C-14: getCredits(`/payments/credits`) 제거 — 호출부 0, getPointBalance(`/credits/balance`)로 대체됨(stale)
 
   /**
    * 결제 시작 — Polar Checkout URL 반환.
@@ -303,6 +353,20 @@ class ApiClient extends BaseApiClient {
     })
   }
 
+  /**
+   * 에피소드 순서 변경 (F-20w) — server `PATCH /works/:id/episodes/reorder` (JWT + 소유권, 분당 10회).
+   *
+   * `episodeIds` 는 새 순서대로 나열한 작품 **전체** 에피소드 id (부분 재정렬 금지 — server 가
+   * 집합 일치[개수·중복·소속] 검증). 대시보드 에피소드 목록은 소유자 뷰라 전체 집합과 일치한다.
+   * 성공 시 재정렬된 에피소드 배열 반환.
+   */
+  async reorderEpisodes(workId: string, episodeIds: string[]) {
+    return this.fetch<Array<{ id: string; slug: string; title: string; orderNum: number; type?: string; status?: string }>>(
+      `/works/${workId}/episodes/reorder`,
+      { method: 'PATCH', body: JSON.stringify({ episodeIds }) },
+    )
+  }
+
   async createShareLink(workId: string, episodeId: string, expireIn: '12h' | '24h' | '48h' | 'never') {
     return this.fetch<{ sharedUrl: string; expireAt: string | null }>(`/works/${workId}/episodes/${episodeId}/share`, {
       method: 'POST',
@@ -311,7 +375,8 @@ class ApiClient extends BaseApiClient {
   }
 
   async getSharedEpisode(token: string) {
-    return this.fetch<any>(`/episodes/shared/${token}`)
+    // server 실제 라우트 = ContentController(@Controller()) @Get('shared/:token') → /shared/:token (구 /episodes/shared 404)
+    return this.fetch<any>(`/shared/${token}`)
   }
 
   // 원고 파싱 (텍스트)
@@ -463,9 +528,31 @@ class ApiClient extends BaseApiClient {
     return normalizePointBalance(raw)
   }
 
-  // 크레딧 사용 로그
-  async getCreditLogs() {
-    return this.fetch<{ id: string; type: string; amount: number; description: string; createdAt: string }[]>('/credits/logs')
+  /**
+   * 크레딧 사용 로그 (신 4 출처 원장 — reason/amount(pt, spend 음수)/source/type/balanceAfter).
+   *
+   * F-21: 기간(from/to ISO8601) + 오프셋 페이지네이션(limit/offset) 전부 optional.
+   * 무파라미터 호출 시 server 기본(최신순 100건) — 기존 동작 하위호환(회귀 0).
+   * hasMore 는 응답 length===limit 로 클라에서 추정(server 계약 = 배열 유지).
+   */
+  async getCreditLogs(params?: { from?: string; to?: string; limit?: number; offset?: number }) {
+    const qs = new URLSearchParams()
+    if (params?.from) qs.set('from', params.from)
+    if (params?.to) qs.set('to', params.to)
+    if (params?.limit != null) qs.set('limit', String(params.limit))
+    if (params?.offset != null) qs.set('offset', String(params.offset))
+    const query = qs.toString()
+    return this.fetch<CreditLogEntry[]>(`/credits/logs${query ? `?${query}` : ''}`)
+  }
+
+  /**
+   * 구독 풀 만료 예정 요약 (F-21 — brightMall #1).
+   *
+   * 활성 유료 구독의 다음 리셋일에 소멸 예정인 구독 풀 pt(현재 구독 출처 잔액).
+   * free/미구독/잔액0 시 null. 구독 풀은 이월 금지(매월 리셋)라 현재 구독 잔액 전액이 poolResetAt 에 소멸.
+   */
+  async getExpiring() {
+    return this.fetch<{ expiringAmount: number; expiresAt: string } | null>('/credits/expiring')
   }
 
   // AI 분석
@@ -807,9 +894,21 @@ class ApiClient extends BaseApiClient {
     })
   }
 
-  /** 멤버십 등급/풀 조회 (CC-5) — env 미설정 시에도 정상 응답 (DB 조회만). */
+  /**
+   * 멤버십 등급/풀 조회 (F-22 / CC-5) — server MembershipResponseDto 정합.
+   *
+   * env 미설정 시에도 정상 응답(DB 조회만). free 는 monthlyPoolPoints=0 / poolResetAt=null.
+   * (구 `{ monthlyPool, used }` 타입은 server DTO와 불일치 stale 였음 — F-22 에서 정합화.)
+   */
   async getMembership() {
-    return this.fetch<{ tier: 'free' | 'pro' | 'premium'; monthlyPool: number; used: number; expiresAt?: string }>('/membership')
+    return this.fetch<{
+      tier: 'free' | 'pro' | 'premium'
+      monthlyPoolPoints: number
+      poolBalance: number
+      poolResetAt: string | null
+      status: 'active' | 'expired' | 'cancelled'
+      expiresAt: string | null
+    }>('/membership')
   }
 }
 

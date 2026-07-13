@@ -46,11 +46,12 @@
 
 | Method | Path | 용도 | 인증 |
 |--------|------|------|------|
-| POST | `/api/auth/register` | 이메일 회원가입 (JWT 발급, 3크레딧 보너스) | - |
-| POST | `/api/auth/login` | 로그인 (JWT 발급) | - |
+| POST | `/api/auth/register` | 이메일 회원가입 (JWT httpOnly 쿠키 발급, 3,000pt 가입 보너스) | - |
+| POST | `/api/auth/login` | 로그인 (JWT httpOnly 쿠키 발급 — email 또는 slug 로그인) | - |
 | GET | `/api/auth/profile` | 내 프로필 조회 | JWT |
-| POST | `/api/auth/google` | Google OAuth 로그인 | - |
-| POST | `/api/auth/logout` | 로그아웃 (쿠키 삭제) | JWT |
+| POST | `/api/auth/google` | Google OAuth 로그인 (JWT httpOnly 쿠키 발급) | - |
+| POST | `/api/auth/refresh` | 액세스 토큰 갱신 (refresh 쿠키 rotation, 쿠키 없으면 403) | - (refresh 쿠키), @Throttle 30/분 |
+| POST | `/api/auth/logout` | 로그아웃 (refresh 토큰 폐기 + 쿠키 삭제) | - (쿠키 기반, 액세스 토큰 불요) |
 | POST | `/api/auth/change-password` | 비밀번호 변경 | JWT |
 | POST | `/api/auth/email/verify-request` | 이메일 인증 토큰 발급 + 발송 (EMAIL-POLAR-READY Phase C) | JWT, @Throttle 3/분 |
 | POST | `/api/auth/email/verify-confirm` | 이메일 인증 토큰 검증 (본인 토큰만) | JWT, @Throttle 10/분 |
@@ -92,13 +93,13 @@
 | Method | Path | 용도 | 인증 |
 |--------|------|------|------|
 | GET | `/api/plan` | 내 플랜 정보 조회 | JWT |
-| POST | `/api/admin/authors/:authorId/plan` | 작가 플랜 수동 설정 (관리자) | JWT, Admin |
+| PATCH | `/api/admin/authors/:authorId/plan` | 작가 플랜 수동 설정 (관리자) — Admin 섹션 `PATCH /api/admin/authors/:id/plan` 과 동일 | JWT, Admin |
 
 ### Manuscript
 
 | Method | Path | 용도 | 인증 |
 |--------|------|------|------|
-| POST | `/api/manuscripts/parse` | 원고 파싱 (md/txt/docx/html → Block[]) | - |
+| POST | `/api/manuscripts/parse` | 원고 MD 파싱 (mdText → Block[], DB 저장 없음) | JWT |
 | POST | `/api/manuscripts/upload` | 파일 업로드 파싱 (multipart) | JWT |
 
 ### Work Management
@@ -109,11 +110,13 @@
 | PATCH | `/api/works/:id` | 작품 수정 | JWT |
 | DELETE | `/api/works/:id` | 작품 삭제 | JWT |
 | POST | `/api/works/:workId/episodes` | 에피소드 생성 | JWT |
+| PATCH | `/api/works/:id/episodes/reorder` | **F-20** 에피소드 순서 변경 — body `{episodeIds}` (새 순서대로 작품 전체 에피소드 id). 소유권 + 집합 일치(개수/중복/소속) 검증 후 `$transaction` 원자 재부여 | JWT |
 | DELETE | `/api/episodes/:id` | 에피소드 삭제 | JWT |
 | PUT | `/api/works/:id/cover` | 커버 이미지 업로드 | JWT |
 | PATCH | `/api/works/:workId/episodes/:episodeId/status` | 에피소드 상태 변경 | JWT |
 | POST | `/api/works/:workId/episodes/:episodeId/share` | 공유 링크 생성 | JWT |
 | PATCH | `/api/episodes/:episodeId/reupload` | 에피소드 재업로드 (파일 교체) | JWT |
+| GET | `/api/episodes/:episodeId/raw` | 작가 본인 에피소드 rawMd 조회 (인라인 본문 편집용, 소유권 검증) | JWT |
 
 ### Author (공개)
 
@@ -251,7 +254,8 @@ HTTP 미노출. NestJS `@Cron('0 0 4 * * *')` 매일 새벽 4시 1회 — PAY-P0
 | POST | `/api/credits/gift` | 응원 선물 (독자 → 작가) — body `{receiverId, amount}` `amount` **단위 pt** (1,000/3,000/5,000pt 3단계, CC-2b §6 결정) | JWT |
 | GET | `/api/credits/ranking` | 응원받는 작가 랭킹 — **CC-3 (HIGH-3) 재작성**: `CreditLedger source='gift', type='earn'` groupBy. 반환 `{authorId, totalGifted}[]` (구 `CreditLog reason='gift_received'` 집계 폐기 — CC-2b 신 선물 정합) | - |
 | GET | `/api/credits/balance` | 4 출처 포인트 잔액 (`CreditBalance` — bySource/total/deficit/available). **CC-3 (CRITICAL-1) lazy 안전망 진입점** — 호출 시 `MembershipPlanPort.checkAndResetExpiredPool` 자동 실행 (poolResetAt 만료 시 풀 리셋). cron 실패 백업 — 이월 금지 코드 강제 | JWT |
-| GET | `/api/credits/logs` | 크레딧 로그 조회 — **CC-3 (HIGH-3) 응답 형태 변경**: `CreditLog[]` → `CreditLedgerEntry[]` (source/type/amount/balanceAfter/expiresAt/relatedId/reason/createdAt). 4 출처 분리 + 만료 + relatedId 까지 노출 | JWT |
+| GET | `/api/credits/logs` | 크레딧 로그 조회 — 응답 `CreditLedgerEntry[]` (source/type/amount/balanceAfter/expiresAt/relatedId/reason/createdAt). **F-21** 쿼리 `?from=ISO8601&to=ISO8601&limit=1..100&offset=0..` (기간 필터 + 오프셋 페이지네이션, 전부 optional — 무파라미터 시 최신순 100건 하위호환). 응답은 배열 유지(web 계약 미파손, hasMore 는 `length===limit` 로 클라 추정) | JWT |
+| GET | `/api/credits/expiring` | **F-21** (brightMall #1) 구독 풀 만료 예정 요약 — 활성 유료 구독의 다음 리셋일 소멸 예정 pt. 응답 `{ expiringAmount, expiresAt } \| null`(free/미구독/잔액0 시 null). 구독 풀은 이월 금지(매월 리셋)라 현재 구독 잔액 전액이 poolResetAt 에 소멸 | JWT |
 
 ### Stats
 
@@ -293,6 +297,18 @@ HTTP 미노출. NestJS `@Cron('0 0 4 * * *')` 매일 새벽 4시 1회 — PAY-P0
 | PATCH | `/api/admin/settings/:key` | 시스템 설정 변경 | JWT, admin |
 | GET | `/api/admin/access-logs` | 접근 로그 조회 | JWT, admin |
 | GET | `/api/admin/audit-logs` | 감사 로그 조회 | JWT, admin |
+| GET | `/api/admin/stats/timeseries` | 시계열 통계 (`?metric=&days=30`) | JWT, admin |
+| GET | `/api/admin/announcements` | 공지사항 목록 (`?page=`) | JWT, admin |
+| POST | `/api/admin/announcements` | 공지사항 생성 (`{title, content, isPinned?, target?}`) | JWT, admin |
+| DELETE | `/api/admin/announcements/:id` | 공지사항 삭제 | JWT, admin |
+| GET | `/api/admin/featured` | 추천 작품 목록 (`?section=`) | JWT, admin |
+| POST | `/api/admin/featured` | 추천 작품 등록 (`{workId, section?, position?}`) | JWT, admin |
+| DELETE | `/api/admin/featured/:id` | 추천 작품 해제 | JWT, admin |
+| GET | `/api/admin/revenue` | 수익 요약 대시보드 | JWT, admin |
+| GET | `/api/admin/themes` | 시스템 테마 프리셋 목록 | JWT, admin |
+| POST | `/api/admin/themes` | 시스템 테마 프리셋 생성 (`{name, preset, overrides}`) | JWT, admin |
+| PATCH | `/api/admin/themes/:themeId` | 시스템 테마 프리셋 수정 (`{name?, overrides?}`) | JWT, admin |
+| DELETE | `/api/admin/themes/:themeId` | 시스템 테마 프리셋 삭제 | JWT, admin |
 | GET | `/api/admin/circuit-breaker/state` | Circuit Breaker 상태 조회 (PAY-S3, 2026-05-23) — 2 호출점(`polar:checkouts:create`/`polar:checkouts:list`) state + 메트릭 + policy 4 env값. `?key=` 미지정 시 전체, 지정 시 단일. @Throttle 분당 60. 응답에 내부 ID 노출 0 | JWT, admin |
 | POST | `/api/admin/circuit-breaker/reset` | Circuit Breaker 수동 복구 (PAY-S3) — body `{key, reason}` (reason 필수, key 화이트리스트 검증). AuditLog `circuit_breaker.manual_reset` 박제(operator_id + reason + beforeState/afterState). @Throttle 분당 5 | JWT, admin |
 | POST | `/api/admin/circuit-breaker/trip` | Circuit Breaker 수동 차단 (PAY-S3) — body `{key, reason}`. 결제 즉시 503 변환. AuditLog `circuit_breaker.manual_trip` 박제. @Throttle 분당 5. ⚠️ 파괴적 액션 (사고 대응·연습 전용) | JWT, admin |
@@ -336,9 +352,10 @@ Request:
 
 Response 201:
 {
-  "user": { "id": "uuid", "slug": "author-slug", "name": "작가명", "email": "...", "credits": 3000 },
-  "token": "jwt-token"
+  "user": { "id": "uuid", "slug": "author-slug", "name": "작가명", "email": "...", "credits": 3000 }
 }
+Set-Cookie: grimoire_token (HttpOnly) + grimoire_refresh (HttpOnly)
+  // JWT 는 응답 body 가 아닌 httpOnly 쿠키로 발급 (SECURITY — localStorage 저장 금지 정책)
 
 Error 400: 유효성 검증 실패
 Error 409: 이메일/슬러그 중복
@@ -357,12 +374,15 @@ Request:
 
 Response 200:
 {
-  "user": { "id": "uuid", "slug": "author-slug", "name": "작가명", "email": "...", "credits": 5000 },
-  "token": "jwt-token"
+  "user": { "id": "uuid", "slug": "author-slug", "name": "작가명", "email": "...", "credits": 5000 }
 }
+Set-Cookie: grimoire_token (HttpOnly) + grimoire_refresh (HttpOnly)
 
 Error 401: 이메일/비밀번호 불일치
+Error 403: 계정 정지 (활성 제재 존재)
 ```
+
+> 로그인 식별자는 `email` 또는 `slug` 중 하나 (`{ email?, slug?, password }`). JWT 는 body 가 아닌 httpOnly 쿠키(`grimoire_token` 액세스 + `grimoire_refresh` 리프레시)로 발급된다.
 
 ### GET /api/auth/profile
 
@@ -383,9 +403,24 @@ Request:
 
 Response 200:
 {
-  "user": { "id": "uuid", "slug": "...", "name": "...", "email": "...", "credits": 5000 },
-  "token": "jwt-token"
+  "user": { "id": "uuid", "slug": "...", "name": "...", "email": "...", "credits": 5000 }
 }
+Set-Cookie: grimoire_token (HttpOnly) + grimoire_refresh (HttpOnly)
+```
+
+### POST /api/auth/refresh
+
+refresh 쿠키(`grimoire_refresh`)로 액세스 토큰을 재발급하고 refresh 토큰을 rotation 한다.
+JwtAuthGuard 없음 — 만료된 액세스 토큰 상태에서 갱신하는 것이 목적이라 refresh 쿠키만 신뢰한다.
+
+```
+Request: (body 없음 — refresh 토큰은 httpOnly 쿠키에서 읽음)
+
+Response 200:
+{ "user": { "id", "slug", "name", "email", "credits" } }
+Set-Cookie: grimoire_token (HttpOnly, 재발급) + grimoire_refresh (HttpOnly, rotation)
+
+Error 403: refresh 쿠키 없음 ("리프레시 토큰이 없습니다") / 무효·만료·폐기된 토큰
 ```
 
 ### POST /api/themes/generate
@@ -515,13 +550,24 @@ Error 409: 슬러그 중복
 
 ```
 Headers: Authorization: Bearer <token>
-Request:
-{ "title": "수정된 제목", "subtitle": "수정된 부제" }
+Request (모든 필드 optional):
+{
+  "title": "수정된 제목",
+  "subtitle": "수정된 부제",
+  "description": "설명",
+  "context": "프로젝트 메모리 (세계관/캐릭터 — AI 채팅 시 주입, ≤20000자)",   // F-5
+  "instructions": "작품 지침 (문체/톤 — AI 채팅 시 주입, ≤5000자)"          // F-5
+}
 
 Response 200: Work
+Error 400: 유효성 (context>20000자 / instructions>5000자 등)
 Error 403: 본인 작품 아님
 Error 404: 작품 없음
 ```
+
+> F-5 (2026-07-11): `context`/`instructions` 는 채팅 시스템 프롬프트 주입원. 명백한 AI 사과문
+> 패턴(사과 표현 + AI 자기지칭 동시)은 **차단하지 않고** 서버 warn + AuditLog 로 관찰만 한다
+> (`work_context_ai_apology_suspected` — 원문 비로깅, field/length 만 박제).
 
 ### DELETE /api/works/:id
 
@@ -539,6 +585,21 @@ Request:
 { "title": "에피소드 제목", "slug": "ep-slug", "blocks": Block[], "rawMd": "..." }
 
 Response 201: Episode
+```
+
+### PATCH /api/works/:id/episodes/reorder
+
+에피소드 순서 변경 (F-20 — 기획 §13, 작가 전용). `episodeIds` 는 **새 순서대로** 나열한 해당 작품의 **전체** 에피소드 id 배열. 소유권(work.authorId === JWT sub) 검증 후 집합 일치(개수 일치 · 중복 불가 · 전원 소속)를 강제하고, `$transaction` 으로 `orderNum` 을 배열 순서대로 원자 재부여한다. orderNum 은 unique 제약이 없어(논유니크 인덱스) 임시 오프셋 없이 직접 재부여한다.
+
+```
+Headers: Authorization: Bearer <token>
+Request:
+{ "episodeIds": ["ep-3", "ep-1", "ep-2"] }
+
+Response 200: EpisodeSummary[]   // orderNum 오름차순 (목록 조회와 동일 정렬)
+Error 400: 빈 배열 / 중복 id / 작품 전체 에피소드와 집합 불일치(개수·미소속)
+Error 403: 본인 작품 아님
+Error 404: 작품 없음
 ```
 
 ### DELETE /api/episodes/:id
@@ -786,27 +847,32 @@ Response 200: [{ "id", "name", "points", "bonusRate", "price", "pricePerPoint" }
 PG (Polar 등) 웹훅 콜백 — 서명 검증 + 멱등성 게이트 + 원자적 크레딧 부여.
 
 **Headers (Polar Standard Webhooks)**:
-- `webhook-id`: PG 발급 unique 이벤트 ID (멱등성 키, 누락 시 거부)
+- `webhook-id`: PG 발급 unique 이벤트 ID (멱등성 키, 누락 시 **400**)
 - `webhook-timestamp`: Unix timestamp
 - `webhook-signature`: HMAC
 
 **Request (raw body)**: PG 원본 이벤트 JSON (Polar SDK가 검증/파싱)
 
-**Response 200 — 처리 결과 reason 박제** (Sprint PAY-P0-1, 2026-05-03 / PAY-P1-1, 2026-05-03):
+**Error 400 — 무효 웹훅 (F-13, 2026-07-11)**: 서명검증 실패 / 파싱 불가 / `webhook-id` 헤더 누락 시
+`BadRequestException`(400). 구 구현은 이 경우도 201(silent ack)을 반환해 Polar 가 "전달 성공"으로
+간주 → 재전송 중단(실패 마스킹). 400 으로 실패를 surface(Polar 재전송 의미론 정합). 처리 로직
+(R1/R2/R1-notify)은 미접촉.
+
+**Response 2xx — 처리 결과 reason 박제** (Sprint PAY-P0-1, 2026-05-03 / PAY-P1-1, 2026-05-03):
 ```
 { "processed": true,  "credits": <N> }                                          // 정상 결제 — 크레딧 부여 (event.status='success')
 { "processed": true,  "credits": 0, "deficitCredits": 0 }                       // 정상 환불 — 환수 완료 (PAY-P1-1, event.status='cancel', Author.credits >= credits)
 { "processed": true,  "credits": 0, "deficitCredits": <N> }                     // deficit 환불 — 잔액 부족 (PAY-P1-1, Author.credits < credits, 0 fix + deficit 박제)
 { "processed": true,  "credits": 0 }                                            // 결제 실패 (event.status='fail', 환수 대상 아님)
-{ "processed": false, "reason": "invalid_or_ignored" }                          // 서명 검증 실패 또는 webhook-id 헤더 누락
+{ "processed": false, "reason": "ignored" }                                     // F-13 — 정상이나 처리 대상 아닌 이벤트(알 수 없는 type/미매핑 구독 등) 무시 (2xx ack, 무효 서명은 400)
 { "processed": false, "reason": "duplicate_event" }                             // 동일 eventId 재전송 — 첫 호출만 처리, 두 번째 즉시 skip
 { "processed": false, "reason": "unknown_trade" }                               // tradeNo 매칭 실패
-{ "processed": false, "reason": "already_completed" }                           // 약식 멱등성 (이전 webhook 박제 누락된 PROD 데이터 안전망)
+{ "processed": false, "reason": "already_completed" }                           // 멱등성 — (a) 약식 게이트(이전 webhook 박제 누락 PROD 안전망) 또는 (b) 충전 success 동시성 패자(status CAS count=0, R1-notify 2026-06-28). 둘 다 알림·적립 0건.
 ```
 
 **멱등성 보장**: 동일 `webhook-id`로 두 번째 호출이 들어와도 `completePaymentWithPoints` / `refundPaymentAtomically`는 단 1회만 실행. DB `webhook_events.event_id` UNIQUE 제약으로 race condition 차단 (P2002 → safe skip).
 
-**충전 적립 (CC-2a, 2026-05-20)**: `event.status='success'` 분기에서 `PaymentRepositoryPort.completePaymentWithPoints` 호출. 단일 `$transaction`으로 Payment.status='completed' + deficit(외상) 우선 상계(`CreditLedger` type='deficit_settle') + 남은 충전액 적립(`CreditLedger` source='charged' type='earn') + `Author.pointsCharged`/`deficitPoints` 캐시 갱신. 충전 시 외상이 먼저 상계되어 채팅 차단(`deficitPoints` 상한)이 해제된다. 응답 `credits` 필드 = 충전 총 pt.
+**충전 적립 (CC-2a, 2026-05-20)**: `event.status='success'` 분기에서 `PaymentRepositoryPort.completePaymentWithPoints` 호출. 단일 `$transaction`으로 Payment.status='completed' + deficit(외상) 우선 상계(`CreditLedger` type='deficit_settle') + 남은 충전액 적립(`CreditLedger` source='charged' type='earn') + `Author.pointsCharged`/`deficitPoints` 캐시 갱신. 충전 시 외상이 먼저 상계되어 채팅 차단(`deficitPoints` 상한)이 해제된다. 응답 `credits` 필드 = 충전 총 pt. **동시성 패자(R1-notify, 2026-06-28)**: 서로 다른 Polar 이벤트(order.paid/order.updated/checkout.updated)가 eventId 가 달라 멱등 게이트를 둘 다 통과해도 status CAS(`updateMany WHERE status='pending'`)가 적립 이중화를 차단(승자 1건만 적립). 패자는 `completePaymentWithPoints` 가 `alreadyCompleted:true` 멱등 no-op 반환 → 호출처가 성공 알림(`notifyChargeSuccess`)·`payment_completed` AuditLog 를 skip 하고 `{processed:false, reason:'already_completed'}` 응답(약식 게이트와 동일 멱등 의미).
 
 **환불 처리 (PAY-P1-1, 2026-05-03)**: `event.status='cancel'` 분기에서 `RefundPaymentUseCase.execute` 호출. $transaction 내부에서 Payment.status='refunded' + Author.credits decrement(0 fix) + CreditLog 음수 amount + RefundLog 박제. 후행으로 AdminAuditLog(operator='system_refund', action='refund_normal' | 'refund_deficit'). 잔액 부족 시 deficitCredits 양수 응답으로 운영자 추적 가능.
 

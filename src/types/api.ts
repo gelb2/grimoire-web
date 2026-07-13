@@ -126,9 +126,32 @@ export interface WorkStats {
 export interface Product {
   id: string
   name: string
-  credits: number
+  /** 총 충전 포인트 (기본 + 보너스, pt 단위) — server `getProducts` 정본. */
+  points: number
+  /** 보너스율 (0 ~ 0.15). */
+  bonusRate: number
+  /** 충전액 (원화 KRW). */
   price: number
-  pricePerCredit: number
+  /** pt 당 충전 단가 (원화) — server `Number((price/points).toFixed(5))`. */
+  pricePerPoint: number
+}
+
+/**
+ * 크레딧 원장 항목 — server `GET /credits/logs` 응답 (CreditLedgerEntry 미러).
+ *
+ * CC-4 이후 신 4 출처 모델. `amount` 는 pt 단위 (spend 는 음수). `reason` 은 사유 (구 `description` 아님).
+ * 정본: grimoire-server `domain/port/outbound/credit-ledger.port.ts` CreditLedgerEntry.
+ */
+export interface CreditLogEntry {
+  id: string
+  source: string
+  type: 'earn' | 'spend'
+  amount: number
+  balanceAfter: number
+  reason: string
+  relatedId: string | null
+  createdAt: string
+  expiresAt: string | null
 }
 
 export interface AnalysisResult {

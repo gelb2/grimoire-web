@@ -39,10 +39,10 @@
 > localhost는 GCP 리소스를 사용하지 않는다. Docker Compose로 로컬 DB를 띄운다.
 > 상세 인프라 구성: `INFRASTRUCTURE.md` 참조.
 
-## Azure 잔존 (Phase 7 정리 대기)
+## Azure decommission (2026-06-04 완료)
 
-> 모든 Azure 리소스는 사용 중지 상태이나 미삭제. Phase 7 정리 sprint 후 삭제 예정.
-> 잔존 영역 상세: `INFRASTRUCTURE.md §12` 참조 — Container Apps × 4 / Postgres × 2 / ACR / Blob / Log Analytics + `azure-storage-account-key-*` Secret.
+> Azure는 2026-06-04 `zenith-rg` 전체 삭제로 완전 decommission 완료. 현역 인프라는 **GCP 단독**.
+> 삭제 이력 상세: `INFRASTRUCTURE.md §12` 참조 (구 Container Apps × 4 / Postgres × 2 / ACR / Blob / Log Analytics → GCP 대체).
 
 ## 환경변수
 
@@ -67,10 +67,13 @@ ANTHROPIC_API_KEY=sk-ant-...
 GOOGLE_CLIENT_ID=...
 OPENAI_API_KEY=...
 # Polar 결제
-POLAR_ACCESS_TOKEN=polar_oat_...
+#   F-12 (2026-07-11): POLAR_ACCESS_TOKEN / POLAR_WEBHOOK_SECRET 는 **production 필수**
+#   (validateEnv 가 prod 부팅 시 미설정이면 process.exit(1)). dev/localhost 는 관대(경고만).
+#   구 PAYAPP_* 검증은 제거됨(PayappAdapter 폐기 — 실사용 게이트웨이는 Polar).
+POLAR_ACCESS_TOKEN=polar_oat_...   # production 필수 (F-12)
 POLAR_SERVER=production
 POLAR_ORGANIZATION_ID=...
-POLAR_WEBHOOK_SECRET=polar_whs_...
+POLAR_WEBHOOK_SECRET=polar_whs_... # production 필수 (F-12)
 # 충전 패키지 4종 (CC-2a 디노미 — CREDIT_PRODUCTS) — 각 Polar Product UUID
 POLAR_PRODUCT_STARTER=...   # 입문 ₩3,000 / $2.99 (CC-2a 신설 — Polar Dashboard 상품 등록 필요)
 POLAR_PRODUCT_BASIC=...     # 기본 ₩5,000 / $4.99
@@ -97,9 +100,9 @@ EMAIL_FROM_ADDRESS=noreply@grimoire-book.com   # 발신자 주소 (기본값)
 #   미설정 시 빈 문자열 폴백 (개발용). prod에서는 반드시 실값 + Secret Manager 권장.
 EMAIL_TOKEN_PEPPER=             # 권장: openssl rand -base64 32
 
-# Azure Blob Storage (없으면 업로드 비활성화, API 폴백)
-AZURE_STORAGE_ACCOUNT_NAME=grimoire0storage
-AZURE_STORAGE_ACCOUNT_KEY=...
+# 커버/테마 CSS 업로드 = GCS (BlobStoragePort → GcsStorageService)
+GCS_BUCKET=grimoire-blob-{env}
+# (구 AZURE_STORAGE_* 는 2026-06-04 Azure decommission + 2026-06-10 dead env 제거로 폐기)
 ```
 
 ### grimoire-web
@@ -118,4 +121,4 @@ API_URL={환경별 API URL}/api
 | CORS_ORIGIN | http://localhost:3001 | https://dev.grimoire-book.com | https://grimoire-book.com |
 | API_URL | http://localhost:3000/api | https://dev-api.grimoire-book.com/api | https://api.grimoire-book.com/api |
 | PUBLIC_API_BASE_URL | http://localhost:3000/api | https://dev-api.grimoire-book.com/api | https://api.grimoire-book.com/api |
-| DATABASE_URL | postgresql://grimoireadmin:...@localhost:5432/grimoire | Azure dev DB | Azure prod DB |
+| DATABASE_URL | postgresql://grimoireadmin:...@localhost:5432/grimoire | Cloud SQL dev (Auth Proxy socket) | Cloud SQL prod (Auth Proxy socket) |

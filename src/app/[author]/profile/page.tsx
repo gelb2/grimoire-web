@@ -11,6 +11,7 @@ import { useAuth } from '@/features/auth/AuthProvider'
 import { useTheme } from '@/features/theme'
 import { WorkCard } from '@/components/WorkCard'
 import { useThrottledAction } from '@/hooks/useThrottle'
+import { GIFT_POINT_OPTIONS, formatPoints } from '@/features/credits'
 
 interface WorkWithStats {
   id: string
@@ -190,13 +191,13 @@ export default function AuthorProfilePage() {
                 </button>
                 {showGift && (
                   <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-g-bg2 border border-g-border rounded-xl p-3 shadow-lg z-10 min-w-[160px]">
-                    <p className="text-xs text-g-text-muted text-center mb-2">크레딧 선물</p>
+                    <p className="text-xs text-g-text-muted text-center mb-2">포인트 선물</p>
                     <div className="flex gap-2 justify-center">
-                      {[1, 3, 5].map(amount => (
+                      {GIFT_POINT_OPTIONS.map(amount => (
                         <button key={amount} onClick={async () => {
                           try {
                             await api.giftCredits(authorSlug, amount)
-                            setGiftMsg(`${amount} 크레딧을 선물했습니다!`)
+                            setGiftMsg(`${formatPoints(amount)}pt를 응원했습니다!`)
                             setShowGift(false)
                             setTimeout(() => setGiftMsg(''), 3000)
                             // 본인 크레딧 차감분 네비바 동기화
@@ -204,7 +205,7 @@ export default function AuthorProfilePage() {
                           } catch { setGiftMsg('선물 실패 (로그인 필요)'); setTimeout(() => setGiftMsg(''), 3000) }
                         }}
                           className="px-3 py-1.5 bg-g-accent/20 text-g-accent text-sm rounded-lg hover:bg-g-accent/30 transition">
-                          {amount}
+                          {formatPoints(amount)}pt
                         </button>
                       ))}
                     </div>

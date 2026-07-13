@@ -50,7 +50,7 @@ const mockUser = {
   plan: 'free',
 }
 
-describe('CreditsTab — 운영자 수동 크레딧 지급/차감 UI', () => {
+describe('CreditsTab — 운영자 수동 포인트 지급/차감 UI', () => {
   let confirmSpy: ReturnType<typeof vi.spyOn>
 
   beforeEach(() => {
@@ -96,7 +96,7 @@ describe('CreditsTab — 운영자 수동 크레딧 지급/차감 UI', () => {
     expect(screen.getByText('gildong@example.com')).toBeTruthy()
     // 잔액 100 박제 (검색 결과 카드)
     const balanceMatches = screen.getAllByText((_content, el) =>
-      el?.textContent?.includes('100') === true && el?.textContent?.includes('크레딧') === true
+      el?.textContent?.includes('100') === true && el?.textContent?.includes('포인트') === true
     )
     expect(balanceMatches.length).toBeGreaterThan(0)
   })
@@ -117,7 +117,7 @@ describe('CreditsTab — 운영자 수동 크레딧 지급/차감 UI', () => {
     // "선택된 사용자" 카드 박제
     expect(await screen.findByText(/선택된 사용자/)).toBeTruthy()
     // 폼 입력 표시
-    const amountInput = screen.getByPlaceholderText(/크레딧 수량/)
+    const amountInput = screen.getByPlaceholderText(/포인트 수량/)
     const reasonInput = screen.getByPlaceholderText(/사유/)
     expect(amountInput).toBeTruthy()
     expect(reasonInput).toBeTruthy()
@@ -144,7 +144,7 @@ describe('CreditsTab — 운영자 수동 크레딧 지급/차감 UI', () => {
     await screen.findByText('홍길동')
     fireEvent.click(screen.getByRole('button', { name: /선택/ }))
 
-    fireEvent.change(screen.getByPlaceholderText(/크레딧 수량/), { target: { value: '0' } })
+    fireEvent.change(screen.getByPlaceholderText(/포인트 수량/), { target: { value: '0' } })
     fireEvent.change(screen.getByPlaceholderText(/사유/), { target: { value: '테스트' } })
 
     const grantBtn = screen.getByRole('button', { name: /^지급$/ })
@@ -165,7 +165,7 @@ describe('CreditsTab — 운영자 수동 크레딧 지급/차감 UI', () => {
     await screen.findByText('홍길동')
     fireEvent.click(screen.getByRole('button', { name: /선택/ }))
 
-    fireEvent.change(screen.getByPlaceholderText(/크레딧 수량/), { target: { value: '50' } })
+    fireEvent.change(screen.getByPlaceholderText(/포인트 수량/), { target: { value: '50' } })
     fireEvent.change(screen.getByPlaceholderText(/사유/), { target: { value: '이벤트 보상' } })
 
     const grantBtn = screen.getByRole('button', { name: /^지급$/ })
@@ -225,7 +225,7 @@ describe('CreditsTab — 운영자 수동 크레딧 지급/차감 UI', () => {
     await screen.findByText('홍길동')
     fireEvent.click(screen.getByRole('button', { name: /선택/ }))
 
-    fireEvent.change(screen.getByPlaceholderText(/크레딧 수량/), { target: { value: '-30' } })
+    fireEvent.change(screen.getByPlaceholderText(/포인트 수량/), { target: { value: '-30' } })
     fireEvent.change(screen.getByPlaceholderText(/사유/), { target: { value: '오지급 회수' } })
 
     fireEvent.click(screen.getByRole('button', { name: /^차감$/ }))
@@ -255,7 +255,7 @@ describe('CreditsTab — 운영자 수동 크레딧 지급/차감 UI', () => {
     await screen.findByText('홍길동')
     fireEvent.click(screen.getByRole('button', { name: /선택/ }))
 
-    fireEvent.change(screen.getByPlaceholderText(/크레딧 수량/), { target: { value: '50' } })
+    fireEvent.change(screen.getByPlaceholderText(/포인트 수량/), { target: { value: '50' } })
     fireEvent.change(screen.getByPlaceholderText(/사유/), { target: { value: '테스트' } })
     fireEvent.click(screen.getByRole('button', { name: /^지급$/ }))
 
@@ -279,7 +279,7 @@ describe('CreditsTab — 운영자 수동 크레딧 지급/차감 UI', () => {
     await screen.findByText('홍길동')
     fireEvent.click(screen.getByRole('button', { name: /선택/ }))
 
-    fireEvent.change(screen.getByPlaceholderText(/크레딧 수량/), { target: { value: '50' } })
+    fireEvent.change(screen.getByPlaceholderText(/포인트 수량/), { target: { value: '50' } })
     fireEvent.change(screen.getByPlaceholderText(/사유/), { target: { value: '테스트' } })
     fireEvent.click(screen.getByRole('button', { name: /^지급$/ }))
 

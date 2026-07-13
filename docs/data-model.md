@@ -5,7 +5,9 @@
 
 ---
 
-## 테이블 (25개)
+## 테이블
+
+> 모델 총 개수는 하드코딩하지 않는다 (피라미드 규칙) — `grep -c '^model ' prisma/schema.prisma`로 확인. 본 문서는 각 테이블을 Prisma 스키마와 1:1로 기술한다.
 
 ### authors
 
@@ -47,7 +49,7 @@
 | overrides | jsonb (nullable) | - | AuthorTheme 전체 값 (독립 레코드) |
 | raw_description | text (nullable) | - | 작가 원본 구술 텍스트 |
 | baked_css_url | text (nullable) | - | Baking된 CSS 파일 URL. **항상 절대 URL(Blob CDN) 또는 NULL만 박제**. NULL이면 응답 시 server가 `${PUBLIC_API_BASE_URL}/themes/css/{slug}`로 동적 절대화하여 web에 반환 (P1-#7, 2026-05-03). 상대 경로 박제 금지 — 환경 전환 시 stale 방지 |
-| is_slotted | boolean | default(true) | 활성 슬롯 배치 여부 (true=활성, false=보관) |
+| is_slotted | boolean | default(false) | 활성 슬롯 배치 여부 (true=활성, false=보관). 신규 테마는 기본 보관(false) — 작가가 명시적으로 슬롯 활성화 |
 | source | text | default("user") | 테마 출처 ("system"=시스템 프리셋, "ai"=AI 생성, "user"=직접 편집) |
 | updated_at | timestamptz | auto-update | 수정일 |
 
@@ -116,6 +118,23 @@ PAY-P3-E archive `credit_logs_archive_pay_p3_e`(1 row, dev 영역)는 회계/감
 | provider_id | text | PK | OAuth provider ID |
 | first_signup_at | timestamptz | default(now()) | 최초 가입일 |
 | signup_count | integer | default(1) | 가입 횟수 |
+
+### refresh_tokens (2026-04-12 도입)
+
+JWT Refresh Token 저장 (Access 15분 + Refresh 7일, rotation). Author hard delete 시 즉시 무효(Cascade).
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 토큰 식별자 |
+| author_id | text | FK→authors (Cascade) | 소유 작가 |
+| token_hash | text | unique | opaque refresh token 해시 (평문 미저장) |
+| expires_at | timestamptz(3) | - | 만료 시각 (7일) |
+| revoked_at | timestamptz(3) (nullable) | - | 회수 시각 (rotation/로그아웃 시 박제, NULL=유효) |
+| ip_address | text (nullable) | - | 발급 IP |
+| user_agent | text (nullable) | - | 발급 브라우저 UA |
+| created_at | timestamptz(3) | default(now()) | 발급 시각 |
+
+인덱스: `@@index([author_id])`, `@@index([expires_at])` (만료 토큰 정리용)
 
 ### bookmarks
 
@@ -213,6 +232,31 @@ PG (Polar 등) 웹훅 재전송 시 동일 `event_id`로 두 번째 호출이 �
 - `webhook_events_event_type_processed_at_idx` (`event_type`, `processed_at`) — 최근 이벤트 조회
 
 정본: `.claude/shared-contracts.md` §11 WebhookEventIdempotency
+
+---
+
+### webhook_retry_queues (Sprint PAY-P2-2 DLQ; PAY-P2-5 retention 2026-05-11)
+
+Polar webhook 처리 실패(timeout/network/5xx/unknown) 시 재시도 대기열(DLQ). `webhook-retry.job` cron이 `next_retry_at` 도래 row를 지수 백오프로 재처리. PAY-P3-B 정책상 Polar 4xx(client 오류)는 retry 무의미 → 큐 박제 0건(즉시 `webhook_permanent_failed`).
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 큐 엔트리 식별자 |
+| event_id | text | unique | Polar `webhook-id` (멱등성 키 — `webhook_events`와 동일) |
+| payload | jsonb | - | NormalizedWebhookEvent 전체 (재처리용) |
+| retry_count | integer | default(0) | 현재까지 재시도 횟수 (MAX_RETRY 초과 시 permanent 박제) |
+| last_error | text (nullable) | - | 마지막 재시도 실패 메시지 |
+| next_retry_at | timestamptz(3) | - | 다음 재시도 예정 시각 (지수 백오프) |
+| created_at | timestamptz(3) | default(now()) | 큐 진입 시각 |
+| masked_at | timestamptz(3) (nullable) | - | **PAY-P2-5** — PII 마스킹 시각 (90일 후, NULL=원본 보존) |
+| retention_tier | text | default("active") | **PAY-P2-5** — 보존 등급 (active / masked / archived) |
+
+인덱스:
+- `webhook_retry_queues_event_id_key` UNIQUE (`event_id`) — 멱등성 중복 큐잉 차단
+- `@@index([next_retry_at])` — cron 재처리 대상 조회
+- `@@index([retention_tier, created_at])` — PAY-P2-5 retention 일괄 처리
+
+정본: `.claude/shared-contracts.md` §15 WebhookRetryQueue(DLQ) + §16 AuditRetention(PAY-P2-5)
 
 ---
 
@@ -394,6 +438,9 @@ Author ──1:N── Comment                (onDelete: SetNull — 익명화, 
 Author ──1:N── AccessLog              (onDelete: SetNull — 보안 감사 영구 보존, 익명화)
 Author ──1:N── Report (reporter/resolver) (onDelete: SetNull — 익명화)
 Author ──1:N── Subscription (sub/target) (onDelete: Cascade)
+Author ──1:N── CreditLedger           (onDelete: Restrict — 회계 원장 영구 보존, CC-1)
+Author ──1:N── MembershipPlan         (onDelete: Restrict — 구독 이력 영구 보존, CC-5)
+Author ──1:N── EmailVerificationToken (onDelete: Restrict — 감사용 영구 보존, EMAIL-POLAR-READY)
 Payment ──1:N── RefundLog              (onDelete: Restrict — 회계/세무 영구 보존)
 ChatSession ──1:N── ChatMessage       (onDelete: Cascade)
 Comment ──1:N── Comment (대댓글)      (onDelete: SetNull — 답글 보존)
@@ -404,9 +451,9 @@ WebhookRetryQueue (DLQ, FK 0건)
 ReconciliationCheckpoint (cron checkpoint, 단일 row)
 ```
 
-**FK Cascade 정책 박제 (PAY-P3-E §3-1, 2026-05-10)**:
-- 4 전략 분포: **Cascade 16건** (사용자 종속 + Work/Episode 종속) + **Restrict 8건** (회계/세무/감사 영구 보존) + **SetNull 9건** (익명화 + 운영자 변경 보존) + **NoAction 0건**
-- Restrict 7 영역 (CC-4 Phase 3 후 — `credit_logs.authorId` 폐기): `payments.authorId` / `works.authorId` / `user_sanctions.authorId` / `analysis_reports.authorId` / `admin_audit_logs.adminId` / `refund_logs.paymentId` / `subscriptions.targetAuthorId` (PAY-P3-E 박제 영역) — 회계/세무/감사 영구 보존
+**FK Cascade 정책 박제 (PAY-P3-E §3-1, 2026-05-10; 2026-06-27 코드 실측 재집계)**:
+- 4 전략 분포 (`grep -c 'onDelete: …' prisma/schema.prisma` 실측): **Cascade 16건** (사용자 종속 + Work/Episode 종속) + **Restrict 9건** (회계/세무/감사 영구 보존) + **SetNull 10건** (익명화 + 운영자 변경 보존) + **NoAction 0건**
+- Restrict 9 영역 (CC-4 Phase 3 후 `credit_logs.authorId` 폐기, CC-1·CC-5·EMAIL-POLAR-READY 신 모델 반영): `works.authorId` / `payments.authorId` / `user_sanctions.authorId` / `analysis_reports.authorId` / `admin_audit_logs.adminId` / `refund_logs.paymentId` / `credit_ledgers.authorId` / `membership_plans.authorId` / `email_verification_tokens.authorId` — 회계/세무/감사/구독 이력 영구 보존
 - 정본: `prisma/schema.prisma` + `prisma/migrations/20260510_pay_p3_e_fk_cascade_policy/migration.sql` + `ADR.md ADR-007`
 - archive 테이블 (옵션 C 강제 박제, 단계 2 dev 영역): `credit_logs_archive_pay_p3_e` (1 row) + `admin_audit_logs_archive_pay_p3_e` (2 row) — 회계/감사 영구 보존
 
@@ -471,6 +518,22 @@ ReconciliationCheckpoint (cron checkpoint, 단일 row)
 | value | text | not null | 설정 값 |
 | updated_by | text | nullable | 마지막 변경 관리자 |
 | updated_at | timestamptz | auto | 변경 시각 |
+
+### announcements
+
+플랫폼 공지사항 (관리자 작성). Author에 느슨 참조(`admin_id` text, FK 미설정 — 작성자 삭제와 독립).
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| id | uuid | PK | 공지 식별자 |
+| title | text | not null | 공지 제목 |
+| content | text | not null | 공지 본문 |
+| is_pinned | boolean | default(false) | 상단 고정 여부 |
+| target | text | default("all") | 노출 대상 (all / authors / readers) |
+| admin_id | text | not null | 작성 관리자 ID (느슨 참조) |
+| created_at | timestamptz(3) | default(now()) | 작성 시각 |
+
+인덱스: `@@index([created_at])`
 
 ### access_logs
 

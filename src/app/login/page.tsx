@@ -87,6 +87,12 @@ function LoginForm() {
           >
             {loading ? '로그인 중...' : '로그인'}
           </button>
+
+          <p className="text-center">
+            <Link href="/reset-password" className="text-sm text-neutral-500 hover:text-black hover:underline transition">
+              비밀번호를 잊으셨나요?
+            </Link>
+          </p>
         </form>
 
         <div className="mt-8">

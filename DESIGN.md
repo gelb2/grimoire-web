@@ -66,21 +66,27 @@ A24 영화 감성의 다크 판타지 소설 뷰어.
 | `mt-g-block` / `mb-g-block` | `1.8rem` | 블록 간 여백 |
 | `mt-g-paragraph` / `mb-g-paragraph` | `1.3rem` | 문단 간 여백 |
 
-### 읽기 폭 토큰
+### 읽기 폭
 
-| Tailwind 클래스 | 값 | 용도 |
-|----------------|------|------|
-| `max-w-g-landing` | `800px` | 랜딩 그리드 |
-| `max-w-g-reader` | `700px` | 에피소드/후기 뷰어 |
-| `max-w-g-reader-narrow` | `640px` | 일러두기 (학술 문서 톤) |
+> ⚠️ 2026-06-27 문서 감사: 과거 표기하던 `max-w-g-landing`/`max-w-g-reader`/`max-w-g-reader-narrow` 커스텀 토큰은
+> **코드에 존재하지 않는다(`grep` 0건)**. 실제 구현은 컴포넌트별 **표준 Tailwind 컨테이너 클래스**를 직접 사용한다.
+
+| 영역 | 실제 클래스 (실측) | 컴포넌트 |
+|------|------|----------|
+| 작가 랜딩/작품 페이지 | `max-w-6xl` / `max-w-4xl` | `AuthorSpace`, `WorkPage`, `GridLayout` |
+| 에피소드 뷰어 본문 | `max-w-prose` | `EpisodeViewer` |
+| 댓글/푸터 영역 | `max-w-2xl` | `EpisodeFooter` |
+| 매거진/미니멀 레이아웃 | `max-w-5xl` / `max-w-4xl` | `MagazineLayout`, `MinimalLayout` |
 
 ### 타이포 크기 토큰
 
-| Tailwind 클래스 | 값 | 용도 |
+| Tailwind 클래스 | 값 (fallback) | 용도 |
 |----------------|------|------|
-| `fs-label` | `10px` | 섹션 라벨, 에피소드 번호 |
-| `fs-caption` | `11px` | 캡션, 부제, 탭 |
+| `fs-label` | `0.8125rem` (≈13px) | 섹션 라벨, 에피소드 번호 |
+| `fs-caption` | `0.75rem` (≈12px) | 캡션, 부제, 탭 |
 | `text-sm` | `14px` | 각주 등 작은 본문 |
+
+> ⚠️ `fs-label`/`fs-caption` 값은 `theme.css` `@layer utilities`의 fallback(`--g-fs-label`/`--g-fs-caption`) 실측치다. ThemeProvider가 작가 테마별로 덮어쓸 수 있다.
 
 ### 자간 토큰 (흔들림 방지)
 
@@ -118,10 +124,11 @@ A24 영화 감성의 다크 판타지 소설 뷰어.
 
 ## 레이아웃
 
-- **에피소드 뷰어**: `max-w-g-reader` (700px), 중앙 정렬
-- **일러두기 뷰어**: `max-w-g-reader-narrow` (640px)
-- **랜딩 페이지**: `max-w-g-landing` (900px)
+- **에피소드 뷰어 본문**: `max-w-prose`, 중앙 정렬 (`EpisodeViewer`)
+- **작가 랜딩/작품 페이지**: `max-w-6xl` / `max-w-4xl` 중앙 정렬 (`AuthorSpace`/`WorkPage`/`GridLayout`)
 - **카드 그리드**: `grid-cols-[repeat(auto-fit,minmax(260px,1fr))]`
+
+> 읽기 폭은 커스텀 토큰이 아니라 표준 Tailwind 컨테이너 클래스 직접 사용. 상세는 위 "읽기 폭" 표 참조.
 
 ---
 
@@ -200,4 +207,4 @@ hover:border-g-accent hover:text-g-accent2 transition-all duration-200
 - ThemeProvider: `min-h-dvh` + `backgroundColor` 인라인
 - `[author]/layout.tsx`에서 `html, body { background-color: 테마색 }` 동적 적용 (safe-area 틈 방지)
 - `<meta name="theme-color">` 동적 설정 — 작가 테마 배경색과 status bar 통일
-- 에피소드 뷰어 본문: `max-w-g-reader` (700px) + `px-4 md:px-8`
+- 에피소드 뷰어 본문: `max-w-prose` + `px-4 md:px-8` (`EpisodeViewer`)

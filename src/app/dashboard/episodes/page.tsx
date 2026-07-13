@@ -35,6 +35,7 @@ export default function EpisodeManagementPage() {
   const [episodes, setEpisodes] = useState<EpisodeLite[]>([])
   const [episodesLoading, setEpisodesLoading] = useState(false)
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [reordering, setReordering] = useState(false)
 
   const [replaceTarget, setReplaceTarget] = useState<EpisodeLite | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<EpisodeLite | null>(null)
@@ -103,6 +104,28 @@ export default function EpisodeManagementPage() {
     }
   }
 
+  // F-20w — 위/아래 이동으로 순서 변경. 인접 스왑 후 작품 전체 에피소드 id 를 새 순서로 전송
+  // (server 가 집합 일치 검증 — 부분 재정렬 금지). 낙관적 반영 후 실패 시 롤백.
+  const moveEpisode = async (index: number, dir: 'up' | 'down') => {
+    if (reordering) return
+    const target = dir === 'up' ? index - 1 : index + 1
+    if (target < 0 || target >= episodes.length) return
+    const prev = episodes
+    const reordered = [...episodes]
+    ;[reordered[index], reordered[target]] = [reordered[target], reordered[index]]
+    setEpisodes(reordered)
+    setReordering(true)
+    try {
+      await api.reorderEpisodes(selectedWorkId, reordered.map(e => e.id))
+      toast.success('순서를 변경했어요.')
+    } catch (err) {
+      setEpisodes(prev)
+      toast.error(err instanceof Error ? err.message : '순서 변경에 실패했어요')
+    } finally {
+      setReordering(false)
+    }
+  }
+
   const handleDelete = async (ep: EpisodeLite) => {
     setBusyId(ep.id)
     setDeleteTarget(null)
@@ -127,7 +150,7 @@ export default function EpisodeManagementPage() {
         <Link href="/dashboard" className="text-sm text-neutral-400 hover:text-neutral-800 transition mb-6 inline-block">&larr; 대시보드</Link>
         <h1 className="text-3xl font-black text-black mb-2">원고 관리</h1>
         <p className="text-sm text-neutral-500 mb-8">
-          업로드한 회차를 파일로 덮어쓰거나 삭제할 수 있어요. 본문 수정은 <span className="text-black font-semibold">파일 교체</span>로만 진행됩니다 — 그리모어는 복붙/타이핑 편집을 지원하지 않아요.
+          업로드한 회차를 파일로 덮어쓰거나 삭제할 수 있어요. <span className="text-black font-semibold">위/아래 화살표</span>로 회차 순서도 바꿀 수 있어요. 본문 수정은 <span className="text-black font-semibold">파일 교체</span>로만 진행됩니다 — 그리모어는 복붙/타이핑 편집을 지원하지 않아요.
         </p>
 
         {/* 작품 선택 */}
@@ -163,7 +186,7 @@ export default function EpisodeManagementPage() {
           </div>
         ) : (
           <ul className="divide-y divide-neutral-200 border-y border-neutral-200">
-            {episodes.map(ep => {
+            {episodes.map((ep, index) => {
               const busy = busyId === ep.id
               const label =
                 ep.type === 'preface' ? `일러두기 · ${ep.title}` :
@@ -172,6 +195,23 @@ export default function EpisodeManagementPage() {
                 ep.orderNum != null ? `${String(ep.orderNum).padStart(2, '0')}화 · ${ep.title}` : ep.title
               return (
                 <li key={ep.id} className={`py-4 px-2 flex items-center gap-3 ${busy ? 'opacity-50' : ''}`}>
+                  {/* F-20w — 순서 변경 (위/아래 이동) */}
+                  <div className="flex flex-col leading-none text-xs">
+                    <button
+                      type="button"
+                      aria-label="위로 이동"
+                      disabled={index === 0 || busy || reordering}
+                      onClick={() => moveEpisode(index, 'up')}
+                      className="px-1 py-0.5 text-neutral-400 hover:text-black disabled:opacity-25 disabled:hover:text-neutral-400 transition"
+                    >▲</button>
+                    <button
+                      type="button"
+                      aria-label="아래로 이동"
+                      disabled={index === episodes.length - 1 || busy || reordering}
+                      onClick={() => moveEpisode(index, 'down')}
+                      className="px-1 py-0.5 text-neutral-400 hover:text-black disabled:opacity-25 disabled:hover:text-neutral-400 transition"
+                    >▼</button>
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-black truncate">{label}</p>
                     {ep.status && (
