@@ -1,29 +1,18 @@
 import type { ReactNode } from "react"
-import { EB_Garamond, Noto_Serif_KR } from "next/font/google"
+import { garamond } from "@/app/author-fonts"
 import { CardTransitionProvider } from "@/features/reader/ui/CardTransition"
 import { ThemeProvider } from "@/features/theme"
 import type { AuthorTheme } from "@/features/theme"
 import { AuthProvider } from "@/features/auth"
 import { SeriesNav } from "@/features/reader/ui/SeriesNav"
 import { resolveBakedCssUrl } from "./_helpers/baked-css-url"
+import { preloadAuthorText } from '@/lib/author-font-preload'
+import { loadPublicAuthor, loadPublicWork } from '@/lib/public-reader-data'
 
 // 완전 동적 — SSR on every request
 export const dynamic = "force-dynamic"
 
-const garamond = EB_Garamond({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  style: ["normal", "italic"],
-  variable: "--fn-garamond",
-  display: "swap",
-})
 
-const notoSerifKR = Noto_Serif_KR({
-  subsets: ["latin"],
-  weight: ["300", "400", "500"],
-  variable: "--fn-noto-serif-kr",
-  display: "swap",
-})
 
 // API에서 테마를 로드한다. 백엔드가 완전한 테마를 반환 (시스템 테마 폴백 포함).
 async function loadTheme(authorSlug: string): Promise<{ theme: AuthorTheme | null; bakedCssUrl: string | null }> {
@@ -42,7 +31,7 @@ async function loadTheme(authorSlug: string): Promise<{ theme: AuthorTheme | nul
       // 상대 경로(`/api/themes/css/{slug}`) fallback 처리는 폐지됨 — DB도 마이그레이션
       // `baked_css_url_clear_relative`로 일괄 NULL 정리. resolveBakedCssUrl은 회귀
       // 방어선(비문자열/빈문자열 → null) 일 뿐, 상대 경로 변환 로직은 포함하지 않는다.
-      const bakedCssUrl = resolveBakedCssUrl(data.bakedCssUrl)
+      const bakedCssUrl = resolveBakedCssUrl(data.bakedCssUrl, authorSlug)
       return { theme, bakedCssUrl }
     }
   } catch {
@@ -78,13 +67,8 @@ interface AuthorInfo {
 
 async function loadAuthorInfo(authorSlug: string): Promise<AuthorInfo> {
   try {
-    const apiUrl = process.env.API_URL || 'http://localhost:3000/api'
-    const res = await fetch(`${apiUrl}/authors/${authorSlug}`, {
-      next: { revalidate: 60 },
-      signal: AbortSignal.timeout(3000),
-    })
-    if (res.ok) {
-      const data = await res.json()
+    const data = await loadPublicAuthor(authorSlug)
+    if (data) {
       const name = data.author?.name ?? data.name ?? authorSlug
       const rawWorks: { slug: string; title: string; episodeCount?: number }[] = data.works ?? []
       const workSlug = rawWorks[0]?.slug
@@ -100,12 +84,8 @@ async function loadAuthorInfo(authorSlug: string): Promise<AuthorInfo> {
       let episodes: NavEpisode[] | undefined
       if (rawWorks.length <= 1 && workSlug) {
         try {
-          const workRes = await fetch(`${apiUrl}/works/${authorSlug}/${workSlug}`, {
-            next: { revalidate: 60 },
-            signal: AbortSignal.timeout(3000),
-          })
-          if (workRes.ok) {
-            const workData = await workRes.json()
+          const workData = await loadPublicWork(authorSlug, workSlug)
+          if (workData) {
             const rawEpisodes: { slug: string; orderNum?: number; type?: string }[] =
               workData.episodes ?? workData.work?.episodes ?? []
             // orderNum 기준 정렬 후 탭 번호 생성
@@ -138,21 +118,24 @@ async function loadAuthorInfo(authorSlug: string): Promise<AuthorInfo> {
 }
 
 export default async function AuthorLayout({ params, children }: Props) {
+  preloadAuthorText("작품 목록 목차 에피소드 일러두기 번외 후기 화 개")
   const { author } = await params
   const [themeData, authorInfo] = await Promise.all([
     loadTheme(author),
     loadAuthorInfo(author),
   ])
   const { theme, bakedCssUrl } = themeData
+  preloadAuthorText(`${authorInfo.name} 작품 목록 목차 에피소드 일러두기 번외 후기 화 개`)
 
   return (
     <>
+      <link rel="stylesheet" href="/fonts/noto-serif-kr/font-faces.css" precedence="grimoire-fonts" />
       {/* CDN 베이킹된 테마 CSS — Blob Storage URL이 있으면 <link>로 로드 */}
       {bakedCssUrl && <link rel="stylesheet" href={bakedCssUrl} />}
       {/* 모바일: status bar + body 배경색을 테마와 통일 (safe-area 틈 방지) */}
       <meta name="theme-color" content={theme?.bgPrimary ?? '#08080e'} />
       <style>{`html, body { background-color: ${theme?.bgPrimary ?? '#08080e'}; }`}</style>
-      <div className={`${garamond.variable} ${notoSerifKR.variable}`}>
+      <div className={`${garamond.variable} font-noto-serif-kr`}>
       <AuthProvider>
         <ThemeProvider theme={theme ?? {} as AuthorTheme}>
           <CardTransitionProvider>

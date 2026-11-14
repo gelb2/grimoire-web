@@ -26,7 +26,7 @@ function LoginForm() {
     setError('')
     setLoading(true)
     try {
-      const recaptchaToken = executeRecaptcha ? await executeRecaptcha('login') : undefined
+      const recaptchaToken = RECAPTCHA_SITE_KEY && executeRecaptcha ? await executeRecaptcha('login') : undefined
       // 좌우 공백 제거 후 AuthProvider.login에 위임 (정규식 자동 판별).
       await login(emailOrSlug.trim(), password, recaptchaToken)
       router.replace('/dashboard')

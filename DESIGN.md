@@ -208,3 +208,19 @@ hover:border-g-accent hover:text-g-accent2 transition-all duration-200
 - `[author]/layout.tsx`에서 `html, body { background-color: 테마색 }` 동적 적용 (safe-area 틈 방지)
 - `<meta name="theme-color">` 동적 설정 — 작가 테마 배경색과 status bar 통일
 - 에피소드 뷰어 본문: `max-w-prose` + `px-4 md:px-8` (`EpisodeViewer`)
+
+
+## 빌드 입력 범위 · 2026-11-13
+
+테마 CSS의 Tailwind 입력은 `src/`로 제한한다. 허브와 CLAUDE.md의 문서 예시 문자열을
+유틸리티 클래스로 만들지 않는다. 기존 화면의 색·서체·간격·레이어 정책은 유지한다.
+
+## 로컬 공개 준비 후속 · 서체와 초기 배치
+
+작가 공간과 대시보드는 같은 `src/app/author-fonts.ts`의 Garamond와 고정 Noto Serif KR CSS를 사용한다. Noto WOFF2는 이전 Next 빌드와 같은 bytes이며 `public/fonts/noto-serif-kr/SOURCE.json`으로 대조한다. 제목·목차에 필요한 한글 조각은 서버에서 preload하고, 해시 이름의 WOFF2만 1년 immutable로 제공한다. CSS와 SOURCE.json은 같은 장기 캐시 규칙에 넣지 않는다. Noto는 `font-display: optional`로 늦은 교체에 따른 줄바꿈을 막는다. 첫 방문에 글꼴이 늦으면 해당 화면은 시스템 대체 글꼴를 유지하고, 캐시된 다음 방문에는 Noto를 사용한다. [preload와 optional의 동작](https://web.dev/articles/preload-optional-fonts)을 따르며 모든 환경의 CLS 0을 보장한다고 표현하지 않는다.
+
+탐색·작가·작품의 첫 데이터는 서버 HTML에 포함한다. 원고 타이핑은 최종 본문 공간과 제목 줄바꿈을 먼저 확보한다. 데이터·폰트가 도착하며 아래 콘텐츠를 밀던 동작을 줄이고 기존 서체·최종 배치·타이핑 효과를 유지한다. CLS는 최초·재방문과 측정 환경을 구분해 실제 결과로 판단한다.
+
+초기 테마의 `layout`은 현재 `episodeListLayout`이 없는 경우에만 읽는다. 명시한 현재 설정이 우선하며 DB 원본은 변경하지 않는다.
+
+2026-11-14 측정 조건·글꼴 서빙 선택·최초/재방문 결과는 [글꼴·CLS 검토](reports/FONT_CLS_REVIEW_2026-11-14.md)를 따른다.

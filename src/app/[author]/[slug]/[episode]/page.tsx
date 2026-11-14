@@ -1,10 +1,11 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { api } from "@/lib/api"
+import { loadPublicAuthor, loadPublicWork, loadPublicEpisode } from "@/lib/public-reader-data"
 import { ApiError } from "@/lib/api/client"
 import { ErrorPopup } from "@/components/ErrorPopup"
 import { EpisodeViewer } from "@/features/reader/ui/EpisodeViewer"
 import { EpisodeFooter } from "@/features/reader/ui/EpisodeFooter"
+import { preloadAuthorText } from '@/lib/author-font-preload'
 // WorkNav 제거 — SeriesNav가 [author]/layout.tsx에서 항상 렌더링됨
 
 // 완전 동적 — SSR on every request
@@ -19,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { author, slug, episode } = await params
 
   try {
-    const episodeData = await api.getEpisode<{ title: string; description?: string }>(author, slug, episode)
+    const episodeData = await loadPublicEpisode(author, slug, episode)
     const title = episodeData.title || episode
     const description = episodeData.description ?? `${author} — ${title}`
 
@@ -49,9 +50,9 @@ export default async function EpisodePage({ params }: Props) {
   try {
     // 에피소드 + 작가 정보 + 작품(에피소드 목록) 동시 로드
     const [episodeData, authorRes, workData] = await Promise.all([
-      api.getEpisode<any>(author, slug, episode),
-      api.getAuthorSpace<any>(author).catch(() => null),
-      api.getWork<any>(author, slug).catch(() => null),
+      loadPublicEpisode(author, slug, episode),
+      loadPublicAuthor(author).catch(() => null),
+      loadPublicWork(author, slug).catch(() => null),
     ])
 
     // 에피소드 번호: 작품 내 episode 타입 순번으로 계산 (orderNum 갭 무시)
@@ -77,6 +78,7 @@ export default async function EpisodePage({ params }: Props) {
       subtitle: episodeData.subtitle ?? undefined,
       description: episodeData.description,
     }
+    preloadAuthorText([episodeData.title, episodeData.subtitle, episodeData.description].filter(Boolean).join(' '))
 
     // 작가 이름: API 응답 > 작가 공간(중첩 구조) > slug 폴백
     const authorName = episodeData.authorName || authorRes?.author?.name || (authorRes as Record<string, unknown>)?.name as string || author

@@ -1071,3 +1071,12 @@ Error 403: 본인 세션 아님
 Headers: Authorization: Bearer <token>
 Response 200: { "workId": "uuid", "indexedEpisodes": 5, "totalEpisodes": 8 }
 ```
+
+
+## 로컬 미설정 연동 경계 · 2026-11-13
+
+- `POST /auth/google`: GOOGLE_CLIENT_ID가 없으면 외부 토큰 검증 전에 503.
+- `POST /themes/generate`: Anthropic 키가 없으면 AI 래퍼가 503. 기존 환불·오류 처리 경로를 유지한다.
+- `POST /auth/email/verify-request`: EmailVerificationUseCase를 명시한 토큰으로 주입한다. EMAIL_PROVIDER=null이면 토큰 발급 처리만 수행하고 `{ issued: true, provider: "null" }`로 응답한다. 이메일을 발송했다는 뜻이 아니다.
+- `POST /payments/initiate`: Polar 토큰 미설정이면 SDK 호출 없이 503.
+- `POST /subscriptions/checkout`: Polar 토큰/상품 미설정이면 기존 계약대로 503. 토큰이 없는 결제 어댑터는 SDK를 호출하지 않는다.

@@ -1,11 +1,14 @@
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata = {
   title: '이용약관 | Grimoire',
   description: '그리모어 서비스 이용약관',
 }
 
 export default function TermsPage() {
+  const contactEmail = process.env.LEGAL_CONTACT_EMAIL?.trim() || '운영자 문의처 미설정'
   return (
     <div className="min-h-screen bg-white">
       <nav className="px-6 py-4 border-b border-neutral-200">
@@ -24,7 +27,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-lg font-bold text-black">제2조 (정의)</h2>
             <ol className="list-decimal pl-5 space-y-1">
-              <li><strong>서비스</strong>: grimoire-book.com에서 운영하는 소설 퍼블리싱 플랫폼</li>
+              <li><strong>서비스</strong>: 운영자가 제공하는 소설 퍼블리싱 플랫폼</li>
               <li><strong>회원</strong>: 본 약관에 동의하고 회원가입을 완료한 자</li>
               <li><strong>작가</strong>: 서비스에 원고를 업로드하고 작가 공간을 운영하는 회원</li>
               <li><strong>크레딧</strong>: 서비스 내 유료 기능 이용을 위한 가상 재화</li>
@@ -67,8 +70,7 @@ export default function TermsPage() {
           </section>
 
           <p className="text-neutral-400 pt-8 border-t border-neutral-200">
-            전체 약관은 <a href="https://grimoire-book.com/terms" className="underline">grimoire-book.com/terms</a>에서 확인할 수 있습니다.
-            <br />문의: grimoire.book@gmail.com
+            문의: {contactEmail}
           </p>
         </div>
       </main>

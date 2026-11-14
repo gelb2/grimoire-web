@@ -1,6 +1,33 @@
 # CHANGELOG.md — 변경 이력
 
+- 검증: 웹 유닛 34파일·289검사, production/Docker 빌드·Compose·Chrome/WebKit 18검사 통과. 복원 데이터 4경로×2너비×최초/재방문 CLS 0. [측정 범위](reports/FONT_CLS_REVIEW_2026-11-14.md).
+- 후속 공개 준비: 첫 탐색/작가/작품 데이터를 SSR로 전달하고 타이핑 공간·인증 메뉴 공간을 확보했다. 기존 Noto Serif KR WOFF2를 고정·선택 preload하며 초기 layout 테마와 현재 episodeListLayout을 호환한다.
+
+- 외부 자료 고지: `npm run notices`로 설치된 운영 의존성의 원문·버전·해시·보충 출처를 수집한다. Docker 빌드에서 대상 플랫폼 기준으로 다시 생성하며 원문이 없는 패키지는 metadata-only로 구분한다.
+
+- 공개 후보 보안: 호환 의존성 업데이트와 지정 override, Node 22 Docker/CI 기준 및 운영·개발 의존성 점검 명령을 추가했다. 클라우드 변경은 하지 않았다.
+
+- 공개 준비: 운영자 문의 정보·사이트 주소 설정을 분리하고, 글꼴 이용 조건과 공개 후보 검토 기록을 보완했다.
+
+- 2026-11-13 로컬 공개 준비: 배포 계정·프로젝트·도메인 기본값을 사용자 설정으로 교체. 필수 값 누락 시 외부 명령 전 중단. 클라우드 배포 미실행.
+
+## [Unreleased] · 로컬 공개 준비 (2026-11-13)
+
+- reCAPTCHA 키가 없는 로그인·가입 화면에서 제공자 실행 함수를 호출해 전송이 막히던 오류를 수정했다. 회귀 검사를 추가했다.
+- Google Fonts의 확장자 없는 파일 URL에서 빌드가 실패하는 오류를 확인해 Next.js를 수정 로더가 포함된 16.4.6으로 고정했다. 기존 서체는 유지한다.
+- 자체 API의 테마 CSS를 같은 출처 BFF로 중계해 CSP 차단을 수정했다. GCS CSS 출처를 허용하고 localhost 환경 별칭을 맞췄다.
+- Next.js 빌드 루트를 웹 저장소로, Tailwind 입력을 실제 src로 제한했다. 상위 허브 문서의 예시 문자열이 잘못된 CSS로 생성되던 문제를 수정했다.
+- 환경 예제와 Docker 빌드 컨텍스트를 정리하고 서버 환경 정본을 동기화했다. 화면 디자인과 원고를 변경하지 않았다.
+- 공개·원격 게시·클라우드 변경은 수행하지 않았다. WebKit 검사와 실제 데스크톱 Safari 검사는 구분한다.
+
+
 ## [Unreleased] - 2026-06-27
+
+### 비차단 follow-up — web 위생/백로그 (fix/followup-web)
+
+- **FW-1 CSP connect-src stale 정리 + 환경 분기** — prod CSP `connect-src` 에 stale `dev-api.grimoire-book.com` + `inhouse-api.grimoire-book.com` 가 정본 `api.grimoire-book.com` 와 함께 허용돼 있던 위생 결함 정리. CSP 는 `next.config.ts headers()` 에서 빌드타임 baked(단일 정본, middleware 부재). 신설 `src/lib/csp.ts` `buildCsp(appEnv)` 로 `connect-src` API origin 을 환경별 분기: **production → api.grimoire-book.com 만 / development → dev-api.grimoire-book.com / local → localhost:3000**. `inhouse-*` 는 2환경화(2026-04-19)로 폐기 → **전 환경 제거**. `appEnv` = 빌드타임 `NEXT_PUBLIC_APP_ENV`(`deploy-common.sh env_to_app_env_buildarg` dev→development/prod→production; 미지정 시 안전 기본값 production). 검증: `NEXT_PUBLIC_APP_ENV=production npm run build` → routes-manifest `connect-src 'self' https://api.grimoire-book.com …`(dev-api·inhouse 0), `=development` → `dev-api …`(inhouse 0). 회귀 가드 `src/lib/csp.test.ts`(6 it). BFF(/api)는 'self' 커버 — 클라 직접 API 호출 변경 0.
+
+- **FW-2 F-18 작품별 테마 색상 — (b) 아키텍처 변경 필요 → DEFER (백로그 스펙)** — 실측 후 판단: 리더 페이지 레벨의 국소 CSS 주입(a)은 **무효**. 근거: server `theme-baker.ts:145` 가 baked CSS 를 `:root { --g-* }` 로 굽지만 `ThemeProvider.tsx:40-77` 이 동일 `--g-*` 를 **div 인라인 스타일**로 재설정 → CSS 커스텀 프로퍼티 **상속 우선(가장 가까운 조상 승)** 으로 author 인라인 변수가 work `:root` baked CSS 를 항상 덮음(`!important` 도 무효). 게다가 렌더 스코프가 `[author]/layout.tsx`(params=`{author}` 뿐, work 컨텍스트 부재)라 색상·`html/body`·`meta`·`useTheme()` 컨텍스트·SeriesNav 6표면이 author 스코프에 묶여 부분적용=사슴악마 회귀 위험. 올바른 픽스=신설 `[author]/[slug]/layout.tsx` work 테마 재-provide(案 A, VCK 사슴악마 불변 검수 선행). **코드 변경 0(테마 에디터·theme.css·프리셋·ThemeProvider·layout 무접촉)** — 백로그 스펙 `reports/F18_THEME_COLOR_BACKLOG.md` + TODO 등재. 정책 [[feedback_theme_no_touch]] 상 defer 가 정답.
 
 ### 전수조사 Sprint 4 — web 기능 4건 + 정리 (feat/audit-s4-web)
 

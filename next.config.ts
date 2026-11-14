@@ -1,9 +1,13 @@
 // [2026-04-08 Remote Test] 이 주석은 클로드 리모트 기능 세팅 및 아이패드 업무지시 가능성 확인 목적으로 작성됨. 업무와 무관한 테스트.
 import type { NextConfig } from "next"
+import { buildCsp } from "./src/lib/csp"
 
 const nextConfig: NextConfig = {
   // Docker standalone 빌드를 위한 설정
   output: "standalone",
+  // 독립 저장소 경계. 상위 허브의 lockfile/문서를 빌드 입력으로 추정하지 않는다.
+  turbopack: { root: __dirname },
+  outputFileTracingRoot: __dirname,
 
   // X-Powered-By: Next.js 헤더 노출 차단 — 프레임워크 핑거프린팅 방어
   poweredByHeader: false,
@@ -32,20 +36,15 @@ const nextConfig: NextConfig = {
           {
             // CSP — Next.js App Router는 인라인 스크립트 사용하므로 'unsafe-inline' 필요
             // 향후 nonce 기반으로 전환 시 middleware.ts에서 nonce 생성 + 헤더 동적 설정
+            // 기본 BFF + 명시한 NEXT_PUBLIC_API_ORIGIN만 허용한다.
             key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://www.gstatic.com https://accounts.google.com https://static.cloudflareinsights.com",
-              "style-src 'self' 'unsafe-inline' https://accounts.google.com",
-              "img-src 'self' data: blob: https:",
-              "font-src 'self' data:",
-              "connect-src 'self' https://api.grimoire-book.com https://dev-api.grimoire-book.com https://inhouse-api.grimoire-book.com https://polar.sh https://www.google.com https://accounts.google.com",
-              "frame-src https://www.google.com https://accounts.google.com https://polar.sh",
-              "base-uri 'self'",
-              "form-action 'self'",
-            ].join('; '),
+            value: buildCsp(process.env.NEXT_PUBLIC_APP_ENV, process.env.NEXT_PUBLIC_API_ORIGIN),
           },
         ],
+      },
+      {
+        source: '/fonts/noto-serif-kr/:font.woff2',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
       },
     ]
   },

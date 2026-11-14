@@ -65,4 +65,16 @@ describe("TypeWriter", () => {
     act(() => { vi.advanceTimersByTime(10) })
     expect(screen.getByText("X")).toBeInTheDocument()
   })
+
+  it("순서가 오기 전에는 공간만 확보하고 타이머와 완료 콜백을 시작하지 않는다", () => {
+    const onComplete = vi.fn()
+    const { rerender } = render(<TypeWriter text="AB" speed={10} active={false} onComplete={onComplete} />)
+    act(() => { vi.advanceTimersByTime(1000) })
+    expect(screen.queryByText('A')).not.toBeInTheDocument()
+    expect(onComplete).not.toHaveBeenCalled()
+    rerender(<TypeWriter text="AB" speed={10} active onComplete={onComplete} />)
+    act(() => { vi.advanceTimersByTime(20) })
+    expect(screen.getByText('AB')).toBeInTheDocument()
+    expect(onComplete).toHaveBeenCalledTimes(1)
+  })
 })

@@ -12,6 +12,21 @@ import { describe, it, expect } from "vitest"
 import { resolveBakedCssUrl } from "./baked-css-url"
 
 describe("resolveBakedCssUrl — bakedCssUrl 응답 정규화", () => {
+  it.each(['http://localhost:33000', 'https://api.example.test'])("자체 API CSS %s는 BFF로 중계한다", (origin) => {
+    expect(resolveBakedCssUrl(`${origin}/api/themes/css/local-writer`, 'local-writer'))
+      .toBe('/api/themes/css/local-writer')
+  })
+
+  it("GCS CDN URL은 자체 API로 바꾸지 않는다", () => {
+    const url = 'https://storage.googleapis.com/user-bucket/themes/local-writer.css'
+    expect(resolveBakedCssUrl(url, 'local-writer')).toBe(url)
+  })
+
+  it("다른 작가 경로를 현재 작가 BFF로 바꾸지 않는다", () => {
+    const url = 'https://api.example.test/api/themes/css/other-writer'
+    expect(resolveBakedCssUrl(url, 'local-writer')).toBe(url)
+  })
+
   it("절대 URL(https) 입력 → 그대로 반환", () => {
     const url = "https://cdn.grimoire-book.com/themes/deerdevil.css"
     expect(resolveBakedCssUrl(url)).toBe(url)

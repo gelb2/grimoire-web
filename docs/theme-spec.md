@@ -181,3 +181,7 @@ interface AuthorTheme {
 | `dot` | 점 3개 기본 구분선 |
 | `line` | 단순 수평선 |
 | `none` | 구분선 없음 |
+
+## 초기 저장 테마 호환 (2026-11-14)
+
+초기 복원 데이터에는 `layout`만 있고 `episodeListLayout`이 없는 테마가 있다. 독서 UI는 현재 `episodeListLayout`을 우선하고, 없을 때만 알려진 `layout` 값(series/grid/classic/magazine/gallery/minimal)을 읽는다. 둘 다 없거나 알 수 없는 값이면 기존 grid 기본값을 사용한다. 원본 테마 JSON을 덮어쓰거나 일괄 DB 변환하지 않는다. 구현은 웹 `src/features/theme/episode-list-layout.ts`다.

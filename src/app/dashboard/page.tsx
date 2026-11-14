@@ -38,7 +38,7 @@ export default function DashboardPage() {
             {user.name}
           </h1>
           <Link href={`/${user.slug}`} className="text-sm text-[#e53e3e] hover:underline" target="_blank">
-            grimoire-book.com/{user.slug}
+            /{user.slug}
           </Link>
         </div>
 

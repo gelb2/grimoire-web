@@ -77,7 +77,7 @@ export function PlatformNav({ variant = 'platform' }: PlatformNavProps) {
 
   return (
     <header className={s.header} style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}>
-      <div className="max-w-5xl mx-auto flex items-center justify-between">
+      <div className="max-w-5xl mx-auto flex min-h-8 items-center justify-between">
         {/* 왼쪽: 로고 + 탐색 */}
         <div className="flex items-center gap-4">
           <Link href="/" className={s.logo}>
@@ -102,7 +102,7 @@ export function PlatformNav({ variant = 'platform' }: PlatformNavProps) {
         </div>
 
         {/* 오른쪽: 로그인/유저 메뉴 */}
-        <div className="flex items-center gap-3">
+        <div className="flex min-h-8 min-w-[8.125rem] items-center justify-end gap-3">
           {loading ? (
             <span className={s.loading}>...</span>
           ) : user ? (
