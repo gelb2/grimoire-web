@@ -8,6 +8,7 @@ interface TypeWriterProps {
   delay?: number
   className?: string
   onComplete?: () => void
+  active?: boolean
 }
 
 export function TypeWriter({
@@ -16,6 +17,7 @@ export function TypeWriter({
   delay = 0,
   className,
   onComplete,
+  active = true,
 }: TypeWriterProps) {
   const [displayText, setDisplayText] = useState("")
   const onCompleteRef = useRef(onComplete)
@@ -23,6 +25,7 @@ export function TypeWriter({
 
   useEffect(() => {
     setDisplayText("")
+    if (!active) return
     let cancelled = false
     let intervalId: ReturnType<typeof setInterval>
 
@@ -45,7 +48,7 @@ export function TypeWriter({
       clearTimeout(delayTimer)
       clearInterval(intervalId)
     }
-  }, [text, speed, delay])
+  }, [text, speed, delay, active])
 
-  return <span className={className}>{displayText}</span>
+  return <span className={`typewriter-reserved ${className ?? ''}`} data-full-text={text}><span>{displayText}</span></span>
 }

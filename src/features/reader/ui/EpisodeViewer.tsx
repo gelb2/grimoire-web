@@ -254,9 +254,10 @@ export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", de
       {/* 히어로 */}
       <header className={`${spacing.pt} ${spacing.pb} border-b border-g-border`}>
         <div className="font-g-sans fs-caption tracking-wide-g text-g-text-muted uppercase mb-3 md:mb-5 min-h-[1em]">
-          {showImmediately || animationType !== "typing" ? labelText : stage >= 1 && (
+          {showImmediately || animationType !== "typing" ? labelText : (
             <TypeWriter
               text={labelText}
+              active={stage >= 1}
               speed={typingSpeed}
               onComplete={() => { if (!cancelledRef.current) setStage(2) }}
             />
@@ -264,9 +265,10 @@ export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", de
         </div>
 
         <h1 className={`font-g-heading text-2xl md:text-4xl font-normal leading-[1.3] text-g-text-bright mb-2.5 min-h-[1.3em] ${subtitleStyle === 'italic' ? 'italic' : ''}`} style={{ fontWeight: 'var(--g-title-weight, 400)', letterSpacing: 'var(--g-letter-spacing, 0)' }}>
-          {showImmediately || animationType !== "typing" ? meta.title : stage >= 2 && (
+          {showImmediately || animationType !== "typing" ? meta.title : (
             <TypeWriter
               text={meta.title}
+              active={stage >= 2}
               speed={typingSpeed}
               onComplete={() => safeTimeout(startBodyTyping, 400)}
             />
@@ -298,8 +300,7 @@ export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", de
       </header>
 
       {/* 본문 — 구분선과 텍스트 사이 충분한 여백 확보 */}
-      {stage >= 3 && (
-        <main className="pt-8 md:pt-14">
+        <main className="pt-8 md:pt-14" style={{ visibility: stage >= 3 ? 'visible' : 'hidden' }}>
           {data.blocks.map((block: Block, idx: number) => {
             // 이 블록이 타이핑 대상인지 (typing 모드에서만)
             const typingOrder = typingTargets.indexOf(idx)
@@ -308,8 +309,6 @@ export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", de
             if (isTypingBlock) {
               const isActiveTyping = typingOrder === typingBlockIdx
               const isTyped = typingOrder < typingBlockIdx
-
-              if (!isActiveTyping && !isTyped) return null
 
               if (isTyped) {
                 return (
@@ -321,12 +320,16 @@ export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", de
 
               // 현재 타이핑 중인 블록
               return (
-                <div key={idx} className="mb-5 text-g-text">
-                  <TypeWriter
-                    text={block.text ?? ""}
-                    speed={typingSpeed}
-                    onComplete={handleTypingBlockComplete}
-                  />
+                <div key={idx} className="relative">
+                  <div style={{ visibility: 'hidden' }} aria-hidden="true"><ChapterBlock blocks={[block]} /></div>
+                  <div className={`absolute inset-0 mb-5 ${block.type === 'italic' ? 'italic text-g-text-warm' : 'text-g-text'}`} style={{ visibility: isActiveTyping && stage >= 3 ? 'visible' : 'hidden' }}>
+                    <TypeWriter
+                      text={block.text ?? ""}
+                      active={stage >= 3 && isActiveTyping}
+                      speed={typingSpeed}
+                      onComplete={handleTypingBlockComplete}
+                    />
+                  </div>
                 </div>
               )
             }
@@ -360,7 +363,6 @@ export function EpisodeViewer({ meta, data: rawData, authorName = "Grimoire", de
             )
           })}
         </main>
-      )}
 
       {/* 클로즈 라인 */}
       <motion.footer

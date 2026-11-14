@@ -19,9 +19,9 @@ vi.mock("framer-motion", () => ({
 
 // TypeWriter mock
 vi.mock("./TypeWriter", () => ({
-  TypeWriter: ({ text, onComplete }: { text: string; onComplete?: () => void }) => {
-    if (onComplete) setTimeout(onComplete, 0)
-    return <span>{text}</span>
+  TypeWriter: ({ text, onComplete, active = true }: { text: string; onComplete?: () => void; active?: boolean }) => {
+    if (active && onComplete) setTimeout(onComplete, 0)
+    return <span>{active ? text : ''}</span>
   },
 }))
 
@@ -111,7 +111,7 @@ describe("EpisodeViewer", () => {
     sessionStorage.setItem("visited:ep-other", "true")
     render(<EpisodeViewer meta={mockMeta} data={mockData} />)
 
-    expect(document.querySelector("main")).not.toBeInTheDocument()
+    expect(document.querySelector("main")).not.toBeVisible()
   })
 })
 

@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import "tailwindcss" source("../");
 @import "tw-animate-css";
 
 /* 시스템 다크 모드 무시 — 플랫폼은 항상 라이트, 작가 테마는 CSS Variables로 제어 */
@@ -75,6 +75,19 @@ body {
   font-family: system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* 타이핑 전부터 최종 텍스트의 줄바꿈과 높이를 확보한다. */
+.typewriter-reserved {
+  display: grid;
+}
+.typewriter-reserved::before {
+  content: attr(data-full-text);
+  visibility: hidden;
+  grid-area: 1 / 1;
+}
+.typewriter-reserved > span {
+  grid-area: 1 / 1;
 }
 
 /* 스크롤바 스타일 */

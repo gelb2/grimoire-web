@@ -1,11 +1,14 @@
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata = {
   title: '개인정보보호방침 | Grimoire',
   description: '그리모어 개인정보 처리방침',
 }
 
 export default function PrivacyPage() {
+  const contactEmail = process.env.LEGAL_CONTACT_EMAIL?.trim() || '운영자 문의처 미설정'
   return (
     <div className="min-h-screen bg-white">
       <nav className="px-6 py-4 border-b border-neutral-200">
@@ -74,7 +77,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-lg font-bold text-black">6. 이용자의 권리</h2>
-            <p>열람, 수정, 삭제, 처리 정지 요청이 가능합니다. 서비스 내 설정 페이지 또는 이메일(grimoire.book@gmail.com)로 요청하세요.</p>
+            <p>열람, 수정, 삭제, 처리 정지 요청이 가능합니다. 서비스 내 설정 페이지 또는 이메일({contactEmail})로 요청하세요.</p>
           </section>
 
           <section>
@@ -89,7 +92,7 @@ export default function PrivacyPage() {
           </section>
 
           <p className="text-neutral-400 pt-8 border-t border-neutral-200">
-            개인정보 보호책임자: grimoire.book@gmail.com
+            개인정보 보호책임자: {contactEmail}
           </p>
         </div>
       </main>

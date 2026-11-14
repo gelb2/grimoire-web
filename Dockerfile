@@ -2,7 +2,7 @@
 # BFF 패턴: API_URL은 런타임 환경변수 → 이미지 1개로 모든 환경 배포
 
 # 1단계: 빌드
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
@@ -18,10 +18,17 @@ ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=${NEXT_PUBLIC_GOOGLE_CLIENT_ID}
 ARG NEXT_PUBLIC_RECAPTCHA_SITE_KEY=""
 ENV NEXT_PUBLIC_RECAPTCHA_SITE_KEY=${NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
 
+ARG NEXT_PUBLIC_SITE_URL=""
+ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
+
+ARG NEXT_PUBLIC_API_ORIGIN=""
+ENV NEXT_PUBLIC_API_ORIGIN=${NEXT_PUBLIC_API_ORIGIN}
+
+RUN npm run notices
 RUN npm run build
 
 # 2단계: 실행 (standalone 모드 — node_modules 불필요)
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 RUN apk add --no-cache tini
 
 # non-root 유저 (컨테이너 보안)

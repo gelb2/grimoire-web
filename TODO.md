@@ -1,5 +1,14 @@
 # TODO — grimoire-web
 
+
+## 공개 준비 후속
+
+- [ ] 자체 소스의 재사용 라이선스를 선택한 뒤 적용한다. MIT 적용안은 준비했으며 원고·외부 자료와 범위를 구분한다. 본인 작성자 정보와 확인된 원고 권한은 추가 진행 차단 항목으로 두지 않는다.
+- [ ] 바이너리·Docker 이미지를 외부에 배포할 때 실제 포함한 OS·네이티브 라이브러리의 고지·소스 제공 조건을 확인한다. 현재 npm 운영 의존성의 원문·버전·출처·보충 고지는 THIRD_PARTY_NOTICES.md와 생성 목록을 따른다.
+- [ ] 실제 외부 연동과 GCP 배포는 별도 허용 범위에서 검증한다. 미설정·테스트 대역 검사와 구분한다. 현재 공개·push·클라우드 변경·유료 호출·키 유효성 시험은 수행하지 않는다.
+
+Docker 빌드·Compose 기동과 Chrome·Playwright WebKit 18개 화면 검사는 2026-11-14에 통과했다. 소스 전체 유닛은 서버 1,267개, 최신 웹 289개다. 실제 Safari·CLS 측정 범위는 별도 검토 기록을 따른다.
+
 > 남은 작업만 기록한다. 완료 항목은 `CHANGELOG.md` 참조.
 
 ---
@@ -11,9 +20,11 @@
 - [ ] 크레딧 개편 — 잔액 4 출처 분해 표시 활성화. `CreditBalanceCard`는 server 가 `bySource`(출처별 잔액) 응답 시 자동 분해 — 현재 server `/credits/balance`는 정수 크레딧만 반환(I Phase backward-compatible). server 가 `CreditLedger.getBalance`를 HTTP 노출하면 추가 작업 없이 동작.
 - [ ] 크레딧 개편 — 충전 패키지 #7 4종(입문 ₩3,000 / 기본 ₩5,000 / 인기 ₩10,000 +10% / 베스트 ₩30,000 +15%) 반영. 현재 server `CREDIT_PRODUCTS`는 구 3종(credit-5/20/50) — server config 갱신 후 web 은 자동 반영(`/payments/products` 정본 의존).
 
-### Claude Code harness 강화 (2026-04-19 도입 필요)
+### 당시 Claude Code harness 강화 (2026-04-19 도입 필요)
 
 > 상세 마스터 목록: `../grimoire-server/TODO.md` "Claude Code harness 강화" 섹션 참조.
+
+현재 작업은 루트 AGENTS.md와 .agents의 브라우저 스킬을 따른다. 아래는 당시 계획·완료 기록이며 훅·센서·배포를 자동 활성화하는 지시가 아니다.
 
 **web 단독 P0**
 - [ ] `grimoire-web/.githooks/pre-push` 설치 — tsc + vitest + build + docs 동기화 검증 (server에는 있으나 web 없음)

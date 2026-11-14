@@ -32,7 +32,7 @@ function RegisterForm() {
     if (form.password !== form.passwordConfirm) { setError('비밀번호가 일치하지 않습니다'); return }
     setLoading(true)
     try {
-      const recaptchaToken = executeRecaptcha ? await executeRecaptcha('register') : undefined
+      const recaptchaToken = RECAPTCHA_SITE_KEY && executeRecaptcha ? await executeRecaptcha('register') : undefined
       await register({ email: form.email, password: form.password, name: form.name, slug: form.slug }, recaptchaToken)
       router.replace('/dashboard')
     } catch (err: any) { setError(err.message || '회원가입에 실패했습니다') }
@@ -83,7 +83,7 @@ function RegisterForm() {
           <div>
             <label className="block text-xs uppercase tracking-widest text-neutral-500 mb-2">내 공간 주소</label>
             <div className="flex items-center">
-              <span className="text-neutral-400 text-sm mr-2">grimoire-book.com/</span>
+              <span className="text-neutral-400 text-sm mr-2">/</span>
               <input type="text" value={form.slug}
                 onChange={e => updateField('slug', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
                 required pattern="[a-z0-9-]+"

@@ -24,7 +24,7 @@ interface Episode {
   nextSlug?: string | null
 }
 
-interface WorkData {
+export interface WorkData {
   id: string
   slug: string
   title: string
@@ -38,16 +38,25 @@ interface WorkData {
 interface WorkPageProps {
   authorSlug: string
   workSlug: string
+  initialWork?: WorkData
+  initialEpisode?: Episode
 }
 
-export function WorkPage({ authorSlug, workSlug }: WorkPageProps) {
-  const [work, setWork] = useState<WorkData | null>(null)
-  const [loading, setLoading] = useState(true)
+export function WorkPage({ authorSlug, workSlug, initialWork, initialEpisode }: WorkPageProps) {
+  const [work, setWork] = useState<WorkData | null>(initialWork ?? null)
+  const [loading, setLoading] = useState(!initialWork)
   const [error, setError] = useState(false)
   // 에피소드 1개인 경우 직접 표시용
-  const [singleEpisode, setSingleEpisode] = useState<Episode | null>(null)
+  const [singleEpisode, setSingleEpisode] = useState<Episode | null>(initialEpisode ?? null)
 
   useEffect(() => {
+    if (initialWork) {
+      setWork(initialWork)
+      setSingleEpisode(initialEpisode ?? null)
+      setLoading(false)
+      setError(false)
+      return
+    }
     let cancelled = false
 
     api.getWork<any>(authorSlug, workSlug)
@@ -76,7 +85,7 @@ export function WorkPage({ authorSlug, workSlug }: WorkPageProps) {
       })
 
     return () => { cancelled = true }
-  }, [authorSlug, workSlug])
+  }, [authorSlug, workSlug, initialWork, initialEpisode])
 
   if (loading) {
     return (

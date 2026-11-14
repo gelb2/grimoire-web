@@ -21,29 +21,21 @@ set -u   # 미정의 변수 참조 시 에러
 # ─────────────────────────────────────────────────────────────
 # 공통 상수 (매트릭스) — GCP (grimoire-server/docs/DEPLOY.md §1 실측 기준)
 # ─────────────────────────────────────────────────────────────
-readonly GCP_PROJECT_ID="grimoire-491708"
-readonly GCP_PROJECT_NUMBER="23295981916"
-readonly GCP_REGION="asia-northeast1"
-readonly ARTIFACT_REGISTRY_HOST="asia-northeast1-docker.pkg.dev"
-readonly ARTIFACT_REPO="grimoire-docker"
+# 계정별 값은 실행 환경에서 주입한다. 원래 운영 값은 Git 이력 자료다.
+readonly GCP_PROJECT_ID="${GCP_PROJECT_ID:-}"
+readonly GCP_REGION="${GCP_REGION:-}"
+readonly ARTIFACT_REGISTRY_HOST="${GCP_REGION}-docker.pkg.dev"
+readonly ARTIFACT_REPO="${ARTIFACT_REPO:-}"
 readonly ARTIFACT_REPO_FQ="${ARTIFACT_REGISTRY_HOST}/${GCP_PROJECT_ID}/${ARTIFACT_REPO}"
-readonly IMAGE_REPO="grimoire-web"
-readonly BUILD_PLATFORM="linux/amd64"
-# Cloud Run 공개 URL pattern: https://grimoire-web-{env}-tolwmynw6a-an.a.run.app
-readonly CLOUD_RUN_URL_SUFFIX="tolwmynw6a-an.a.run.app"
+readonly IMAGE_REPO="${IMAGE_REPO:-grimoire-web}"
+readonly BUILD_PLATFORM="${BUILD_PLATFORM:-linux/amd64}"
 readonly IMAGE_KEEP_COUNT=5
-readonly EXPECTED_GCP_ACCOUNT="rainmaker8492@gmail.com"
-# Cloud Run 서비스 계정 (기본 compute SA)
-readonly CLOUD_RUN_SA="${GCP_PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
-# Cloud Run 컨테이너 포트 (web — Dockerfile EXPOSE 3001)
+readonly EXPECTED_GCP_ACCOUNT="${EXPECTED_GCP_ACCOUNT:-}"
+readonly CLOUD_RUN_SA="${CLOUD_RUN_SA:-}"
 readonly CONTAINER_PORT=3001
-
-# build-arg 상수 (환경 무관 — NEXT_PUBLIC_* 빌드타임 인라인).
-# reCAPTCHA site key: Google 정식 키(40자). 절대 빈 값/절단본으로 빌드 금지(로그인 파손).
-#   출처 실측: .env.local + 과거 Azure 배포 상수 일치(40자). 현 source-deploy revision 의
-#   런타임 env 값(39자)은 NEXT_PUBLIC(빌드타임 인라인)에 무효한 런타임 오타 — 채택 안 함.
-readonly RECAPTCHA_SITE_KEY="6Ldxb6QsAAAAABTyABs61_Bzhi6iwrAQiqRbbXaJ"
-readonly GOOGLE_CLIENT_ID="23295981916-30pl52bdf3k008k9gmsf9fpufinnpk4o.apps.googleusercontent.com"
+# 공개 클라이언트 ID는 선택 사항이다. 미설정 시 이메일 로그인을 사용한다.
+readonly RECAPTCHA_SITE_KEY="${NEXT_PUBLIC_RECAPTCHA_SITE_KEY:-}"
+readonly GOOGLE_CLIENT_ID="${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}"
 
 # ─────────────────────────────────────────────────────────────
 # 색상 출력 유틸
@@ -77,6 +69,15 @@ validate_env() {
   esac
 }
 
+# 필수 설정 이름만 출력한다. 자격증명이나 설정 값을 출력하지 않는다.
+validate_cloud_config() {
+  local suffix name
+  case "$1" in dev) suffix=DEV ;; prod) suffix=PROD ;; *) fail "ENV must be dev or prod" ;; esac
+  for name in GCP_PROJECT_ID GCP_REGION ARTIFACT_REPO EXPECTED_GCP_ACCOUNT CLOUD_RUN_SA WEB_SERVICE_${suffix} WEB_RUN_URL_${suffix} PUBLIC_WEB_URL_${suffix} API_URL_${suffix}; do
+    [ -n "${!name:-}" ] || fail "필수 사용자 설정 누락: $name (docs/DEPLOY.md 참고)"
+  done
+}
+
 # ENV → git 브랜치
 env_to_branch() {
   case "$1" in
@@ -89,8 +90,8 @@ env_to_branch() {
 # ENV → Cloud Run 서비스 이름 (web)
 env_to_app_name() {
   case "$1" in
-    dev) echo "grimoire-web-dev" ;;
-    prod) echo "grimoire-web-prod" ;;
+    dev) echo "${WEB_SERVICE_DEV}" ;;
+    prod) echo "${WEB_SERVICE_PROD}" ;;
     *) return 1 ;;
   esac
 }
@@ -98,8 +99,8 @@ env_to_app_name() {
 # ENV → Cloud Run 자동 발급 공개 URL (도메인 매핑 외 직접 접근용)
 env_to_run_url() {
   case "$1" in
-    dev) echo "https://grimoire-web-dev-${CLOUD_RUN_URL_SUFFIX}" ;;
-    prod) echo "https://grimoire-web-prod-${CLOUD_RUN_URL_SUFFIX}" ;;
+    dev) echo "${WEB_RUN_URL_DEV}" ;;
+    prod) echo "${WEB_RUN_URL_PROD}" ;;
     *) return 1 ;;
   esac
 }
@@ -107,8 +108,8 @@ env_to_run_url() {
 # ENV → public 웹 URL (커스텀 도메인)
 env_to_public_url() {
   case "$1" in
-    dev) echo "https://dev.grimoire-book.com" ;;
-    prod) echo "https://grimoire-book.com" ;;
+    dev) echo "${PUBLIC_WEB_URL_DEV}" ;;
+    prod) echo "${PUBLIC_WEB_URL_PROD}" ;;
     *) return 1 ;;
   esac
 }
@@ -137,8 +138,8 @@ env_to_tag_prefix() {
 # Cloud Run 직접 URL 형식일 수 있어 preflight 에서는 mismatch=WARN(누락만 FAIL).
 env_to_expected_api_url() {
   case "$1" in
-    dev) echo "https://dev-api.grimoire-book.com/api" ;;
-    prod) echo "https://api.grimoire-book.com/api" ;;
+    dev) echo "${API_URL_DEV}" ;;
+    prod) echo "${API_URL_PROD}" ;;
     *) return 1 ;;
   esac
 }
@@ -196,8 +197,7 @@ action_acr_login() {
 }
 
 # Docker 이미지 빌드 + 푸시 (web — NEXT_PUBLIC_* build-arg 인라인).
-# ⚠️ build-arg 는 web 고유·필수. 빈 recaptcha/google 또는 잘못된 APP_ENV 로 빌드하면
-#    클라이언트 번들에 그대로 박혀 로그인/reCAPTCHA 가 파손된다(인프라 에이전트 경고 실패모드).
+# 공개 클라이언트 설정은 빌드에 인라인된다. 미설정 연동은 비활성화한다.
 action_docker_build_push() {
   local env="$1" sha="$2"
   local tag_sha tag_latest app_env
@@ -212,12 +212,13 @@ action_docker_build_push() {
   info "  build-arg NEXT_PUBLIC_RECAPTCHA_SITE_KEY=(hidden, len=${#RECAPTCHA_SITE_KEY})"
   info "  build-arg NEXT_PUBLIC_GOOGLE_CLIENT_ID=(hidden)"
 
-  # 빈 값 방어 — 빌드타임 인라인 값이 비면 로그인 파손. 사전 차단.
-  [ -n "$RECAPTCHA_SITE_KEY" ] || fail "RECAPTCHA_SITE_KEY 비어있음 — 빌드 중단(로그인 파손 방지)."
-  [ -n "$GOOGLE_CLIENT_ID" ]   || fail "GOOGLE_CLIENT_ID 비어있음 — 빌드 중단(로그인 파손 방지)."
+  # 선택 연동 설정은 사용자 값만 사용한다.
+  # reCAPTCHA/Google 미설정 경로는 이메일 가입·로그인으로 검증한다.
 
   docker build --platform "$BUILD_PLATFORM" \
     --build-arg "NEXT_PUBLIC_APP_ENV=${app_env}" \
+    --build-arg "NEXT_PUBLIC_SITE_URL=$(env_to_public_url "$env")" \
+    --build-arg "NEXT_PUBLIC_API_ORIGIN=${NEXT_PUBLIC_API_ORIGIN:-}" \
     --build-arg "NEXT_PUBLIC_RECAPTCHA_SITE_KEY=${RECAPTCHA_SITE_KEY}" \
     --build-arg "NEXT_PUBLIC_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}" \
     -t "$tag_sha" \

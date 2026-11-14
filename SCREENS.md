@@ -157,3 +157,7 @@
 |--------|------|
 | useExploreStore | 탐색 페이지 상태 (Zustand) |
 | useNavigationStore | 뒤로가기 정책 + 네비게이션 상태 (Zustand) |
+
+## 초기 화면 데이터와 테마 호환
+
+`/explore`의 서버 page가 첫 목록을 읽어 `ExploreClient`에 전달한다. 작가·작품 page도 첫 데이터를 `AuthorSpace`·`WorkPage`에 전달하며 API 실패 시 기존 클라이언트 오류/재시도 경로를 유지한다. 대시보드 테마 미리보기의 previewData 경로는 유지한다. 초기 테마에 `layout: series`만 있으면 기존 SeriesLayout의 카드형 회차 목록을 사용한다.

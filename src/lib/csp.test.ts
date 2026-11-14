@@ -1,41 +1,24 @@
-// FW-1 회귀 가드 — CSP connect-src 환경별 분기 + stale 도메인 제거.
-// prod = api 만 / dev = dev-api / inhouse-* 전 환경 제거 를 단언한다 (재도입 시 즉시 RED).
-import { describe, it, expect } from "vitest"
-import { buildCsp, apiConnectSrc } from "./csp"
+import { describe, it, expect } from 'vitest'
+import { buildCsp, apiConnectSrc } from './csp'
 
-describe("CSP connect-src 환경 분기 (FW-1)", () => {
-  it("prod: api.grimoire-book.com 만 허용 (dev-api·inhouse 없음)", () => {
-    const csp = buildCsp("production")
-    expect(csp).toContain("connect-src 'self' https://api.grimoire-book.com ")
-    expect(csp).not.toContain("dev-api.grimoire-book.com")
-    expect(csp).not.toContain("inhouse")
-    expect(apiConnectSrc("production")).toBe("https://api.grimoire-book.com")
+describe('CSP 사용자 API 출처', () => {
+  it.each(['local', 'localhost'])('%s는 루프백 API를 허용한다', env => {
+    expect(apiConnectSrc(env)).toBe('http://localhost:3000')
   })
-
-  it("dev: dev-api.grimoire-book.com 만 허용 (inhouse 없음)", () => {
-    const csp = buildCsp("development")
-    expect(csp).toContain("https://dev-api.grimoire-book.com")
-    expect(csp).not.toContain("inhouse")
-    expect(apiConnectSrc("development")).toBe("https://dev-api.grimoire-book.com")
+  it.each(['development', 'production', undefined])('%s는 기본 BFF만 사용한다', env => {
+    expect(apiConnectSrc(env)).toBe('')
+    expect(buildCsp(env)).not.toContain('grimoire-book.com')
   })
-
-  it("local: localhost:3000 origin", () => {
-    expect(apiConnectSrc("local")).toBe("http://localhost:3000")
+  it('설정한 API 출처만 추가한다', () => {
+    expect(apiConnectSrc('production', 'https://api.example.test')).toBe('https://api.example.test')
+    expect(buildCsp('production', 'https://api.example.test')).toContain("connect-src 'self' https://api.example.test ")
   })
-
-  it("미지정: production 을 안전 기본값으로 사용 (stale 노출 없음)", () => {
-    expect(apiConnectSrc(undefined)).toBe("https://api.grimoire-book.com")
-    expect(buildCsp(undefined)).not.toContain("dev-api.grimoire-book.com")
+  it.each(['https://user:password@example.test', 'https://example.test/path', 'https://example.test?key=value', 'https://example.test#hash', 'javascript:alert(1)', 'not-a-url'])('잘못된 출처는 빌드를 중단한다: %s', origin => {
+    expect(() => buildCsp('production', origin)).toThrow()
   })
-
-  it("inhouse-api 는 전 환경에서 제거", () => {
-    for (const e of ["production", "development", "local", undefined]) {
-      expect(buildCsp(e as string | undefined)).not.toContain("inhouse")
-    }
-  })
-
-  it("CSP 골격(다른 지시어)은 불변 유지", () => {
-    const csp = buildCsp("production")
+  it('GCS 테마 CSS와 기존 보안 지시어를 유지한다', () => {
+    const csp = buildCsp('localhost')
+    expect(csp).toContain("style-src 'self' 'unsafe-inline' https://accounts.google.com https://storage.googleapis.com")
     expect(csp).toContain("default-src 'self'")
     expect(csp).toContain("frame-src https://www.google.com https://accounts.google.com https://polar.sh")
     expect(csp).toContain("base-uri 'self'")

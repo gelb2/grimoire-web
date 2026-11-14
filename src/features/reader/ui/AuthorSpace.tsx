@@ -7,6 +7,7 @@
 import { useState, useEffect } from 'react'
 import { api } from '@/lib/api'
 import { useTheme } from '@/features/theme'
+import { resolveEpisodeListLayout } from '@/features/theme/episode-list-layout'
 import { ErrorPopup } from '@/components/ErrorPopup'
 import {
   SeriesLayout,
@@ -21,18 +22,25 @@ interface AuthorSpaceProps {
   authorSlug: string
   /** 테마 에디터 프리뷰용: 데이터를 직접 주입하면 API 호출을 건너뛴다 */
   previewData?: AuthorData
+  initialData?: AuthorData
 }
 
-export function AuthorSpace({ authorSlug, previewData }: AuthorSpaceProps) {
+export function AuthorSpace({ authorSlug, previewData, initialData }: AuthorSpaceProps) {
   const theme = useTheme()
-  const [author, setAuthor] = useState<AuthorData | null>(previewData ?? null)
-  const [loading, setLoading] = useState(!previewData)
+  const [author, setAuthor] = useState<AuthorData | null>(previewData ?? initialData ?? null)
+  const [loading, setLoading] = useState(!previewData && !initialData)
   const [error, setError] = useState(false)
 
   useEffect(() => {
     // 프리뷰 모드: previewData가 도착하면 상태를 동기화하고 API 호출 생략
     if (previewData) {
       setAuthor(previewData)
+      setLoading(false)
+      setError(false)
+      return
+    }
+    if (initialData) {
+      setAuthor(initialData)
       setLoading(false)
       setError(false)
       return
@@ -77,7 +85,7 @@ export function AuthorSpace({ authorSlug, previewData }: AuthorSpaceProps) {
       })
 
     return () => { mounted = false }
-  }, [authorSlug, previewData])
+  }, [authorSlug, previewData, initialData])
 
   // 로딩 스켈레톤
   if (loading) {
@@ -113,7 +121,7 @@ export function AuthorSpace({ authorSlug, previewData }: AuthorSpaceProps) {
   // 레이아웃 선택 — 각 레이아웃은 독립 컴포넌트
   const layoutProps = { author, authorSlug, theme }
 
-  switch (theme.episodeListLayout) {
+  switch (resolveEpisodeListLayout(theme)) {
     case 'series':   return <SeriesLayout {...layoutProps} />
     case 'gallery':  return <GalleryLayout {...layoutProps} />
     case 'magazine': return <MagazineLayout {...layoutProps} />

@@ -1,0 +1,34 @@
+[
+  {
+    "name": "@react-oauth/google",
+    "version": "0.13.4",
+    "source": "https://raw.githubusercontent.com/MomenSherif/react-oauth/3c74cde91fc49a0887414622c186da30cf50e73c/LICENSE",
+    "sha256": "eaee28fd442d345699daac7b8dacfda6fb15db5f5477bd69e0b30e429aea68ba",
+    "file": "_react-oauth_google-0.13.4.txt",
+    "kind": "pinned-upstream-text"
+  },
+  {
+    "name": "@next/env",
+    "version": "16.4.6",
+    "source": "https://raw.githubusercontent.com/vercel/next.js/v16.4.6/license.md",
+    "sha256": "ee765244e2d59f5234d474f62e0766fa0c8b99af967fdd4c0cb8dcb0c76ea224",
+    "file": "_next_env-16.4.6.txt",
+    "kind": "pinned-upstream-text"
+  },
+  {
+    "version": "16.4.6",
+    "source": "https://raw.githubusercontent.com/vercel/next.js/v16.4.6/license.md",
+    "sha256": "ee765244e2d59f5234d474f62e0766fa0c8b99af967fdd4c0cb8dcb0c76ea224",
+    "file": "_next_swc-darwin-arm64-16.4.6.txt",
+    "kind": "pinned-upstream-text",
+    "prefix": "@next/swc-"
+  },
+  {
+    "version": "1.3.4",
+    "source": "https://raw.githubusercontent.com/lovell/sharp-libvips/ebb95f8add54eee8bed840e3fb587e4cbec857d7/LICENSE",
+    "sha256": "b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1",
+    "file": "_img_sharp-libvips-darwin-arm64-1.3.4.txt",
+    "kind": "pinned-upstream-text",
+    "prefix": "@img/sharp-libvips-"
+  }
+]

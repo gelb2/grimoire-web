@@ -19,6 +19,7 @@ source "${SCRIPT_DIR}/deploy-common.sh"
 
 ENV="${1:-}"
 validate_env "$ENV"
+validate_cloud_config "$ENV"
 
 # 체크 결과 추적 (bash 3.2 호환 — associative array 미사용)
 CHECK_FAILED=0
@@ -79,7 +80,7 @@ fi
 
 # 프로젝트 접근 가능 여부 (전역 default 와 무관하게 --project 명시로 직접 확인)
 if gcloud projects describe "$GCP_PROJECT_ID" --format="value(projectId)" >/dev/null 2>&1; then
-  _pass "프로젝트 접근 가능: $GCP_PROJECT_ID (project number $GCP_PROJECT_NUMBER)"
+  _pass "프로젝트 접근 가능: $GCP_PROJECT_ID"
 else
   _fail "프로젝트 '$GCP_PROJECT_ID' 접근 불가 (권한 또는 로그인 확인 필요)"
 fi
